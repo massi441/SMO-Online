@@ -1,6 +1,6 @@
-﻿namespace SMOO.Protocol;
+﻿namespace SMOO.Server;
 
-internal enum Error
+internal enum ServerError
 {
     // Packet header
     InvalidMagic,
@@ -26,4 +26,5 @@ internal enum Error
 
     // Generic
     OperationFailed,
+    ConnectionLost
 }

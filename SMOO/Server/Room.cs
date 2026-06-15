@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
-using System.Net.Sockets;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using SMOO.Client;
@@ -22,6 +21,7 @@ internal class Room
     public IPlayerHolder PlayerHolder { get; }
     public IBroadcaster Broadcaster { get; }
     public PlayerList Players => PlayerHolder.Players;
+    public IReliablePacketStore ReliableStore => Broadcaster.ReliablePacketStore;
 
     public Room(ushort roomId, ServerContext conxtext, IPlayerHolder playerHolder, IBroadcaster broadcaster)
     {
@@ -39,6 +39,26 @@ internal class Room
     {
         Packets.Writer.Complete();
         return Task.WhenAll(_processTask, Broadcaster.Shutdown());
+    }
+
+    public void DropPlayer(Player player)
+    {
+        _context.Logger.LogWarning("{PlayerName} is unreachable and will be disconnected from Room #{RoomId}", player.Name, Id);
+
+        _commands.Enqueue(() =>
+        {
+            _context.PlayerDisconnector.Disconnect(player);
+        });
+    }
+
+    public void DisconnectPlayer(Player player)
+    {
+        _context.Logger.LogInformation("{PlayerName} will be disconnected from Room #{RoomId}", player.Name, Id);
+        
+        _commands.Enqueue(() =>
+        {
+            _context.PlayerDisconnector.Disconnect(player);
+        });
     }
 
     public void UploadCommand(Action action)
@@ -78,7 +98,7 @@ internal class Room
 
                 if (packet.PayloadSize > packetHandler.MaxPayloadSize)
                 {
-                    _context.Logger.LogWarning("{PacketType} packet payload too large ({PacketSize}), maximum allowed: {Maximum}. Error: {Error}", packet.Header.Type, packet.PayloadSize, packetHandler.MaxPayloadSize, Error.PayloadTooLarge);
+                    _context.Logger.LogWarning("{PacketType} packet payload too large ({PacketSize}), maximum allowed: {Maximum}. Error: {Error}", packet.Header.Type, packet.PayloadSize, packetHandler.MaxPayloadSize, ServerError.PayloadTooLarge);
                     continue;
                 }
 
@@ -97,19 +117,6 @@ internal class Room
             catch (InvalidDataException ex)
             {
                 _context.Logger.LogError("Invalid data detected in {PacketType} in Room #{RoomId}: {Message}", packet.Header.Type, Id, ex.Message);
-            }
-            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
-            {
-                Player? player = PlayerHolder.FindPlayerByHost(packet.Sender);
-                if (player != null)
-                {
-                    _context.Logger.LogWarning("{PlayerName} is unreachable and will be disconnected from the room", player.Name);
-                    _context.PlayerDisconnector.Disconnect(player);
-                }
-                else
-                {
-                    _context.Logger.LogWarning("Host {Address}:{Port} was unreachable but already disconnected from room", packet.Sender.Address, packet.Sender.Port);
-                }
             }
             catch (Exception ex)
             {

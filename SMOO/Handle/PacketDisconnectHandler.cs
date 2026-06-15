@@ -1,7 +1,6 @@
 using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Server;
-using SMOO.Util;
 using Microsoft.Extensions.Logging;
 
 namespace SMOO.Handle;
@@ -21,7 +20,7 @@ internal class PacketDisconnectHandler : IPacketHandler
             return;
         }
 
-        Result<Error> disconnectResult = context.PlayerDisconnector.Disconnect(player);
+        ServerResult disconnectResult = context.PlayerDisconnector.Disconnect(player);
         if (disconnectResult.IsFailed)
         {
             context.Logger.LogError("Unable to disconnect {PlayerName} in room #{RoomId}", player.Name, room.Id);

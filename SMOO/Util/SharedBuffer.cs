@@ -24,7 +24,7 @@ internal class SharedBuffer : IDisposable
     }
 
     /// <summary>
-    /// Acquires a reference to the buffer
+    /// Acquires a reference to the buffer, to be called in sequential code.
     /// </summary>
     public void Acquire()
     {

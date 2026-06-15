@@ -59,7 +59,7 @@ internal class EventChangeStageHandler : IEventHandler
 
                 context.Logger.LogInformation("{PlayerCount} were already in stage {StageName}, {PlayerName} will be notified", inStageCount, data.NewStage, player.Name);
 
-                context.PacketSender.SendReliably(player, buffer, room);
+                context.PacketSender.SendReliably(buffer, player, room.ReliableStore);
             }
         }
         else

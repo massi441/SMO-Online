@@ -1,9 +1,9 @@
-﻿using System.Buffers;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
+using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Services.Impl;
 using SMOO.Util;
@@ -85,19 +85,24 @@ internal class UdpServer
             {
                 _context.Logger.LogError("The received packet was too big to fit inside the receive buffer");
             }
+            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
+            {
+                _context.Logger.LogWarning("An error occured while trying to send a packet, host unreachable");
+            }
             catch (Exception ex)
             {
                 _context.Logger.LogError(ex, "An Unexpected exception occured while receiving packets");
             }
         }
     }
+
     private async Task ProcessLoop(CancellationToken cancellationTokenSource)
     {
         await foreach (Packet packet in _packets.Reader.ReadAllAsync(cancellationTokenSource))
         {
             using SharedBuffer buffer = packet.Buffer;
 
-            Result<Error> dispatchResult = Dispatch(packet, _context);
+            ServerResult dispatchResult = Dispatch(packet, _context);
             if (dispatchResult.IsFailed)
             {
                 _context.Logger.LogWarning("Dispatch failed. Error: {Error}, Sender: {Address}:{Port}", dispatchResult.Error, packet.Sender.Address, packet.Sender.Port);
@@ -105,41 +110,41 @@ internal class UdpServer
         }
     }
 
-    private static Result<Error> Dispatch(Packet packet, ServerContext context)
+    private static ServerResult Dispatch(Packet packet, ServerContext context)
     {
         if (!IsValidHeaderSize(packet.Buffer))
         {
-            return Result<Error>.Failure(Error.InvalidHeaderSize);
+            return ServerResult.Failure(ServerError.InvalidHeaderSize);
         }
 
         ref PacketHeader header = ref packet.Header;
 
         if (header.Magic != Config.Magic)
         {
-            return Result<Error>.Failure(Error.InvalidMagic);
+            return ServerResult.Failure(ServerError.InvalidMagic);
         }
 
         if (!IsValidType((byte)header.Type))
         {
-            return Result<Error>.Failure(Error.InvalidPacketType);
+            return ServerResult.Failure(ServerError.InvalidPacketType);
         }
 
         if (!IsValidVersion(header.Version))
         {
-            return Result<Error>.Failure(Error.InvalidVersion);
+            return ServerResult.Failure(ServerError.InvalidVersion);
         }
 
         if (header.Type == PacketType.Ping)
         {
             context.Logger.LogTrace("Ping received from {Address}:{Port}", packet.Sender.Address, packet.Sender.Port);
-            Result<Error> result = context.PacketSender.Send(packet.Sender, packet.Buffer);
+            ServerResult result = context.PacketSender.Send(packet.Buffer, packet.Sender);
             return result;
         }
 
         Room? room = context.RoomHolder.GetRoom(header.RoomId);
         if (room == null)
         {
-            return Result<Error>.Failure(Error.RoomNotFound);
+            return ServerResult.Failure(ServerError.RoomNotFound);
         }
 
         Packet roomPacket = new Packet
@@ -150,7 +155,7 @@ internal class UdpServer
 
         room.Packets.Writer.TryWrite(roomPacket);
 
-        return Result<Error>.Success();
+        return ServerResult.Success();
     }
 
     private static bool IsValidVersion(byte version)

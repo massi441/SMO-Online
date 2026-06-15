@@ -1,6 +1,5 @@
 ﻿using System.Net;
-using SMOO.Protocol;
-using SMOO.Util;
+using SMOO.Server;
 
 namespace SMOO.Client;
 
@@ -8,8 +7,8 @@ internal interface IPlayerHolder
 {
     PlayerList Players { get; }
     byte MaxSize { get; }
-    Result<Player, Error> RegisterPlayer(in PlayerInfo playerInfo);
-    Result<Error> UnregisterPlayer(Player player);
+    ServerResult<Player> RegisterPlayer(in PlayerInfo playerInfo);
+    ServerResult UnregisterPlayer(Player player);
 
     Player? FindPlayerByHost(IPEndPoint endpoint);
     Player? FindPlayerById(PlayerId id);

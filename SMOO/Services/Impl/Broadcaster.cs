@@ -29,7 +29,7 @@ internal class Broadcaster : IBroadcaster
     {
         foreach (Player player in players)
         {
-            _context.PacketSender.Send(player.Endpoint, payload);
+             _context.PacketSender.Send(payload, player.Endpoint);
         }
     }
 
@@ -38,7 +38,7 @@ internal class Broadcaster : IBroadcaster
         foreach (Player player in players)
         {
             _resendStore.UploadPacket(buffer, player, maxRetries);
-            _context.PacketSender.Send(player.Endpoint, buffer);
+            _context.PacketSender.Send(buffer, player);
         }
     }
 
@@ -46,63 +46,75 @@ internal class Broadcaster : IBroadcaster
     {
         while (!_resendToken.IsCancellationRequested)
         {
-            foreach (var pair in _resendStore.PendingPackets)
-            {
-                ProcessAckPacket(pair.Value);
-            }
-
-            await Task.Delay(Config.ResendThreadTick);
+            await CheckPackets();
         }
 
         _context.Logger.LogInformation("Room Broadcaster was shutdown successfully");
     }
 
-    private void ProcessAckPacket(ReliablePacket reliablePacket)
+    private async Task CheckPackets()
     {
-        if (reliablePacket.HasTriesLeft)
+        foreach (var pair in _resendStore.PendingPackets)
         {
-            if (!reliablePacket.IsResendTime)
+            ReliablePacket packet = pair.Value;
+
+            if (packet.HasTriesLeft)
             {
-                return;
+                _context.Logger.LogTrace("Resending {Type} packet #{Id} to {PlayerName} in room {#RoomdId}", packet.Header.Type, packet.SequenceNumber, packet.Receiver.Name, packet.Receiver.Room.Id);
+
+                TryResendPacket(packet);
             }
-
-            _context.Logger.LogTrace("Resending {Type} packet #{Id} to {PlayerName} in room {#RoomdId}", reliablePacket.Header.Type, reliablePacket.SequenceNumber, reliablePacket.Receiver.Name, reliablePacket.Receiver.Room.Id);
-
-            reliablePacket.WriteSequenceNumber(); // write the packet's sequence number into the payload in case the buffer is shared
-
-            Result<Error> sendResult = _context.PacketSender.Send(reliablePacket.Receiver.Endpoint, reliablePacket.Buffer);
-            if (!sendResult.IsSuccess)
+            else
             {
-                _context.Logger.LogError("An error occured while trying to resend the packet");
+                ClearPacket(packet);
             }
-
-            reliablePacket.DecrementTries();
-            reliablePacket.RefreshLastSent();
         }
-        else
+
+        await Task.Delay(Config.ResendThreadTick);
+    }
+
+    private void TryResendPacket(ReliablePacket packet)
+    {
+        if (!packet.IsResendTime)
         {
-            PacketType packetType = reliablePacket.Header.Type; // need to capture here as packet store frees the rented buffer
-
-            ReliablePacket? expiredPacket = _resendStore.RemovePacket(reliablePacket.Receiver, reliablePacket.SequenceNumber);
-            if (expiredPacket == null)
-            {
-                _context.Logger.LogWarning("Expired packet already removed");
-                return;
-            }
-
-            reliablePacket.Receiver.Room.UploadCommand(() =>
-            {
-                Result<Error> disconnectResult = _context.PlayerDisconnector.Disconnect(reliablePacket.Receiver);
-                if (disconnectResult.IsSuccess)
-                {
-                    _context.Logger.LogWarning("Disconnected player {PlayerName} for not Acking {PacketType} packet (#{SequenceNumber}) in room #{RoomId}", reliablePacket.Receiver.Name, packetType, reliablePacket.SequenceNumber, reliablePacket.Receiver.Room.Id);
-                }
-                else
-                {
-                    _context.Logger.LogError("Failed to disconnect player {PlayerName} for no Acking packet #{PacketId} in room #{RoomId}", reliablePacket.Receiver.Name, reliablePacket.SequenceNumber, reliablePacket.Receiver.Room.Id);
-                }
-            });
+            return;
         }
+
+        packet.WriteSequenceNumber(); // write the packet's sequence number into the payload in case the buffer is shared
+
+        ServerResult sendResult = _context.PacketSender.Send(packet.Buffer, packet.Receiver);
+        if (!sendResult.IsSuccess)
+        {
+            _context.Logger.LogError("An error occured while trying to resend the packet");
+        }
+
+        packet.DecrementTries();
+        packet.RefreshLastSent();
+    }
+
+    private void ClearPacket(ReliablePacket reliablePacket)
+    {
+        PacketType packetType = reliablePacket.Header.Type; // need to capture here as packet store frees the rented buffer
+
+        ReliablePacket? expiredPacket = _resendStore.RemovePacket(reliablePacket.Receiver, reliablePacket.SequenceNumber);
+        if (expiredPacket == null)
+        {
+            _context.Logger.LogWarning("Expired packet already removed");
+            return;
+        }
+
+        reliablePacket.Receiver.Room.UploadCommand(() =>
+        {
+            ServerResult disconnectResult = _context.PlayerDisconnector.Disconnect(reliablePacket.Receiver);
+            if (disconnectResult.IsSuccess)
+            {
+                _context.Logger.LogWarning("Disconnected player {PlayerName} for not Acking {PacketType} packet (#{SequenceNumber}) in room #{RoomId}", reliablePacket.Receiver.Name, packetType, reliablePacket.SequenceNumber, reliablePacket.Receiver.Room.Id);
+            }
+            else
+            {
+                _context.Logger.LogError("Failed to disconnect player {PlayerName} for no Acking packet #{PacketId} in room #{RoomId}", reliablePacket.Receiver.Name, reliablePacket.SequenceNumber, reliablePacket.Receiver.Room.Id);
+            }
+        });
     }
 
     public Task Shutdown()

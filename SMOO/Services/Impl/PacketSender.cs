@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using SMOO.Client;
-using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Services.Interface;
 using SMOO.Util;
@@ -17,21 +16,40 @@ internal class PacketSender : IPacketSender
         _socket = socket;
     }
 
-    public Result<Error> Send(EndPoint destination, ReadOnlySpan<byte> buffer)
+    public ServerResult Send(ReadOnlySpan<byte> buffer, IPEndPoint receiver)
     {
-        int bytesSent = _socket.SendTo(buffer, destination);
+        int bytesSent = _socket.SendTo(buffer, receiver);
         if (bytesSent != buffer.Length)
         {
-            return Result<Error>.Failure(Error.NotSent);
+            return ServerResult.Failure(ServerError.NotSent);
         }
 
-        return Result<Error>.Success();
+        return ServerResult.Success();
     }
 
-    public void SendReliably(Player receiver, SharedBuffer buffer, Room room, byte maxRetries = Config.MaxRetries)
+    public ServerResult Send(ReadOnlySpan<byte> buffer, Player receiver)
     {
-        room.Broadcaster.ReliablePacketStore.UploadPacket(buffer, receiver, maxRetries);
+        try
+        {
+            int bytesSent = _socket.SendTo(buffer, receiver.Endpoint);
+            if (bytesSent != buffer.Length)
+            {
+                return ServerResult.Failure(ServerError.NotSent);
+            }
 
-        Send(receiver.Endpoint, buffer.UsedSpan);
+            return ServerResult.Success();
+        }
+        catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
+        {
+            receiver.Room.DropPlayer(receiver);
+            return ServerResult.Failure(ServerError.ConnectionLost);
+        }
+    }
+
+    public void SendReliably(SharedBuffer buffer, Player receiver, IReliablePacketStore reliableStore, byte maxRetries = Config.MaxRetries)
+    {
+        reliableStore.UploadPacket(buffer, receiver, maxRetries);
+
+        Send(buffer.UsedSpan, receiver);
     }
 }

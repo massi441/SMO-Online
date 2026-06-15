@@ -30,7 +30,7 @@ internal class PacketEventHandler : IPacketHandler
 
         if (eventPacket.EventData.Length > handler.MaxDataSize)
         {
-            context.Logger.LogWarning("Event {EventType} data too large ({Size}), maximum allowed: {Maximum}. Error: {Error}", eventType, eventPacket.EventData.Length, handler.MaxDataSize, Error.PayloadTooLarge);
+            context.Logger.LogWarning("Event {EventType} data too large ({Size}), maximum allowed: {Maximum}. Error: {Error}", eventType, eventPacket.EventData.Length, handler.MaxDataSize, ServerError.PayloadTooLarge);
             return;
         }
 
