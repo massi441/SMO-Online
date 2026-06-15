@@ -1,7 +1,6 @@
 using System.Net;
 using Microsoft.Extensions.Logging;
 using SMOO.Client;
-using SMOO.Enumerator;
 using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Util;
@@ -32,7 +31,6 @@ internal class PacketConnectHandler : IPacketHandler
         if (IsInOtherRoom(packet.SenderIp, context, out Player? takenPlayer, out Room takenRoom))
         {
             context.Logger.LogWarning("Player {Name} ({Address}:{Port}) is already in room {RoomId}", takenPlayer.Name, takenPlayer.Endpoint.Address, takenPlayer.Endpoint.Port, takenRoom.Id);
-            goto cleanup;
         }
 
         PacketConnectPayload connectPayload = PacketSerializer.Deserialize<PacketConnectPayload>(packet.Payload);
@@ -40,7 +38,6 @@ internal class PacketConnectHandler : IPacketHandler
         if (!IsValidNameLength(connectPayload.Name.Length))
         {
             context.Logger.LogWarning("Invalid player name length {Length}", connectPayload.Name.Length);
-            goto cleanup;
         }
 
         PlayerInfo playerInfo = new PlayerInfo()
@@ -54,7 +51,6 @@ internal class PacketConnectHandler : IPacketHandler
         if (newPlayerResult.IsFailed)
         {
             context.Logger.LogError("Failed to register {PlayerName} in Room #{RoomId}", playerInfo.Name, room.Id);
-            goto cleanup;
         }
 
         Player newPlayer = newPlayerResult.Data!;
@@ -70,14 +66,11 @@ internal class PacketConnectHandler : IPacketHandler
             PlayerInfos = playerInfos
         };
 
-        RentedBuffer ackBuffer = PacketSerializer.Serialize(ref ackPacket, Config.MaxBufferSize);
+        using SharedBuffer ackBuffer = PacketSerializer.Serialize(ref ackPacket, Config.MaxBufferSize);
 
         context.PacketSender.SendReliably(newPlayer, ackBuffer, room, Config.MaxRetries);
 
         context.Logger.LogTrace("Player {Name} joined Room #{RoomId} in slot {Slot}, waiting for a confirmation...", newPlayer.Name, packet.Header.RoomId, newPlayer.Slot);
-
-        cleanup:
-        packet.RentedBuffer.Return();
     }
 
     private static bool IsInOtherRoom(IPEndPoint sender, ServerContext context, out Player player, out Room takenRoom)

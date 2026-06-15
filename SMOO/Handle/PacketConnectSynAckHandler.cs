@@ -19,7 +19,6 @@ internal class PacketConnectSynAckHandler : IPacketHandler
         if (ackPacket == null)
         {
             context.Logger.LogWarning("Invalid SYN ACK sequence number ({SequenceNumber}) received by {PlayerName} in Room #{RoomId}, broadcast will be skipped", sequenceNumber, packet.SenderPlayer?.Name, room.Id);
-            packet.RentedBuffer.Return();
             return;
         }
 
@@ -29,12 +28,10 @@ internal class PacketConnectSynAckHandler : IPacketHandler
             PlayerRoomInfo = new PlayerInRoomInfo(packet.SenderPlayer!)
         };
 
-        RentedBuffer joinRoomBuffer = PacketSerializer.Serialize(ref joinPacket, RequiredSize<PacketPlayerJoinRoom>.MaxSize);
+        using SharedBuffer joinRoomBuffer = PacketSerializer.Serialize(ref joinPacket, RequiredSize<PacketPlayerJoinRoom>.MaxSize);
 
         context.Logger.LogInformation("Player {PlayerName} has confirmed their connection in Room #{RoomId}, room will be notified", packet.SenderPlayer!.Name, room.Id);
 
-        room.Broadcaster.BroadcastReliably(room.Players.Except(packet.SenderPlayer), joinRoomBuffer); // transfers ownership of the rented buffer to the reliable store
-
-        packet.RentedBuffer.Return();
+        room.Broadcaster.BroadcastReliably(joinRoomBuffer, room.Players.Except(packet.SenderPlayer)); // transfers ownership of the rented buffer to the reliable store
     }
 }

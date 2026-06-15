@@ -8,7 +8,6 @@ namespace SMOO.Services.Interface;
 
 internal interface IPacketSender
 {
-    Result<Error> Send(EndPoint destination, RentedBuffer buffer);
-    void SendReliably(Player receiver, RentedBuffer buffer, Room room, RefCounter refCounter, byte maxRetries = Config.MaxRetries);
-    void SendReliably(Player receiver, RentedBuffer buffer, Room room, byte maxRetries = Config.MaxRetries);
+    Result<Error> Send(EndPoint destination, ReadOnlySpan<byte> buffer);
+    void SendReliably(Player receiver, SharedBuffer buffer, Room room, byte maxRetries = Config.MaxRetries);
 }

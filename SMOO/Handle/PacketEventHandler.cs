@@ -25,21 +25,19 @@ internal class PacketEventHandler : IPacketHandler
         if (eventPacket.EventData.Length < handler.MinDataSize)
         {
             context.Logger.LogWarning("Event {EventType} data too small ({Size}), minimum required: {Minimum}", eventType, eventPacket.EventData.Length, handler.MinDataSize);
-            packet.RentedBuffer.Return();
             return;
         }
 
         if (eventPacket.EventData.Length > handler.MaxDataSize)
         {
             context.Logger.LogWarning("Event {EventType} data too large ({Size}), maximum allowed: {Maximum}. Error: {Error}", eventType, eventPacket.EventData.Length, handler.MaxDataSize, Error.PayloadTooLarge);
-            packet.RentedBuffer.Return();
             return;
         }
 
         unsafe
         {
             eventPacket.EventHeader.PlayerSlot = packet.SenderPlayer!.Slot;
-            handler.Handle(eventPacket, room, context); // handler takes ownership of the rented buffer
+            handler.Handle(eventPacket, room, context);
         }
     }
 }

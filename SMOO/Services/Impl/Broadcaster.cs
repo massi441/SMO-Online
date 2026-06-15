@@ -25,33 +25,21 @@ internal class Broadcaster : IBroadcaster
         _resendTask = Task.Run(ResendLoop);
     }
 
-    public void Broadcast<TEnumerator>(TEnumerator players, RentedBuffer buffer) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
+    public void Broadcast<TEnumerator>(ReadOnlySpan<byte> payload, TEnumerator players) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
     {
         foreach (Player player in players)
         {
+            _context.PacketSender.Send(player.Endpoint, payload);
+        }
+    }
+
+    public void BroadcastReliably<TEnumerator>(SharedBuffer buffer, TEnumerator players, byte maxRetries = Config.MaxRetries) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
+    {
+        foreach (Player player in players)
+        {
+            _resendStore.UploadPacket(buffer, player, maxRetries);
             _context.PacketSender.Send(player.Endpoint, buffer);
         }
-    }
-
-    public void BroadcastReliably<TEnumerator>(TEnumerator players, RentedBuffer roomPayload, byte maxRetries = Config.MaxRetries) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
-    {
-        RefCounter counter = new RefCounter();
-        foreach (Player player in players)
-        {
-            UploadAndSendAckPacket(roomPayload, counter, player, maxRetries);
-        }
-
-        if (counter.Count == 0)
-        {
-            roomPayload.Return();
-        }
-    }
-
-    private void UploadAndSendAckPacket(RentedBuffer buffer, RefCounter refCounter, Player receiver, byte maxRetries)
-    {
-        _resendStore.UploadPacket(buffer, refCounter, receiver, maxRetries);
-
-        _context.PacketSender.Send(receiver.Endpoint, buffer);
     }
 
     private async Task ResendLoop()
@@ -82,7 +70,7 @@ internal class Broadcaster : IBroadcaster
 
             reliablePacket.WriteSequenceNumber(); // write the packet's sequence number into the payload in case the buffer is shared
 
-            Result<Error> sendResult = _context.PacketSender.Send(reliablePacket.Receiver.Endpoint, reliablePacket.RentedBuffer);
+            Result<Error> sendResult = _context.PacketSender.Send(reliablePacket.Receiver.Endpoint, reliablePacket.Buffer);
             if (!sendResult.IsSuccess)
             {
                 _context.Logger.LogError("An error occured while trying to resend the packet");

@@ -1,11 +1,13 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Channels;
-using SMOO.Client;
-using SMOO.Protocol;
 using Microsoft.Extensions.Logging;
-using SMOO.Services.Interface;
+using SMOO.Client;
 using SMOO.Handle;
+using SMOO.Protocol;
+using SMOO.Services.Interface;
+using SMOO.Util;
 
 namespace SMOO.Server;
 
@@ -50,6 +52,8 @@ internal class Room
         {
             try
             {
+                using SharedBuffer buffer = packet.Buffer;
+
                 while (_commands.TryDequeue(out Action? command))
                 {
                     _context.Logger.LogTrace("Processing command in room #{RoomId}", Id);
@@ -59,7 +63,6 @@ internal class Room
                 if (!IsAllowedInRoom(packet.Sender, packet.Header, out Player? player))
                 {
                     _context.Logger.LogWarning("{Address}:{Port} illegally tried to access room #{RoomId}", packet.Sender.Address, packet.Sender.Port, Id);
-                    packet.RentedBuffer.Return();
                     continue;
                 }
 
@@ -70,21 +73,19 @@ internal class Room
                 if (packet.PayloadSize < packetHandler.MinPayloadSize)
                 {
                     _context.Logger.LogWarning("{PacketType} packet of invalid size ({PacketSize}) was requested. Minimum required: {Minimum}", packet.Header.Type, packet.PayloadSize, packetHandler.MinPayloadSize);
-                    packet.RentedBuffer.Return();
                     continue;
                 }
 
                 if (packet.PayloadSize > packetHandler.MaxPayloadSize)
                 {
                     _context.Logger.LogWarning("{PacketType} packet payload too large ({PacketSize}), maximum allowed: {Maximum}. Error: {Error}", packet.Header.Type, packet.PayloadSize, packetHandler.MaxPayloadSize, Error.PayloadTooLarge);
-                    packet.RentedBuffer.Return();
                     continue;
                 }
 
                 ParsedPacket parsedPacket = new ParsedPacket()
                 {
                     SenderPlayer = player,
-                    RentedBuffer = packet.RentedBuffer,
+                    Buffer = packet.Buffer,
                     SenderIp = packet.Sender
                 };
 
@@ -96,12 +97,23 @@ internal class Room
             catch (InvalidDataException ex)
             {
                 _context.Logger.LogError("Invalid data detected in {PacketType} in Room #{RoomId}: {Message}", packet.Header.Type, Id, ex.Message);
-                packet.RentedBuffer.Return();
+            }
+            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
+            {
+                Player? player = PlayerHolder.FindPlayerByHost(packet.Sender);
+                if (player != null)
+                {
+                    _context.Logger.LogWarning("{PlayerName} is unreachable and will be disconnected from the room", player.Name);
+                    _context.PlayerDisconnector.Disconnect(player);
+                }
+                else
+                {
+                    _context.Logger.LogWarning("Host {Address}:{Port} was unreachable but already disconnected from room", packet.Sender.Address, packet.Sender.Port);
+                }
             }
             catch (Exception ex)
             {
                 _context.Logger.LogError(ex, "Unexpected error in Room #{RoomId}", Id);
-                packet.RentedBuffer.Return();
             }
         }
 

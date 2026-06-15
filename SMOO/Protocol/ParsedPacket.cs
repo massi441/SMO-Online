@@ -12,18 +12,18 @@ namespace SMOO.Protocol;
 internal readonly struct ParsedPacket
 {
     public required IPEndPoint SenderIp { get; init; }
-    public required RentedBuffer RentedBuffer { get; init; }
+    public required SharedBuffer Buffer { get; init; }
     public Player? SenderPlayer { get; init; }
 
     /// <summary>
     /// Returns a view of the header inside the packet's payload
     /// </summary>
-    public ref PacketHeader Header => ref MemoryMarshal.AsRef<PacketHeader>(RentedBuffer.RentRef.AsSpan());
+    public ref PacketHeader Header => ref MemoryMarshal.AsRef<PacketHeader>(Buffer.UsedSpan);
 
     /// <summary>
     /// Returns a span of the payload of the packet
     /// </summary>
-    public Span<byte> Payload => RentedBuffer.UsedSpan[Unsafe.SizeOf<PacketHeader>()..];
+    public Span<byte> Payload => Buffer.UsedSpan[Unsafe.SizeOf<PacketHeader>()..];
 
-    public int FullSize => RentedBuffer.UsedBytes;
+    public int FullSize => Buffer.UsedBytes;
 }

@@ -21,19 +21,18 @@ internal class ReliablePacketStore : IReliablePacketStore
         _context = context;
     }
 
-    public ReliablePacket UploadPacket(RentedBuffer rentedBuffer, RefCounter refCounter, Player receiver, byte maxRetries)
+    public ReliablePacket UploadPacket(SharedBuffer buffer, Player receiver, byte maxRetries)
     {
         ReliablePacket reliablePacket = new ReliablePacket()
         {
-            RentedBuffer = rentedBuffer,
-            RefCounter = refCounter,
+            Buffer = buffer,
             Receiver = receiver,
             Tries = maxRetries,
             SequenceNumber = _nextSequenceNumber
         };
 
+        reliablePacket.Buffer.Acquire();
         reliablePacket.WriteSequenceNumber();
-        reliablePacket.RefCounter.Increment();
 
         _pendingPackets[_nextSequenceNumber] = reliablePacket;
         _nextSequenceNumber++;
@@ -54,14 +53,13 @@ internal class ReliablePacketStore : IReliablePacketStore
                 return null;
             }
 
-            if (pendingPacket.RefCounter.Decrement() <= 0)
+            if (pendingPacket.Buffer.Release())
             {
-                pendingPacket.RentedBuffer.Return();
                 _context.Logger.LogTrace("Removed and free'd buffer used by reliable packet #{SequenceNumber}", sequenceNumber);
             }
             else
             {
-                _context.Logger.LogTrace("Decremented ref count after removing reliable packet #{SequenceNumber}, new ref count: {RefCount}", sequenceNumber, pendingPacket.RefCounter.Count);
+                _context.Logger.LogTrace("Decremented ref count after removing reliable packet #{SequenceNumber}, new ref count: {RefCount}", sequenceNumber, pendingPacket.Buffer.RefCount);
             }
             
             return pendingPacket;

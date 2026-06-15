@@ -11,6 +11,6 @@ internal class EventChangeCostumeHandler : IEventHandler
 
     public static void Handle(ParsedEventPacket packet, Room room, ServerContext context)
     {
-        packet.BasePacket.RentedBuffer.Return();
+        
     }
 }

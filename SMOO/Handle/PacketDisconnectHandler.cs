@@ -17,7 +17,6 @@ internal class PacketDisconnectHandler : IPacketHandler
 
         if (player == null)
         {
-            packet.RentedBuffer.Return();
             context.Logger.LogWarning("Player was null in PacketDisconnect handler");
             return;
         }
@@ -25,12 +24,9 @@ internal class PacketDisconnectHandler : IPacketHandler
         Result<Error> disconnectResult = context.PlayerDisconnector.Disconnect(player);
         if (disconnectResult.IsFailed)
         {
-            packet.RentedBuffer.Return();
             context.Logger.LogError("Unable to disconnect {PlayerName} in room #{RoomId}", player.Name, room.Id);
             return;
         }
-
-        packet.RentedBuffer.Return();
 
         context.Logger.LogWarning("Player {Name} left room {RoomId}", player.Name, room.Id);
     }
