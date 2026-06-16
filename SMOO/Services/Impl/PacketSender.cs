@@ -29,26 +29,12 @@ internal class PacketSender : IPacketSender
 
     public ServerResult Send(ReadOnlySpan<byte> buffer, Player receiver)
     {
-        try
-        {
-            int bytesSent = _socket.SendTo(buffer, receiver.Endpoint);
-            if (bytesSent != buffer.Length)
-            {
-                return ServerResult.Failure(ServerError.NotSent);
-            }
-
-            return ServerResult.Success();
-        }
-        catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
-        {
-            receiver.Room.DropPlayer(receiver);
-            return ServerResult.Failure(ServerError.ConnectionLost);
-        }
+        return Send(buffer, receiver.Endpoint);
     }
 
-    public void SendReliably(SharedBuffer buffer, Player receiver, IReliablePacketStore reliableStore, byte maxRetries = Config.MaxRetries)
+    public void SendReliably(SharedBuffer buffer, Player receiver, IReliablePacketStore reliableStore, byte maxRetries, int resendDelay)
     {
-        reliableStore.UploadPacket(buffer, receiver, maxRetries);
+        reliableStore.UploadPacket(buffer, receiver, maxRetries, resendDelay);
 
         Send(buffer.UsedSpan, receiver);
     }

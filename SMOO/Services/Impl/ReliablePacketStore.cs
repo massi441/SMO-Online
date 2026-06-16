@@ -21,14 +21,15 @@ internal class ReliablePacketStore : IReliablePacketStore
         _context = context;
     }
 
-    public ReliablePacket UploadPacket(SharedBuffer buffer, Player receiver, byte maxRetries)
+    public ReliablePacket UploadPacket(SharedBuffer buffer, Player receiver, byte maxRetries, int resendDelay)
     {
         ReliablePacket reliablePacket = new ReliablePacket()
         {
             Buffer = buffer,
             Receiver = receiver,
             Tries = maxRetries,
-            SequenceNumber = _nextSequenceNumber
+            SequenceNumber = _nextSequenceNumber,
+            ResendMsDelay = resendDelay
         };
 
         reliablePacket.Buffer.Acquire();
@@ -66,5 +67,15 @@ internal class ReliablePacketStore : IReliablePacketStore
         }
 
         return null;
+    }
+
+    public void ClearPlayer(Player player)
+    {
+        ReliablePacket[] playerPackets = [.. _pendingPackets.Values.Where(packet => packet.Receiver == player)];
+
+        foreach (ReliablePacket playerPacket in playerPackets)
+        {
+            RemovePacket(playerPacket.Receiver, playerPacket.SequenceNumber);
+        }
     }
 }

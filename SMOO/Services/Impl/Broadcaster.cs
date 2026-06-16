@@ -22,7 +22,8 @@ internal class Broadcaster : IBroadcaster
         _context = context;
         _resendStore = resendStore;
         _resendToken = CancellationTokenSource.CreateLinkedTokenSource(_context.CancellationToken);
-        _resendTask = Task.Run(ResendLoop);
+
+        _resendTask = Task.Run(ResendLoop, _resendToken.Token);
     }
 
     public void Broadcast<TEnumerator>(ReadOnlySpan<byte> payload, TEnumerator players) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
@@ -60,8 +61,6 @@ internal class Broadcaster : IBroadcaster
 
             if (packet.HasTriesLeft)
             {
-                _context.Logger.LogTrace("Resending {Type} packet #{Id} to {PlayerName} in room {#RoomdId}", packet.Header.Type, packet.SequenceNumber, packet.Receiver.Name, packet.Receiver.Room.Id);
-
                 TryResendPacket(packet);
             }
             else
@@ -75,10 +74,12 @@ internal class Broadcaster : IBroadcaster
 
     private void TryResendPacket(ReliablePacket packet)
     {
-        if (!packet.IsResendTime)
+        if (!packet.IsResendTime())
         {
             return;
         }
+
+        _context.Logger.LogTrace("Resending {Type} packet #{Id} to {PlayerName} in room {#RoomdId}", packet.Header.Type, packet.SequenceNumber, packet.Receiver.Name, packet.Receiver.Room.Id);
 
         packet.WriteSequenceNumber(); // write the packet's sequence number into the payload in case the buffer is shared
 
@@ -102,6 +103,8 @@ internal class Broadcaster : IBroadcaster
             _context.Logger.LogWarning("Expired packet already removed");
             return;
         }
+
+        reliablePacket.Receiver.MarkDisconnected();
 
         reliablePacket.Receiver.Room.UploadCommand(() =>
         {

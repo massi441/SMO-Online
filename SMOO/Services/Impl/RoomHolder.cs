@@ -1,4 +1,5 @@
-﻿using SMOO.Client;
+﻿using System.Net;
+using SMOO.Client;
 using SMOO.Server;
 using SMOO.Services.Interface;
 
@@ -58,5 +59,19 @@ internal class RoomHolder : IRoomHolder
     public IEnumerable<Room> GetRooms()
     {
         return _rooms.Values;
+    }
+
+    public Player? FindPlayerByHost(IPEndPoint endpoint)
+    {
+        foreach (Room room in _rooms.Values)
+        {
+            Player? player = room.PlayerHolder.FindPlayerByHost(endpoint);
+            if (player != null)
+            {
+                return player;
+            }
+        }
+
+        return null;
     }
 }

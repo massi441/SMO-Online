@@ -12,10 +12,10 @@ internal class ReliablePacket
     public required ushort SequenceNumber { get; init; }
     public required Player Receiver { get; init; }
     public required SharedBuffer Buffer { get; init; }
+    public required int ResendMsDelay { get; init; }
     public ref PacketHeader Header => ref MemoryMarshal.AsRef<PacketHeader>(Buffer.UsedSpan);
     public DateTime LastSent { get; private set; } = DateTime.UtcNow;
     public bool HasTriesLeft => _tries > 0;
-    public bool IsResendTime => (DateTime.UtcNow - LastSent).TotalMilliseconds > Config.MinimumResendDelay.TotalMilliseconds;
 
     public void RefreshLastSent()
     {
@@ -28,6 +28,11 @@ internal class ReliablePacket
         {
             _tries--;
         }
+    }
+
+    public bool IsResendTime()
+    {
+        return !Receiver.IsDisconnected && (DateTime.UtcNow - LastSent).TotalMilliseconds > ResendMsDelay;
     }
 
     public void WriteSequenceNumber()

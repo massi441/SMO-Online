@@ -71,7 +71,7 @@ internal class PacketConnectHandler : IPacketHandler
 
         using SharedBuffer ackBuffer = PacketSerializer.Serialize(ref ackPacket, Config.MaxBufferSize);
 
-        context.PacketSender.SendReliably(ackBuffer, newPlayer, room.ReliableStore, Config.MaxRetries);
+        context.PacketSender.SendReliably(ackBuffer, newPlayer, room.ReliableStore, resendDelay: Config.PlayerSynAckDelay);
 
         context.Logger.LogTrace("Player {Name} joined Room #{RoomId} in slot {Slot}, waiting for a confirmation...", newPlayer.Name, packet.Header.RoomId, newPlayer.Slot);
     }

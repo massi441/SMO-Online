@@ -4,7 +4,7 @@ using SMOO.Util;
 namespace SMOO.Protocol;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-internal record struct PacketHeader
+internal record struct PacketHeader : ISerializableStruct
 {
     public readonly uint Magic = Config.Magic;
     public required PacketType Type;
@@ -16,6 +16,11 @@ internal record struct PacketHeader
     public PacketHeader()
     {
 
+    }
+
+    public readonly void Serialize(ref SpanWriter writer)
+    {
+        writer.Write(this);
     }
 
     public PacketHeader WithType(PacketType type)

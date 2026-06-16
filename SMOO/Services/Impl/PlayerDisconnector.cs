@@ -30,6 +30,8 @@ internal class PlayerDisconnector : IPlayerDisconnector
             return unregisterResult;
         }
 
+        player.Room.Broadcaster.ReliablePacketStore.ClearPlayer(player);
+
         PacketDisconnect disconnectPacket = new PacketDisconnect()
         {
             Header = new PacketHeader()

@@ -57,10 +57,9 @@ internal class UdpServer
         while (!cancellationTokenSource.IsCancellationRequested)
         {
             using SharedBuffer buffer = new SharedBuffer(Config.MaxBufferSize);
+            IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
             try
             {
-                IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-
                 SocketReceiveFromResult receiveResult = await socket.ReceiveFromAsync(buffer.Ref, SocketFlags.None, sender, cancellationTokenSource);
                 if (receiveResult.ReceivedBytes > 0)
                 {
@@ -81,13 +80,18 @@ internal class UdpServer
                 _context.Logger.LogWarning("Operation aborted");
                 break;
             }
+            catch (OperationCanceledException)
+            {
+                _context.Logger.LogWarning("The server was interrupted and will be shutdown");
+                break;
+            }
             catch (SocketException ex) when (ex.SocketErrorCode == SocketError.MessageSize)
             {
                 _context.Logger.LogError("The received packet was too big to fit inside the receive buffer");
             }
             catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
             {
-                _context.Logger.LogWarning("An error occured while trying to send a packet, host unreachable");
+                _context.Logger.LogWarning("The remote host is unreachable, and will shortly be disconnected by the health check");
             }
             catch (Exception ex)
             {

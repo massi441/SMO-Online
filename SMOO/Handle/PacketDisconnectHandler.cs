@@ -20,6 +20,8 @@ internal class PacketDisconnectHandler : IPacketHandler
             return;
         }
 
+        player.MarkDisconnected();
+
         ServerResult disconnectResult = context.PlayerDisconnector.Disconnect(player);
         if (disconnectResult.IsFailed)
         {
