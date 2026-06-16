@@ -2,6 +2,9 @@
 
 namespace SMOO.Client;
 
+/// <summary>
+/// A wrapper around a list of players with predefined span iterators
+/// </summary>
 internal readonly struct PlayerList
 {
     private readonly Player[] _players;
@@ -9,8 +12,8 @@ internal readonly struct PlayerList
     public PlayerActiveEnumerator Active => new PlayerActiveEnumerator(_players);
     public PlayerIgnoreEnumerator Except(Player player) => new PlayerIgnoreEnumerator(_players, player);
     public PlayerSameStageEnumerator SameStageAs(Player player) => new PlayerSameStageEnumerator(_players, player);
-    public PlayerInRoomInfoEnumerator PlayerInfos() => new(_players);
-    public PlayerInRoomInfoEnumerator PlayerInfosExcept(Player player) => new(_players, player);
+    public PlayerInRoomInfoEnumerator PlayerInfos() => new PlayerInRoomInfoEnumerator(_players);
+    public PlayerInRoomInfoEnumerator PlayerInfosExcept(Player player) => new PlayerInRoomInfoEnumerator(_players, player);
     public PlayerActiveEnumerator GetEnumerator() => new PlayerActiveEnumerator(_players);
 
     public PlayerList(int playerCount)

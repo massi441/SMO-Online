@@ -2,7 +2,7 @@
 using SMOO.Util;
 using Microsoft.Extensions.Logging;
 
-namespace Lockstep;
+namespace SMOO;
 
 class Program
 {
@@ -20,12 +20,18 @@ class Program
             Console.CancelKeyPress += (_, e) =>
             {
                 e.Cancel = true;
-                cancellationTokenSource.Cancel();
+                if (!cancellationTokenSource.IsCancellationRequested)
+                {
+                    cancellationTokenSource.Cancel();
+                }
             };
 
             AppDomain.CurrentDomain.ProcessExit += (_, _) =>
             {
-                cancellationTokenSource.Cancel();
+                if (!cancellationTokenSource.IsCancellationRequested)
+                {
+                    cancellationTokenSource.Cancel();
+                }
             };
 
             await server.RunAsync(cancellationTokenSource.Token);

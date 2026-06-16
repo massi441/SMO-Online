@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using SMOO.Client;
 using SMOO.Protocol;
+using SMOO.Server;
 using SMOO.Services.Interface;
 using SMOO.Util;
 
@@ -21,13 +22,15 @@ internal class PlayerDisconnector : IPlayerDisconnector
         }
     }
 
-    public Result<Error> Disconnect(Player player)
+    public ServerResult Disconnect(Player player)
     {
-        Result<Error> unregisterResult = player.Room.PlayerHolder.UnregisterPlayer(player);
+        ServerResult unregisterResult = player.Room.PlayerHolder.UnregisterPlayer(player);
         if (unregisterResult.IsFailed)
         {
             return unregisterResult;
         }
+
+        player.Room.Broadcaster.ReliablePacketStore.ClearPlayer(player);
 
         PacketDisconnect disconnectPacket = new PacketDisconnect()
         {
@@ -41,10 +44,10 @@ internal class PlayerDisconnector : IPlayerDisconnector
             PlayerSlot = player.Slot
         };
 
-        RentedBuffer broadcastBuffer = PacketSerializer.Serialize(ref disconnectPacket, Unsafe.SizeOf<PacketDisconnect>());
+        using SharedBuffer broadcastBuffer = PacketSerializer.Serialize(ref disconnectPacket, Unsafe.SizeOf<PacketDisconnect>());
 
-        player.Room.Broadcaster.BroadcastReliably(player.Room.Players.Active, broadcastBuffer);
+        player.Room.Broadcaster.BroadcastReliably(broadcastBuffer, player.Room.Players.Active);
 
-        return Result<Error>.Success();
+        return ServerResult.Success();
     }
 }

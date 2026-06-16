@@ -1,10 +1,9 @@
 ﻿using SMOO.Client;
-using SMOO.Protocol;
-using SMOO.Util;
+using SMOO.Server;
 
 namespace SMOO.Services.Interface;
 
 internal interface IPlayerDisconnector
 {
-    Result<Error> Disconnect(Player player);
+    ServerResult Disconnect(Player player);
 }

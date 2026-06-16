@@ -1,11 +1,12 @@
-﻿using SMOO.Protocol;
-using SMOO.Util;
-using Microsoft.Extensions.Logging;
-using System.Buffers;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Threading.Channels;
+using Microsoft.Extensions.Logging;
+using SMOO.Client;
+using SMOO.Protocol;
 using SMOO.Services.Impl;
+using SMOO.Util;
 
 namespace SMOO.Server;
 
@@ -14,7 +15,7 @@ internal class UdpServer
     private readonly int _port;
     private readonly Channel<Packet> _packets;
 
-    public ServerContext _context { get; private set; } = null!;
+    private ServerContext _context = null!;
 
     public UdpServer(int port)
     {
@@ -55,62 +56,125 @@ internal class UdpServer
     {
         while (!cancellationTokenSource.IsCancellationRequested)
         {
-            RentedBuffer buffer = new RentedBuffer(Config.MaxBufferSize);
+            using SharedBuffer buffer = new SharedBuffer(Config.MaxBufferSize);
+            IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
             try
             {
-                IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-
-                SocketReceiveFromResult receiveResult = await socket.ReceiveFromAsync(buffer.RentRef, SocketFlags.None, sender, cancellationTokenSource);
+                SocketReceiveFromResult receiveResult = await socket.ReceiveFromAsync(buffer.Ref, SocketFlags.None, sender, cancellationTokenSource);
                 if (receiveResult.ReceivedBytes > 0)
                 {
                     buffer.Restrict(receiveResult.ReceivedBytes);
                     _packets.Writer.TryWrite(new Packet
                     {
                         Sender = (IPEndPoint)receiveResult.RemoteEndPoint,
-                        RentedBuffer = buffer
+                        Buffer = buffer.Transfer()
                     });
-                    // ownership transferred to RentedBuffer
                 }
                 else
                 {
-                    buffer.Return();
                     _context.Logger.LogInformation("Empty packet received from {Address}:{Port}", sender.Address.ToString(), sender.Port);
                 }
             }
             catch (SocketException ex) when (ex.SocketErrorCode == SocketError.OperationAborted)
             {
-                buffer.Return();
                 _context.Logger.LogWarning("Operation aborted");
+                break;
+            }
+            catch (OperationCanceledException)
+            {
+                _context.Logger.LogWarning("The server was interrupted and will be shutdown");
                 break;
             }
             catch (SocketException ex) when (ex.SocketErrorCode == SocketError.MessageSize)
             {
-                buffer.Return();
                 _context.Logger.LogError("The received packet was too big to fit inside the receive buffer");
             }
             catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
             {
-                buffer.Return();
-                _context.Logger.LogWarning("An error occured while trying to send a packet, host unreachable");
+                _context.Logger.LogWarning("The remote host is unreachable, and will shortly be disconnected by the health check");
             }
             catch (Exception ex)
             {
-                buffer.Return();
                 _context.Logger.LogError(ex, "An Unexpected exception occured while receiving packets");
             }
         }
     }
+
     private async Task ProcessLoop(CancellationToken cancellationTokenSource)
     {
         await foreach (Packet packet in _packets.Reader.ReadAllAsync(cancellationTokenSource))
         {
-            Result<Error> dispatchResult = PacketDispatcher.Dispatch(packet, _context);
+            using SharedBuffer buffer = packet.Buffer;
+
+            ServerResult dispatchResult = Dispatch(packet, _context);
             if (dispatchResult.IsFailed)
             {
                 _context.Logger.LogWarning("Dispatch failed. Error: {Error}, Sender: {Address}:{Port}", dispatchResult.Error, packet.Sender.Address, packet.Sender.Port);
-                packet.RentedBuffer.Return();
             }
         }
+    }
+
+    private static ServerResult Dispatch(Packet packet, ServerContext context)
+    {
+        if (!IsValidHeaderSize(packet.Buffer))
+        {
+            return ServerResult.Failure(ServerError.InvalidHeaderSize);
+        }
+
+        ref PacketHeader header = ref packet.Header;
+
+        if (header.Magic != Config.Magic)
+        {
+            return ServerResult.Failure(ServerError.InvalidMagic);
+        }
+
+        if (!IsValidType((byte)header.Type))
+        {
+            return ServerResult.Failure(ServerError.InvalidPacketType);
+        }
+
+        if (!IsValidVersion(header.Version))
+        {
+            return ServerResult.Failure(ServerError.InvalidVersion);
+        }
+
+        if (header.Type == PacketType.Ping)
+        {
+            context.Logger.LogTrace("Ping received from {Address}:{Port}", packet.Sender.Address, packet.Sender.Port);
+            ServerResult result = context.PacketSender.Send(packet.Buffer, packet.Sender);
+            return result;
+        }
+
+        Room? room = context.RoomHolder.GetRoom(header.RoomId);
+        if (room == null)
+        {
+            return ServerResult.Failure(ServerError.RoomNotFound);
+        }
+
+        Packet roomPacket = new Packet
+        {
+            Buffer = packet.Buffer.Transfer(),
+            Sender = packet.Sender
+        };
+
+        room.Packets.Writer.TryWrite(roomPacket);
+
+        return ServerResult.Success();
+    }
+
+    private static bool IsValidVersion(byte version)
+    {
+        return version == Config.Version;
+    }
+
+    private static bool IsValidHeaderSize(ReadOnlySpan<byte> span)
+    {
+        return span.Length >= Unsafe.SizeOf<PacketHeader>();
+    }
+
+    private static bool IsValidType(byte packetType)
+    {
+        return packetType >= 0 && packetType < (byte)PacketType.Invalid;
     }
 
     private void InitContext(Socket socket, CancellationToken cancellationToken)
@@ -119,7 +183,7 @@ internal class UdpServer
         {
             Logger = LockstepLogger.Instance(),
             RoomHolder = new RoomHolder(),
-            PacketSender = new PacketSenderUdp(socket),
+            PacketSender = new PacketSender(socket),
             PlayerDisconnector = new PlayerDisconnector(),
             CancellationToken = cancellationToken
         };

@@ -12,7 +12,5 @@ internal class PacketHealthCheckHandler : IPacketHandler
     public static void Handle(ParsedPacket packet, Room room, ServerContext context)
     {
         context.Logger.LogTrace("Health check accepted");
-        context.PacketSender.Send(packet.SenderIp, packet.RentedBuffer);
-        packet.RentedBuffer.Return();
     }
 }

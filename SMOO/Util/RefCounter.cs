@@ -1,10 +1,10 @@
 ﻿namespace SMOO.Util;
 
-internal class RefCounter
+internal struct RefCounter
 {
-    private int _count = 0;
+    private int _count;
 
-    public int Count => _count;
+    public readonly int Count => _count;
 
     public int Increment()
     {

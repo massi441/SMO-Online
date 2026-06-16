@@ -1,5 +1,5 @@
 ﻿using System.Net;
-using SMOO.Protocol;
+using SMOO.Server;
 using SMOO.Util;
 
 namespace SMOO.Client;
@@ -15,16 +15,16 @@ internal class PlayerHolder : IPlayerHolder
         _players = new PlayerList(Math.Min(size, Config.MaxRoomSize));
     }
 
-    public Result<Player, Error> RegisterPlayer(in PlayerInfo playerInfo)
+    public ServerResult<Player> RegisterPlayer(in PlayerInfo playerInfo)
     {
         if (ContainsPlayer(playerInfo))
         {
-            return Result<Player, Error>.Failure(Error.PlayerAlreadyInRoom);
+            return ServerResult<Player>.Failure(ServerError.PlayerAlreadyInRoom);
         }
 
         if (!TryFindSlot(out byte index))
         {
-            return Result<Player, Error>.Failure(Error.RoomFull);
+            return ServerResult<Player>.Failure(ServerError.RoomFull);
         }
 
         Player player = new Player()
@@ -47,21 +47,21 @@ internal class PlayerHolder : IPlayerHolder
 
         _players[index] = player;
 
-        return Result<Player, Error>.Success(player);
+        return ServerResult<Player>.Success(player);
     }
 
-    public Result<Error> UnregisterPlayer(Player player)
+    public ServerResult UnregisterPlayer(Player player)
     {
         for (int i = 0; i < _players.Length; i++)
         {
             if (_players[i] == player)
             {
                 _players[i] = null!;
-                return Result<Error>.Success();
+                return ServerResult.Success();
             }
         }
 
-        return Result<Error>.Failure(Error.OperationFailed);
+        return ServerResult.Failure(ServerError.OperationFailed);
     }
 
     public Player? FindPlayerById(PlayerId id)

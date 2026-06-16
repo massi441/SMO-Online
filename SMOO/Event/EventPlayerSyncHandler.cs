@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
 using SMOO.Enumerator;
 using SMOO.Protocol;
 using SMOO.Server;
@@ -52,11 +53,17 @@ internal class EventPlayerSyncHandler : IEventHandler
 
     public static void Handle(ParsedEventPacket eventPacket, Room room, ServerContext context)
     {
-        PacketSerializer.Deserialize<PlayerSyncData>(eventPacket.EventData); // for validation only
+        try
+        {
+            PacketSerializer.Deserialize<PlayerSyncData>(eventPacket.EventData);
 
-        PlayerSameStageEnumerator enumerator = room.Players.SameStageAs(eventPacket.BasePacket.SenderPlayer!);
-        room.Broadcaster.Broadcast(enumerator, eventPacket.BasePacket.RentedBuffer);
+            PlayerSameStageEnumerator enumerator = room.Players.SameStageAs(eventPacket.BasePacket.SenderPlayer!);
 
-        eventPacket.BasePacket.RentedBuffer.Return();
+            room.Broadcaster.Broadcast(eventPacket.BasePacket.Buffer, enumerator);
+        }
+        catch (InvalidDataException ex)
+        {
+            context.Logger.LogError("{PlayerName} sent a malformed player sync payload in Room #{RoomId}: {Message}", eventPacket.BasePacket.SenderPlayer!.Name, room.Id, ex.Message);
+        }
     }
 }

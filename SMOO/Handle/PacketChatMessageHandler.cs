@@ -37,10 +37,8 @@ internal class PacketChatMessageHandler : IPacketHandler
             Message = request.Message,
         };
 
-        packet.RentedBuffer.Return();
+        using SharedBuffer chatBuffer = PacketSerializer.Serialize(ref chatPacket, RequiredSize<PacketChatMessage>.MaxSize);
 
-        RentedBuffer chatBuffer = PacketSerializer.Serialize(ref chatPacket, RequiredSize<PacketChatMessage>.MaxSize);
-
-        room.Broadcaster.BroadcastReliably(room.Players.Except(packet.SenderPlayer), chatBuffer);
+        room.Broadcaster.BroadcastReliably(chatBuffer, room.Players.Except(packet.SenderPlayer));
     }
 }

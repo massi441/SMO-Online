@@ -18,17 +18,17 @@ internal readonly struct Packet
     /// <summary>
     /// The rented buffer of the packet
     /// </summary>
-    public required RentedBuffer RentedBuffer { get; init; }
+    public required SharedBuffer Buffer { get; init; }
 
     /// <summary>
     /// Returns a view of the header inside the packet's payload
     /// </summary>
-    public ref PacketHeader Header => ref MemoryMarshal.AsRef<PacketHeader>(RentedBuffer.RentRef.AsSpan());
+    public ref PacketHeader Header => ref MemoryMarshal.AsRef<PacketHeader>(Buffer.UsedSpan);
 
     /// <summary>
     /// The full size of the packet
     /// </summary>
-    public int FullSize => RentedBuffer.UsedBytes;
+    public int FullSize => Buffer.UsedBytes;
 
-    public int PayloadSize => RentedBuffer.UsedBytes - Unsafe.SizeOf<PacketHeader>();
+    public int PayloadSize => Buffer.UsedBytes - Unsafe.SizeOf<PacketHeader>();
 }
