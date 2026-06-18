@@ -21,9 +21,9 @@ internal readonly unsafe struct PacketHandler
 internal static unsafe class PacketHandlerTable
 {
     private static readonly PacketHandler DefaultHandler        = new PacketHandler(PacketDefaultHandler.MinPayloadSize,        PacketDefaultHandler.MaxPayloadSize,        &PacketDefaultHandler.Handle);
-    private static readonly PacketHandler Connect               = new PacketHandler(PacketConnectHandler.MinPayloadSize,         PacketConnectHandler.MaxPayloadSize,         &PacketConnectHandler.Handle);
-    private static readonly PacketHandler ConnectAck            = DefaultHandler;
-    private static readonly PacketHandler ConnectSynAck         = new PacketHandler(PacketConnectSynAckHandler.MinPayloadSize,   PacketConnectSynAckHandler.MaxPayloadSize,   &PacketConnectSynAckHandler.Handle);
+    private static readonly PacketHandler ConnectSyn            = new PacketHandler(PacketConnectSynHandler.MinPayloadSize,         PacketConnectSynHandler.MaxPayloadSize,         &PacketConnectSynHandler.Handle);
+    private static readonly PacketHandler ConnectSynAck         = DefaultHandler;
+    private static readonly PacketHandler ConnectAck            = new PacketHandler(PacketConnectAckHandler.MinPayloadSize, PacketConnectAckHandler.MaxPayloadSize, &PacketConnectAckHandler.Handle);
     private static readonly PacketHandler Disconnect            = new PacketHandler(PacketDisconnectHandler.MinPayloadSize,      PacketDisconnectHandler.MaxPayloadSize,      &PacketDisconnectHandler.Handle);
     private static readonly PacketHandler PlayerJoinRoom        = DefaultHandler;
     private static readonly PacketHandler HealthCheck           = new PacketHandler(PacketHealthCheckHandler.MinPayloadSize,     PacketHealthCheckHandler.MaxPayloadSize,     &PacketHealthCheckHandler.Handle);
@@ -36,9 +36,9 @@ internal static unsafe class PacketHandlerTable
 
     private static readonly PacketHandler[] Handlers =
     [
-        Connect,
-        ConnectAck,
+        ConnectSyn,
         ConnectSynAck,
+        ConnectAck,
         Disconnect,
         PlayerJoinRoom,
         HealthCheck,

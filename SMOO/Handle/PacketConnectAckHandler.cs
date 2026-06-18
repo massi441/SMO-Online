@@ -6,7 +6,7 @@ using SMOO.Util;
 
 namespace SMOO.Handle;
 
-internal class PacketConnectSynAckHandler : IPacketHandler
+internal class PacketConnectAckHandler : IPacketHandler
 {
     public static ushort MinPayloadSize => 0;
     public static ushort MaxPayloadSize => 0;

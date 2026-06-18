@@ -7,7 +7,7 @@ namespace SMOO.Protocol;
 /// <summary>
 /// The packet sent to a player that just connected to a room
 /// </summary>
-internal ref struct PacketConnectAck : ISerializableStruct
+internal ref struct PacketConnectSynAck : ISerializableStruct
 {
     public required PacketHeader Header;
     public required Guid SessionId;

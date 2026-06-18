@@ -5,8 +5,9 @@ namespace SMOO.Enumerator;
 internal ref struct PlayerInRoomInfoEnumerator : ISpanEnumerator<PlayerInRoomInfo, PlayerInRoomInfoEnumerator>
 {
     private PlayerActiveEnumerator _playerEnumerator;
-    private readonly Player? _exclude;
     private PlayerInRoomInfo _current;
+    private readonly Player? _exclude;
+
     public readonly PlayerInRoomInfo Current => _current;
     public readonly PlayerInRoomInfoEnumerator GetEnumerator() => this;
 
@@ -20,7 +21,11 @@ internal ref struct PlayerInRoomInfoEnumerator : ISpanEnumerator<PlayerInRoomInf
     {
         while (_playerEnumerator.MoveNext())
         {
-            if (_playerEnumerator.Current == _exclude) continue;
+            if (_playerEnumerator.Current == _exclude)
+            {
+                continue;
+            }
+
             _current = new PlayerInRoomInfo(_playerEnumerator.Current);
             return true;
         }
