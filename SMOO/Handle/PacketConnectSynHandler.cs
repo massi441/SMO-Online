@@ -1,13 +1,14 @@
 using System.Net;
 using Microsoft.Extensions.Logging;
 using SMOO.Client;
+using SMOO.Enumerator;
 using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Util;
 
 namespace SMOO.Handle;
 
-internal class PacketConnectHandler : IPacketHandler
+internal class PacketConnectSynHandler : IPacketHandler
 {
     /// <summary>
     /// Requires at least one UInt16 for the length of the Player's name
@@ -58,11 +59,11 @@ internal class PacketConnectHandler : IPacketHandler
 
         Player newPlayer = newPlayerResult.Data!;
 
-        var playerInfos = room.Players.PlayerInfosExcept(newPlayer);
+        PlayerInRoomInfoEnumerator playerInfos = room.Players.PlayerInfosExcept(newPlayer);
 
-        PacketConnectAck ackPacket = new PacketConnectAck()
+        PacketConnectSynAck ackPacket = new PacketConnectSynAck()
         {
-            Header = packet.Header.WithType(PacketType.ConnectAck),
+            Header = packet.Header.WithType(PacketType.ConnectSynAck),
             RoomSize = room.PlayerHolder.MaxSize,
             SessionId = newPlayer.Id.SessionId,
             OtherPlayersCount = (byte)(room.Players.ActiveCount() - 1),

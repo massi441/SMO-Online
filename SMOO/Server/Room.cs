@@ -182,7 +182,7 @@ internal class Room
 
     private bool IsAllowedInRoom(IPEndPoint sender, PacketHeader header, out Player? player)
     {
-        if (header.Type == PacketType.Connect)
+        if (header.Type == PacketType.ConnectSyn)
         {
             player = null;
             return true;
