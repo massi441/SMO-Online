@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Text;
+using SMOO.Attributes;
 
 namespace SMOO.Util;
 
@@ -7,7 +8,7 @@ namespace SMOO.Util;
 /// Represents a length prefixed string in a byte stream
 /// </summary>
 /// <typeparam name="TLengthPrefix">The type of the length prefix</typeparam>
-internal struct StreamStringView<TLengthPrefix> where TLengthPrefix : unmanaged, IBinaryInteger<TLengthPrefix>, IMinMaxValue<TLengthPrefix>
+internal struct StreamStringView<TLengthPrefix> where TLengthPrefix : unmanaged, IBinaryInteger<TLengthPrefix>
 {
     [RequiredField]
     private TLengthPrefix _length;
@@ -43,6 +44,11 @@ internal struct StreamStringView<TLengthPrefix> where TLengthPrefix : unmanaged,
     {
         writer.Write(_length);
         writer.WriteString(_string);
+    }
+
+    public readonly bool HasData()
+    {
+        return int.CreateChecked(_length) > 0;
     }
 
     public override readonly string ToString()

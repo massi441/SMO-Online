@@ -1,4 +1,5 @@
-﻿using SMOO.Client;
+﻿using SMOO.Attributes;
+using SMOO.Client;
 using SMOO.Enumerator;
 using SMOO.Util;
 
@@ -28,7 +29,6 @@ internal ref struct PacketConnectSynAck : ISerializableStruct
         }
     }
 }
-
 
 internal ref struct PacketAck : ISerializableStruct
 {
@@ -88,6 +88,9 @@ internal ref struct PacketChatMessage : ISerializableStruct
     }
 }
 
+/// <summary>
+/// The packet sent to a player that just joined a stage
+/// </summary>
 internal ref struct PacketPlayersInStage : ISerializableStruct
 {
     [RequiredField]
@@ -96,8 +99,41 @@ internal ref struct PacketPlayersInStage : ISerializableStruct
     [RequiredField]
     public required byte PlayerCount;
 
-    [DynamicField(MaxSize = sizeof(byte) * Config.MaxRoomSize)]
+    [DynamicRepeatedField(Type = typeof(PlayerInStageInfo), MaxRepeatCount = Config.MaxRoomSize)]
     public required PlayerSameStageEnumerator PlayersInStage;
+
+    internal ref struct PlayerInStageInfo : ISerializableStruct
+    {
+        [RequiredField]
+        public byte PlayerSlot;
+
+        [DynamicField(MaxSize = Config.MaxAnimNameLength)]
+        public StreamStringView<byte> Anim;
+
+        [DynamicField(MaxSize = Config.MaxAnimNameLength)]
+        public StreamStringView<byte> SubAnim;
+
+        [DynamicField(MaxSize = Config.MaxAnimNameLength)]
+        public StreamStringView<byte> UpperAnim;
+
+        public PlayerInStageInfo(Player player)
+        {
+            PlayerSlot = player.Slot;
+
+            Anim = new StreamStringView<byte>(player.SyncData.Anim);
+            SubAnim = new StreamStringView<byte>(player.SyncData.SubAnim);
+            UpperAnim = new StreamStringView<byte>(player.SyncData.UpperAnim);
+        }
+
+        public readonly void Serialize(ref SpanWriter writer)
+        {
+            writer.Write(PlayerSlot);
+
+            Anim.Serialize(ref writer);
+            SubAnim.Serialize(ref writer);
+            UpperAnim.Serialize(ref writer);
+        }
+    }
 
     public readonly void Serialize(ref SpanWriter writer)
     {
@@ -106,7 +142,9 @@ internal ref struct PacketPlayersInStage : ISerializableStruct
 
         foreach (Player player in PlayersInStage)
         {
-            writer.Write(player.Slot);
+            PlayerInStageInfo stageInfo = new PlayerInStageInfo(player);
+
+            stageInfo.Serialize(ref writer);
         }
     }
 }

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using SMOO.Attributes;
 using SMOO.Client;
 using SMOO.Enumerator;
 using SMOO.Protocol;
@@ -36,7 +37,7 @@ internal class EventChangeStageHandler : IEventHandler
 
         player.WorldInfo.CurrentStage = data.NewStage.String;
 
-        PacketUtil.Ack(packet.BasePacket, context); // need to ack before the broadcast overwrites the sequence number
+        PacketUtil.Ack(packet, context); // need to ack before the broadcast overwrites the sequence number
 
         room.Broadcaster.BroadcastReliably(packet.BasePacket.Buffer, room.Players.Except(player));
 

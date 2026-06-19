@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.Extensions.Logging;
+using SMOO.Attributes;
 using SMOO.Client;
 using SMOO.Enumerator;
 using SMOO.Protocol;
