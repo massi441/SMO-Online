@@ -36,6 +36,8 @@ internal class EventChangeStageHandler : IEventHandler
 
         player.WorldInfo.CurrentStage = data.NewStage.String;
 
+        PacketUtil.Ack(packet.BasePacket, context); // need to ack before the broadcast overwrites the sequence number
+
         room.Broadcaster.BroadcastReliably(packet.BasePacket.Buffer, room.Players.Except(player));
 
         if (data.NewStage.String.Length > 0)
@@ -55,9 +57,9 @@ internal class EventChangeStageHandler : IEventHandler
                     PlayersInStage = playersInStage
                 };
 
-                using SharedBuffer buffer = PacketSerializer.Serialize(ref playersInStagePacket, RequiredSize<PacketPlayersInStage>.MaxSize);
+                using SharedBuffer buffer = PacketSerializer.SerializeShared(ref playersInStagePacket, RequiredSize<PacketPlayersInStage>.MaxSize);
 
-                context.Logger.LogInformation("{PlayerCount} were already in stage {StageName}, {PlayerName} will be notified", inStageCount, data.NewStage, player.Name);
+                context.Logger.LogInformation("{PlayerCount} players were already in stage {StageName}, {PlayerName} will be notified", inStageCount, data.NewStage, player.Name);
 
                 context.PacketSender.SendReliably(buffer, player, room.ReliableStore);
             }

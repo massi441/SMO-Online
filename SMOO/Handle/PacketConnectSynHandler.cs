@@ -70,7 +70,7 @@ internal class PacketConnectSynHandler : IPacketHandler
             PlayerInfos = playerInfos
         };
 
-        using SharedBuffer ackBuffer = PacketSerializer.Serialize(ref ackPacket, Config.MaxBufferSize);
+        using SharedBuffer ackBuffer = PacketSerializer.SerializeShared(ref ackPacket, Config.MaxBufferSize);
 
         context.PacketSender.SendReliably(ackBuffer, newPlayer, room.ReliableStore, resendDelay: Config.PlayerSynAckDelay);
 

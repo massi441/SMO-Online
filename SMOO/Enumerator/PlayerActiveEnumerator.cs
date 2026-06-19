@@ -3,7 +3,7 @@
 namespace SMOO.Enumerator;
 
 /// <summary>
-/// An enumerator for iterating over all non players in a span of players
+/// An enumerator for iterating over all non null players in a span of players
 /// </summary>
 internal ref struct PlayerActiveEnumerator : IPlayerEnumerator<PlayerActiveEnumerator>
 {

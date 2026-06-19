@@ -161,7 +161,7 @@ internal class Room
                         RoomId = Id
                     };
 
-                    using SharedBuffer buffer = PacketSerializer.Serialize(ref header, Unsafe.SizeOf<PacketHeader>());
+                    using SharedBuffer buffer = PacketSerializer.SerializeShared(ref header, Unsafe.SizeOf<PacketHeader>());
 
                     _context.Logger.LogTrace("Player {PlayerName} has been idle for too long in Room #{RoomId}, a health check request will be sent", player.Name, Id);
 

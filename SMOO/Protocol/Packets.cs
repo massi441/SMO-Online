@@ -29,6 +29,18 @@ internal ref struct PacketConnectSynAck : ISerializableStruct
     }
 }
 
+
+internal ref struct PacketAck : ISerializableStruct
+{
+    [RequiredField]
+    public PacketHeader Header;
+
+    public readonly void Serialize(ref SpanWriter writer)
+    {
+        writer.Write(Header);
+    }
+}
+
 /// <summary>
 /// The packet sent to a room, to notify that a new player has joined
 /// </summary>

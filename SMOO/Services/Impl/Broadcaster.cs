@@ -67,7 +67,7 @@ internal class Broadcaster : IBroadcaster
             }
             else
             {
-                ClearPacket(packet);
+                TryClearPacket(packet);
             }
         }
 
@@ -97,7 +97,7 @@ internal class Broadcaster : IBroadcaster
         packet.RefreshLastSent();
     }
 
-    private void ClearPacket(ReliablePacket reliablePacket)
+    private void TryClearPacket(ReliablePacket reliablePacket)
     {
         PacketType packetType = reliablePacket.Header.Type; // need to capture here as packet store frees the rented buffer
 

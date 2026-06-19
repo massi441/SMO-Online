@@ -44,7 +44,7 @@ internal class PlayerDisconnector : IPlayerDisconnector
             PlayerSlot = player.Slot
         };
 
-        using SharedBuffer broadcastBuffer = PacketSerializer.Serialize(ref disconnectPacket, Unsafe.SizeOf<PacketDisconnect>());
+        using SharedBuffer broadcastBuffer = PacketSerializer.SerializeShared(ref disconnectPacket, Unsafe.SizeOf<PacketDisconnect>());
 
         player.Room.Broadcaster.BroadcastReliably(broadcastBuffer, player.Room.Players.Active);
 

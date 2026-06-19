@@ -1,6 +1,8 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using SMOO.Client;
+using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Services.Interface;
 using SMOO.Util;
@@ -30,6 +32,22 @@ internal class PacketSender : IPacketSender
     public ServerResult Send(ReadOnlySpan<byte> buffer, Player receiver)
     {
         return Send(buffer, receiver.Endpoint);
+    }
+
+    public ServerResult SendAck(ParsedPacket originalPacket)
+    {
+        PacketAck ackPacket = new PacketAck()
+        {
+            Header = originalPacket.Header.WithType(PacketType.Ack),
+        };
+
+        Span<byte> buffer = stackalloc byte[Unsafe.SizeOf<PacketAck>()];
+
+        SpanWriter writer = new SpanWriter(buffer);
+
+        ackPacket.Serialize(ref writer);
+
+        return Send(buffer, originalPacket.SenderIp);
     }
 
     public void SendReliably(SharedBuffer buffer, Player receiver, IReliablePacketStore reliableStore, byte maxRetries, int resendDelay)

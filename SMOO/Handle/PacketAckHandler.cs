@@ -20,6 +20,6 @@ internal class PacketAckHandler : IPacketHandler
             return;
         }
 
-        context.Logger.LogTrace("Successfully Acked {PacketType} packet #{PacketNumber} from {PlayerName} in Room #{RoomId}", packet.Header.Type, pendingPacket.SequenceNumber, pendingPacket.Receiver.Name, room.Id);
+        context.Logger.LogTrace("Successfully Acked packet #{PacketNumber} from {PlayerName} in Room #{RoomId}", pendingPacket.SequenceNumber, pendingPacket.Receiver.Name, room.Id);
     }
 }
