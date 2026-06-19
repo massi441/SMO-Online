@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Server;
@@ -10,15 +9,17 @@ namespace SMOO.Services.Impl;
 
 internal class ReliablePacketStore : IReliablePacketStore
 {
-    private ushort _nextSequenceNumber = 0;
     private readonly ServerContext _context;
-    private readonly ConcurrentDictionary<ushort, ReliablePacket> _pendingPackets = [];
+    private readonly LockedDictionary<ushort, ReliablePacket> _pendingPackets;
+    private ushort _nextSequenceNumber = 0;
 
-    public ConcurrentDictionary<ushort, ReliablePacket> PendingPackets => _pendingPackets;
+    public LockedDictionary<ushort, ReliablePacket> PendingPackets => _pendingPackets;
+
 
     public ReliablePacketStore(ServerContext context)
     {
         _context = context;
+        _pendingPackets = new LockedDictionary<ushort, ReliablePacket>();
     }
 
     public ReliablePacket UploadPacket(SharedBuffer buffer, Player receiver, byte maxRetries, int resendDelay)
@@ -34,8 +35,9 @@ internal class ReliablePacketStore : IReliablePacketStore
 
         reliablePacket.Buffer.Acquire();
         reliablePacket.WriteSequenceNumber();
-
+        
         _pendingPackets[_nextSequenceNumber] = reliablePacket;
+
         _nextSequenceNumber++;
 
         _context.Logger.LogTrace("Uploaded reliable {PacketType} packet with sequence number #{SequenceNumber}, and {Tries} tries", reliablePacket.Header.Type, reliablePacket.SequenceNumber, reliablePacket.Tries);
@@ -45,7 +47,7 @@ internal class ReliablePacketStore : IReliablePacketStore
 
     public ReliablePacket? RemovePacket(Player requester, ushort sequenceNumber)
     {
-        if (_pendingPackets.TryRemove(sequenceNumber, out ReliablePacket? pendingPacket))
+        if (_pendingPackets.Remove(sequenceNumber, out ReliablePacket? pendingPacket))
         {
             if (pendingPacket.Receiver != requester)
             {
@@ -71,7 +73,11 @@ internal class ReliablePacketStore : IReliablePacketStore
 
     public void ClearPlayer(Player player)
     {
+        _pendingPackets.Lock();
+
         ReliablePacket[] playerPackets = [.. _pendingPackets.Values.Where(packet => packet.Receiver == player)];
+
+        _pendingPackets.Unlock();
 
         foreach (ReliablePacket playerPacket in playerPackets)
         {

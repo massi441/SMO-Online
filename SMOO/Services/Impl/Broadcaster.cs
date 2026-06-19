@@ -55,6 +55,8 @@ internal class Broadcaster : IBroadcaster
 
     private async Task CheckPackets()
     {
+        _resendStore.PendingPackets.Lock();
+
         foreach (var pair in _resendStore.PendingPackets)
         {
             ReliablePacket packet = pair.Value;
@@ -68,6 +70,8 @@ internal class Broadcaster : IBroadcaster
                 ClearPacket(packet);
             }
         }
+
+        _resendStore.PendingPackets.Unlock();
 
         await Task.Delay(Config.ResendThreadTick);
     }

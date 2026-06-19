@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using SMOO.Client;
+﻿using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Util;
 
@@ -7,7 +6,7 @@ namespace SMOO.Services.Interface;
 
 internal interface IReliablePacketStore
 {
-    public ConcurrentDictionary<ushort, ReliablePacket> PendingPackets { get; }
+    public LockedDictionary<ushort, ReliablePacket> PendingPackets { get; }
 
     public ReliablePacket UploadPacket(SharedBuffer buffer, Player receiver, byte maxRetries = Config.MaxRetries, int resendDelay = Config.DefaultResendDelay);
 
