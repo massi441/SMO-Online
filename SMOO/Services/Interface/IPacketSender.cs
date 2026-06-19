@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using SMOO.Client;
+using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Util;
 
@@ -16,6 +17,8 @@ internal interface IPacketSender
     /// Sends a payload to a player, and triggers a disconnection if the player's host is unreachable
     /// </summary>
     ServerResult Send(ReadOnlySpan<byte> buffer, Player receiver);
+
+    ServerResult SendAck(ParsedPacket originalPacket);
 
     /// <summary>
     /// Sends a packet

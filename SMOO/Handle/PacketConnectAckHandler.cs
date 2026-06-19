@@ -28,7 +28,7 @@ internal class PacketConnectAckHandler : IPacketHandler
             PlayerRoomInfo = new PlayerInRoomInfo(packet.SenderPlayer!)
         };
 
-        using SharedBuffer joinRoomBuffer = PacketSerializer.Serialize(ref joinPacket, RequiredSize<PacketPlayerJoinRoom>.MaxSize);
+        using SharedBuffer joinRoomBuffer = PacketSerializer.SerializeShared(ref joinPacket, RequiredSize<PacketPlayerJoinRoom>.MaxSize);
 
         context.Logger.LogInformation("Player {PlayerName} has confirmed their connection in Room #{RoomId}, room will be notified", packet.SenderPlayer!.Name, room.Id);
 

@@ -1,6 +1,8 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
+using SMOO.Attributes;
+using SMOO.Client;
 using SMOO.Enumerator;
 using SMOO.Protocol;
 using SMOO.Server;
@@ -55,11 +57,28 @@ internal class EventPlayerSyncHandler : IEventHandler
     {
         try
         {
-            PacketSerializer.Deserialize<PlayerSyncData>(eventPacket.EventData);
+            PlayerSyncData syncData = PacketSerializer.Deserialize<PlayerSyncData>(eventPacket.EventData);
 
-            PlayerSameStageEnumerator enumerator = room.Players.SameStageAs(eventPacket.BasePacket.SenderPlayer!);
+            Player player = eventPacket.BasePacket.SenderPlayer!;
 
-            room.Broadcaster.Broadcast(eventPacket.BasePacket.Buffer, enumerator);
+            if (syncData.Anim.HasData())
+            {
+                player.SyncData.Anim = syncData.Anim.String; 
+            }
+
+            if (syncData.SubAnim.HasData())
+            {
+                player.SyncData.SubAnim = syncData.SubAnim.String;
+            }
+
+            if (syncData.UpperAnim.HasData())
+            {
+                player.SyncData.UpperAnim = syncData.UpperAnim.String;
+            }
+
+            PlayerSameStageEnumerator playersInStage = room.Players.SameStageAs(player);
+
+            room.Broadcaster.Broadcast(eventPacket.BasePacket.Buffer, playersInStage);
         }
         catch (InvalidDataException ex)
         {

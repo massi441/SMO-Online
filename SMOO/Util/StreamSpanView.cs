@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using SMOO.Attributes;
 
 namespace SMOO.Util;
 
@@ -48,5 +49,10 @@ internal ref struct StreamSpanView<TLengthPrefix, T>
         }
 
         _span = reader.ReadView<T>(int.CreateChecked(Length));
+    }
+
+    public readonly bool HasData()
+    {
+        return int.CreateChecked(_length) > 0;
     }
 }

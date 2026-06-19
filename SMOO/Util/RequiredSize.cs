@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
+using SMOO.Attributes;
 
 namespace SMOO.Util;
 
@@ -20,7 +21,7 @@ internal static class RequiredSize<T> where T : struct, allows ref struct
 
         FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
-        bool hasSizeFields = fields.Any(f => f.IsDefined(typeof(RequiredFieldAttribute)) || f.IsDefined(typeof(DynamicFieldAttribute)));
+        bool hasSizeFields = fields.Any(f => f.IsDefined(typeof(RequiredFieldAttribute)) || f.IsDefined(typeof(DynamicFieldAttribute)) || f.IsDefined(typeof(DynamicRepeatedFieldAttribute)));
         if (!hasSizeFields)
         {
             minSize += (ushort)Marshal.SizeOf(type);
@@ -43,6 +44,13 @@ internal static class RequiredSize<T> where T : struct, allows ref struct
 
                 minSize += Min;
                 maxSize += (ushort)(Min + attribute.MaxSize);
+            }
+            else if (field.IsDefined(typeof(DynamicRepeatedFieldAttribute)))
+            {
+                DynamicRepeatedFieldAttribute attribute = field.GetCustomAttribute<DynamicRepeatedFieldAttribute>()!;
+
+                (ushort _, ushort MaxTypeSize) = Compute(attribute.Type);
+                maxSize += (ushort)(MaxTypeSize * attribute.MaxRepeatCount);
             }
         }
 

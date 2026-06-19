@@ -4,7 +4,7 @@ namespace SMOO.Protocol;
 
 internal static class PacketSerializer
 {
-    public static SharedBuffer Serialize<T>(ref T packet, int requiredSize) where T : struct, ISerializableStruct, allows ref struct
+    public static SharedBuffer SerializeShared<T>(ref T packet, int requiredSize) where T : struct, ISerializableStruct, allows ref struct
     {
         SharedBuffer buffer = new SharedBuffer(requiredSize);
         SpanWriter writer = new SpanWriter(buffer);

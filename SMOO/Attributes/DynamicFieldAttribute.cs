@@ -1,4 +1,4 @@
-﻿namespace SMOO.Util;
+﻿namespace SMOO.Attributes;
 
 [AttributeUsage(AttributeTargets.Field)]
 internal class DynamicFieldAttribute : Attribute

@@ -42,7 +42,8 @@ internal class PlayerHolder : IPlayerHolder
                 CurrentStage = string.Empty,
                 CostumeBody = Config.DefaultCostumeName,
                 CostumeCap = Config.DefaultCostumeName
-            }
+            },
+            SyncData = new PlayerSyncData()
         };
 
         _players[index] = player;

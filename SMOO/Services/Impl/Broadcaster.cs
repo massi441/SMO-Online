@@ -55,6 +55,8 @@ internal class Broadcaster : IBroadcaster
 
     private async Task CheckPackets()
     {
+        _resendStore.PendingPackets.Lock();
+
         foreach (var pair in _resendStore.PendingPackets)
         {
             ReliablePacket packet = pair.Value;
@@ -65,9 +67,11 @@ internal class Broadcaster : IBroadcaster
             }
             else
             {
-                ClearPacket(packet);
+                TryClearPacket(packet);
             }
         }
+
+        _resendStore.PendingPackets.Unlock();
 
         await Task.Delay(Config.ResendThreadTick);
     }
@@ -93,7 +97,7 @@ internal class Broadcaster : IBroadcaster
         packet.RefreshLastSent();
     }
 
-    private void ClearPacket(ReliablePacket reliablePacket)
+    private void TryClearPacket(ReliablePacket reliablePacket)
     {
         PacketType packetType = reliablePacket.Header.Type; // need to capture here as packet store frees the rented buffer
 
