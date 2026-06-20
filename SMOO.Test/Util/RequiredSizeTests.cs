@@ -6,7 +6,6 @@ namespace SMOO.Test.Util;
 [TestClass]
 public class RequiredSizeTests
 {
-
     struct StructSize10
     {
         [RequiredField]
@@ -23,12 +22,17 @@ public class RequiredSizeTests
     {
         [RequiredField]
         public int Int32;
+
         public double Ignored1;
+
         [RequiredField]
         public float Single32;
+
         [RequiredField]
         public ushort UInt16;
+
         public long Ignored2;
+
         [RequiredField]
         public long Long64;
     }
