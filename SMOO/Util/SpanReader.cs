@@ -132,6 +132,11 @@ internal ref struct SpanReader
         return result;
     }
 
+    public void ReadDeserializable<T>(ref T deserializable) where T : IDeserializableStruct, allows ref struct
+    {
+        deserializable.Deserialize(ref this);
+    }
+
     public string ReadStringUTF8(int length)
     {
         return Encoding.UTF8.GetString(ReadBytes(length));
