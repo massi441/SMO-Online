@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using SMOO.Attributes;
 using SMOO.Client;
@@ -12,10 +11,9 @@ namespace SMOO.Event;
 
 internal class EventPlayerSyncHandler : IEventHandler
 {
-    public static ushort MinDataSize => RequiredSize<PlayerSyncData>.MinSize;
-    public static ushort MaxDataSize => RequiredSize<PlayerSyncData>.MaxSize;  
+    public static ushort MinDataSize => (ushort)(RequiredSize<PlayerSyncData>.MinSize + RequiredSize<CapSyncData>.MinSize);
+    public static ushort MaxDataSize => (ushort)(RequiredSize<PlayerSyncData>.MaxSize + RequiredSize<CapSyncData>.MaxSize);
 
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     private ref struct PlayerSyncData : IDeserializableStruct
     {
         [RequiredField]
@@ -53,27 +51,59 @@ internal class EventPlayerSyncHandler : IEventHandler
         }
     }
 
+    private ref struct CapSyncData : IDeserializableStruct
+    {
+        [RequiredField]
+        public Vector3 Position;
+
+        [RequiredField]
+        public Quaternion Quat;
+
+        [DynamicField(MaxSize = Config.MaxAnimNameLength)]
+        StreamStringView<byte> Anim;
+
+        [RequiredField]
+        public Vector3 SpinRotation;
+
+        [RequiredField]
+        public bool IsVisible;
+
+        public void Deserialize(ref SpanReader reader)
+        {
+            reader.ReadInto(ref Position);
+            reader.ReadInto(ref Quat);
+
+            Anim.Deserialize(ref reader, Config.MaxAnimNameLength);
+
+            reader.ReadInto(ref SpinRotation);
+            reader.ReadInto(ref IsVisible);
+        }
+    }
+
     public static void Handle(ParsedEventPacket eventPacket, Room room, ServerContext context)
     {
         try
         {
-            PlayerSyncData syncData = PacketSerializer.Deserialize<PlayerSyncData>(eventPacket.EventData);
+            SpanReader reader = new SpanReader(eventPacket.EventData);
+
+            PlayerSyncData playerSyncData = PacketSerializer.Deserialize<PlayerSyncData>(ref reader);
+            CapSyncData capSyncData = PacketSerializer.Deserialize<CapSyncData>(ref reader);
 
             Player player = eventPacket.BasePacket.SenderPlayer!;
 
-            if (syncData.Anim.HasData())
+            if (playerSyncData.Anim.HasData())
             {
-                player.SyncData.Anim = syncData.Anim.String; 
+                player.SyncData.Anim = playerSyncData.Anim.String; 
             }
 
-            if (syncData.SubAnim.HasData())
+            if (playerSyncData.SubAnim.HasData())
             {
-                player.SyncData.SubAnim = syncData.SubAnim.String;
+                player.SyncData.SubAnim = playerSyncData.SubAnim.String;
             }
 
-            if (syncData.UpperAnim.HasData())
+            if (playerSyncData.UpperAnim.HasData())
             {
-                player.SyncData.UpperAnim = syncData.UpperAnim.String;
+                player.SyncData.UpperAnim = playerSyncData.UpperAnim.String;
             }
 
             PlayerSameStageEnumerator playersInStage = room.Players.SameStageAs(player);

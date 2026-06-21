@@ -31,13 +31,13 @@ internal struct StreamStringView<TLengthPrefix> where TLengthPrefix : unmanaged,
             throw new InvalidDataException($"The string length prefix ({_length}) was bigger than the maximum size allowed ({maxReadLength})");
         }
 
-        int length = int.CreateChecked(_length);
-        if (length > reader.RemainingByteCount)
+        int intLength = int.CreateChecked(_length);
+        if (intLength > reader.RemainingByteCount)
         {
             throw new InvalidDataException($"The string length prefix ({_length}) was bigger than the remaining bytes ({reader.RemainingByteCount}) in the reader");
         }
 
-        _string = Encoding.UTF8.GetString(reader.ReadBytes(length));
+        _string = Encoding.UTF8.GetString(reader.ReadBytes(intLength));
     }
 
     public readonly void Serialize(ref SpanWriter writer)

@@ -46,6 +46,11 @@ internal ref struct SpanWriter
         _offset += bytes.Length;
     }
 
+    public void WriteSerializable<T>(ref T serializable) where T : ISerializableStruct, allows ref struct
+    {
+        serializable.Serialize(ref this);
+    }
+
     public void WriteString(string str)
     {
         Encoding.UTF8.GetBytes(str, RemainingSpan);

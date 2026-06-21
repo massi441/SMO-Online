@@ -17,9 +17,16 @@ internal static class PacketSerializer
 
     public static T Deserialize<T>(ReadOnlySpan<byte> source) where T : struct, IDeserializableStruct, allows ref struct
     {
-        T t = new T();
+        T node = new T();
         SpanReader reader = new SpanReader(source);
-        t.Deserialize(ref reader);
-        return t;
+        node.Deserialize(ref reader);
+        return node;
+    }
+
+    public static T Deserialize<T>(ref SpanReader reader) where T : struct, IDeserializableStruct, allows ref struct
+    {
+        T node = new T();
+        node.Deserialize(ref reader);
+        return node;
     }
 }
