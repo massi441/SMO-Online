@@ -63,13 +63,10 @@ internal class EventPlayerSyncHandler : IEventHandler
         StreamStringView<byte> Anim;
 
         [RequiredField]
-        public Vector3 JointKeeperRotation;
+        public Vector3 SpinRotation;
 
         [RequiredField]
-        public float JointKeeperSkew;
-
-        [RequiredField]
-        public bool IsAlive;
+        public bool IsVisible;
 
         public void Deserialize(ref SpanReader reader)
         {
@@ -78,9 +75,8 @@ internal class EventPlayerSyncHandler : IEventHandler
 
             Anim.Deserialize(ref reader, Config.MaxAnimNameLength);
 
-            reader.ReadInto(ref JointKeeperRotation);
-            reader.ReadInto(ref JointKeeperSkew);
-            reader.ReadInto(ref IsAlive);
+            reader.ReadInto(ref SpinRotation);
+            reader.ReadInto(ref IsVisible);
         }
     }
 
