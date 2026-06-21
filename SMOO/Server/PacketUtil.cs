@@ -17,7 +17,7 @@ internal static class PacketUtil
         writer.Write(sequenceNumber);
     }
 
-    public static void Ack(ParsedPacket originalPacket, ServerContext context)
+    public static void AckPacket(ParsedPacket originalPacket, ServerContext context)
     {
         ServerResult ackResult = context.PacketSender.SendAck(originalPacket);
         if (ackResult.IsSuccess)
@@ -30,7 +30,7 @@ internal static class PacketUtil
         }
     }
 
-    public static void Ack(ParsedEventPacket originalPacket, ServerContext context)
+    public static void AckEvent(ParsedEventPacket originalPacket, ServerContext context)
     {
         ParsedPacket basePacket = originalPacket.BasePacket;
 
