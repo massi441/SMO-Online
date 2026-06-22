@@ -6,7 +6,7 @@ using SMOO.Enumerator;
 using SMOO.Protocol;
 using SMOO.Serialization;
 using SMOO.Server;
-using SMOO.MemUtil;
+using SMOO.Memory;
 
 namespace SMOO.Handle;
 

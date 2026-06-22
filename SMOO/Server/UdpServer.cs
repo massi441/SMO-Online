@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Services.Impl;
-using SMOO.MemUtil;
+using SMOO.Memory;
 
 namespace SMOO.Server;
 

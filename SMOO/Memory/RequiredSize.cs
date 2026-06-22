@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using SMOO.Attributes;
 
-namespace SMOO.MemUtil;
+namespace SMOO.Memory;
 
 internal static class RequiredSize<T> where T : struct, allows ref struct
 {

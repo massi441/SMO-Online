@@ -2,7 +2,7 @@
 using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Server;
-using SMOO.MemUtil;
+using SMOO.Memory;
 
 namespace SMOO.Services.Interface;
 

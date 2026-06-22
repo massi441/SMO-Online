@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using SMOO.Serialization;
 
-namespace SMOO.MemUtil;
+namespace SMOO.Memory;
 
 internal ref struct SpanReader
 {

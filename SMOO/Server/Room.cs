@@ -5,7 +5,7 @@ using SMOO.Client;
 using SMOO.Handle;
 using SMOO.Protocol;
 using SMOO.Services.Interface;
-using SMOO.MemUtil;
+using SMOO.Memory;
 
 namespace SMOO.Server;
 

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using SMOO.Serialization;
 using SMOO.Server;
-using SMOO.MemUtil;
+using SMOO.Memory;
 
 namespace SMOO.Protocol;
 

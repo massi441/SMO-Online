@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using SMOO.Attributes;
 
-namespace SMOO.MemUtil;
+namespace SMOO.Memory;
 
 internal ref struct StreamSpanView<TLengthPrefix, T> 
     where TLengthPrefix : unmanaged, IBinaryInteger<TLengthPrefix>
