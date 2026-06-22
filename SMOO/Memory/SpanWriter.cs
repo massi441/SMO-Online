@@ -19,6 +19,8 @@ internal ref struct SpanWriter
     /// </summary>
     public readonly Span<byte> RemainingSpan => _span[_offset..];
 
+    public readonly bool IsDone => _offset == _span.Length;
+
     public SpanWriter(Span<byte> span)
     {
         _span = span;

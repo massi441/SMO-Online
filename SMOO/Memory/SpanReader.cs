@@ -13,6 +13,7 @@ internal ref struct SpanReader
 
     public readonly int RemainingByteCount => _span.Length - _offset;
     public readonly ReadOnlySpan<byte> RemainingSpan => _span[_offset..];
+    public readonly bool IsDone => RemainingByteCount == 0;
 
     public SpanReader(ReadOnlySpan<byte> span)
     {
