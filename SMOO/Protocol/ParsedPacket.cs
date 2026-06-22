@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using SMOO.Client;
-using SMOO.Util;
+using SMOO.MemUtil;
 
 namespace SMOO.Protocol;
 

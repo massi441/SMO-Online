@@ -2,7 +2,7 @@
 using System.Text;
 using SMOO.Attributes;
 
-namespace SMOO.Util;
+namespace SMOO.MemUtil;
 
 /// <summary>
 /// Represents a length prefixed string in a byte stream

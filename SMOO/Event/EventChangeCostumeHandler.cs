@@ -4,7 +4,7 @@ using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Serialization;
 using SMOO.Server;
-using SMOO.Util;
+using SMOO.MemUtil;
 
 namespace SMOO.Event;
 

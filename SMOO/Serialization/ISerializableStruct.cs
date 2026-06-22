@@ -1,4 +1,4 @@
-﻿using SMOO.Util;
+﻿using SMOO.MemUtil;
 
 namespace SMOO.Serialization;
 

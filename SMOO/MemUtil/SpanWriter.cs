@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using SMOO.Serialization;
 
-namespace SMOO.Util;
+namespace SMOO.MemUtil;
 
 internal ref struct SpanWriter
 {

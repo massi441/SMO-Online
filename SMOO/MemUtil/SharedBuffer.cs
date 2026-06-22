@@ -1,7 +1,7 @@
 ﻿using System.Buffers;
 using SMOO.Threading;
 
-namespace SMOO.Util;
+namespace SMOO.MemUtil;
 
 /// <summary>
 /// A wrapper around a rented byte buffer from the array pool
