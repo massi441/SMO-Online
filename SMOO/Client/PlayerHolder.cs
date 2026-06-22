@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using SMOO.Server;
+using SMOO.Threading;
 using SMOO.Util;
 
 namespace SMOO.Client;
@@ -9,10 +10,12 @@ internal class PlayerHolder : IPlayerHolder
     private readonly PlayerList _players;
     public PlayerList Players => _players;
     public byte MaxSize => (byte)_players.Length;
+    public ReaderWriterLockSlim ReadWriteLock { get; }
 
     public PlayerHolder(byte size = Config.DefaultRoomSize)
     {
         _players = new PlayerList(Math.Min(size, Config.MaxRoomSize));
+        ReadWriteLock = new ReaderWriterLockSlim();
     }
 
     public ServerResult<Player> RegisterPlayer(in PlayerInfo playerInfo)
@@ -46,18 +49,27 @@ internal class PlayerHolder : IPlayerHolder
             SyncData = new PlayerSyncData()
         };
 
-        _players[index] = player;
+        using (ReadWriteLock.EnterWriteScope())
+        {
+            _players[index] = player;
+        }
 
         return ServerResult<Player>.Success(player);
     }
 
     public ServerResult UnregisterPlayer(Player player)
     {
+        using ScopedUpgradeableLock upgradeableScope = ReadWriteLock.EnterUpgradeableScope();
+
         for (int i = 0; i < _players.Length; i++)
         {
             if (_players[i] == player)
             {
-                _players[i] = null!;
+                using (ReadWriteLock.EnterWriteScope())
+                {
+                    _players[i] = null!;
+                }
+
                 return ServerResult.Success();
             }
         }
@@ -67,6 +79,8 @@ internal class PlayerHolder : IPlayerHolder
 
     public Player? FindPlayerById(PlayerId id)
     {
+        using ScopedReadLock readScope = ReadWriteLock.EnterReadScope();
+
         foreach (Player p in _players)
         {
             if (p == null)
@@ -85,6 +99,8 @@ internal class PlayerHolder : IPlayerHolder
 
     public Player? FindPlayerByHost(IPEndPoint endpoint)
     {
+        using ScopedReadLock readScope = ReadWriteLock.EnterReadScope();
+
         foreach (Player p in _players)
         {
             if (p == null)
@@ -101,9 +117,13 @@ internal class PlayerHolder : IPlayerHolder
         return null;
     }
 
+    // TODO: Merge into one single operation
+
     private bool TryFindSlot(out byte index)
     {
         index = 0;
+
+        using ScopedReadLock readScope = ReadWriteLock.EnterReadScope();
 
         while (index < _players.Length)
         {

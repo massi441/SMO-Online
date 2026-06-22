@@ -15,7 +15,6 @@ internal class ReliablePacketStore : IReliablePacketStore
 
     public LockedDictionary<ushort, ReliablePacket> PendingPackets => _pendingPackets;
 
-
     public ReliablePacketStore(ServerContext context)
     {
         _context = context;

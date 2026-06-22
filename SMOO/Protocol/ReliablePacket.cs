@@ -32,7 +32,7 @@ internal class ReliablePacket
 
     public bool IsResendTime()
     {
-        return !Receiver.IsDisconnected && (DateTime.UtcNow - LastSent).TotalMilliseconds > ResendMsDelay;
+        return (DateTime.UtcNow - LastSent).TotalMilliseconds > ResendMsDelay;
     }
 
     public void WriteSequenceNumber()

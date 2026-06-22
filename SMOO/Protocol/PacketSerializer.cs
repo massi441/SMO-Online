@@ -4,6 +4,13 @@ namespace SMOO.Protocol;
 
 internal static class PacketSerializer
 {
+    public static void SerializeScoped<T>(ref T packet, Span<byte> destination) where T : struct, ISerializableStruct, allows ref struct
+    {
+        SpanWriter writer = new SpanWriter(destination);
+
+        packet.Serialize(ref writer);
+    }
+
     public static SharedBuffer SerializeShared<T>(ref T packet, int requiredSize) where T : struct, ISerializableStruct, allows ref struct
     {
         SharedBuffer buffer = new SharedBuffer(requiredSize);

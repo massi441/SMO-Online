@@ -4,6 +4,7 @@ using SMOO.Enumerator;
 using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Services.Interface;
+using SMOO.Threading;
 using SMOO.Util;
 
 namespace SMOO.Services.Impl;
@@ -12,22 +13,28 @@ internal class Broadcaster : IBroadcaster
 {
     private readonly ServerContext _context;
     private readonly IReliablePacketStore _resendStore;
+    private readonly IPlayerHolder _playerHolder;
     private readonly CancellationTokenSource _resendToken;
     private readonly Task _resendTask;
+    private readonly Stack<ReliablePacket> _deadPackets;
 
     public IReliablePacketStore ReliablePacketStore => _resendStore;
 
-    public Broadcaster(ServerContext context, IReliablePacketStore resendStore)
+    public Broadcaster(ServerContext context, IReliablePacketStore resendStore, IPlayerHolder holder)
     {
         _context = context;
         _resendStore = resendStore;
+        _playerHolder = holder;
         _resendToken = CancellationTokenSource.CreateLinkedTokenSource(_context.CancellationToken);
+        _deadPackets = new Stack<ReliablePacket>();
 
         _resendTask = Task.Run(ResendLoop, _resendToken.Token);
     }
 
     public void Broadcast<TEnumerator>(ReadOnlySpan<byte> payload, TEnumerator players) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
     {
+        using ScopedReadLock readScope = _playerHolder.ReadWriteLock.EnterReadScope();
+
         foreach (Player player in players)
         {
              _context.PacketSender.Send(payload, player.Endpoint);
@@ -36,6 +43,8 @@ internal class Broadcaster : IBroadcaster
 
     public void BroadcastReliably<TEnumerator>(SharedBuffer buffer, TEnumerator players, byte maxRetries = Config.MaxRetries) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
     {
+        using ScopedReadLock readScope = _playerHolder.ReadWriteLock.EnterReadScope();
+
         foreach (Player player in players)
         {
             _resendStore.UploadPacket(buffer, player, maxRetries);
@@ -67,11 +76,16 @@ internal class Broadcaster : IBroadcaster
             }
             else
             {
-                TryClearPacket(packet);
+                _deadPackets.Push(packet);
             }
         }
 
         _resendStore.PendingPackets.Unlock();
+
+        while (_deadPackets.TryPop(out ReliablePacket? deadPacket))
+        {
+            TryClearPacket(deadPacket);
+        }
 
         await Task.Delay(Config.ResendThreadTick);
     }
@@ -108,26 +122,22 @@ internal class Broadcaster : IBroadcaster
             return;
         }
 
-        reliablePacket.Receiver.MarkDisconnected();
-
-        reliablePacket.Receiver.Room.UploadCommand(() =>
+        ServerResult disconnectResult = _context.PlayerDisconnector.Disconnect(reliablePacket.Receiver);
+        if (disconnectResult.IsSuccess)
         {
-            ServerResult disconnectResult = _context.PlayerDisconnector.Disconnect(reliablePacket.Receiver);
-            if (disconnectResult.IsSuccess)
-            {
-                _context.Logger.LogWarning("Disconnected player {PlayerName} for not Acking {PacketType} packet (#{SequenceNumber}) in room #{RoomId}", reliablePacket.Receiver.Name, packetType, reliablePacket.SequenceNumber, reliablePacket.Receiver.Room.Id);
-            }
-            else
-            {
-                _context.Logger.LogError("Failed to disconnect player {PlayerName} for no Acking packet #{PacketId} in room #{RoomId}", reliablePacket.Receiver.Name, reliablePacket.SequenceNumber, reliablePacket.Receiver.Room.Id);
-            }
-        });
+            _context.Logger.LogWarning("Disconnected player {PlayerName} for not Acking {PacketType} packet (#{SequenceNumber}) in room #{RoomId}", reliablePacket.Receiver.Name, packetType, reliablePacket.SequenceNumber, reliablePacket.Receiver.Room.Id);
+        }
+        else
+        {
+            _context.Logger.LogError("Failed to disconnect player {PlayerName} for not Acking packet #{PacketId} in room #{RoomId}", reliablePacket.Receiver.Name, reliablePacket.SequenceNumber, reliablePacket.Receiver.Room.Id);
+        }
     }
 
     public Task Shutdown()
     {
         _resendToken.Cancel();
         _resendToken.Dispose();
+
         return _resendTask;
     }
 }

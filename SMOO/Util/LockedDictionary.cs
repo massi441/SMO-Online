@@ -29,7 +29,7 @@ internal class LockedDictionary<TKey, TValue> where TKey : notnull
 
     public bool TryGetValue(TKey key, out TValue? value)
     {
-        using (_lock.EnterScope()) ;
+        using (_lock.EnterScope())
         {
             return _dictionary.TryGetValue(key, out value);
         }
