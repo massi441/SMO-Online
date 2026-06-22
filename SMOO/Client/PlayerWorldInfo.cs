@@ -1,4 +1,5 @@
-﻿using SMOO.Util;
+﻿using SMOO.Serialization;
+using SMOO.Util;
 
 namespace SMOO.Client;
 

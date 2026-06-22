@@ -3,14 +3,13 @@ using Microsoft.Extensions.Logging;
 using SMOO.Event;
 using SMOO.Protocol;
 using SMOO.Server;
-using SMOO.Util;
 
 namespace SMOO.Handle;
 
 internal class PacketEventHandler : IPacketHandler
 {
     public static ushort MinPayloadSize => (ushort)Unsafe.SizeOf<EventHeader>();
-    public static ushort MaxPayloadSize => Config.MaxBufferSize;
+    public static ushort MaxPayloadSize => Constants.MaxBufferSize;
 
     public static void Handle(ParsedPacket packet, Room room, ServerContext context)
     {

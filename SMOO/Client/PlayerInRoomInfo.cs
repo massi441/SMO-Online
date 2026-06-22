@@ -1,4 +1,5 @@
 ﻿using SMOO.Attributes;
+using SMOO.Server;
 using SMOO.Util;
 
 namespace SMOO.Client;
@@ -8,13 +9,13 @@ internal readonly struct PlayerInRoomInfo
     [RequiredField]
     public readonly byte PlayerIndex;
 
-    [DynamicField(MaxSize = Config.MaxPlayerNameLength)]
+    [DynamicField(MaxSize = Constants.MaxPlayerNameLength)]
     public readonly StreamStringView<byte> PlayerName;
 
-    [DynamicField(MaxSize = Config.MaxCostumeNameLength)]
+    [DynamicField(MaxSize = Constants.MaxCostumeNameLength)]
     public readonly StreamStringView<byte> CostumeBody;
 
-    [DynamicField(MaxSize = Config.MaxCostumeNameLength)]
+    [DynamicField(MaxSize = Constants.MaxCostumeNameLength)]
     public readonly StreamStringView<byte> CostumeCap;
 
     public PlayerInRoomInfo(Player player)

@@ -1,7 +1,6 @@
 ﻿
 using System.Net;
 using SMOO.Server;
-using SMOO.Util;
 
 namespace SMOO.Client;
 
@@ -23,11 +22,11 @@ internal class Player
 
     public bool IsConnectionLost()
     {
-        return (DateTime.UtcNow - LastSeen).TotalMilliseconds > Config.PlayerConnectionLostThreshold;
+        return (DateTime.UtcNow - LastSeen).TotalMilliseconds > Constants.PlayerConnectionLostThreshold;
     }
 
     public bool IsNeedHealthCheck()
     {
-        return (DateTime.UtcNow - LastSeen).TotalMilliseconds > Config.PlayerHealthCheckThreshold;
+        return (DateTime.UtcNow - LastSeen).TotalMilliseconds > Constants.PlayerHealthCheckThreshold;
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace SMOO.Util;
+﻿namespace SMOO.Threading;
 
 internal struct AtomicBool
 {

@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using SMOO.Server;
 using SMOO.Threading;
-using SMOO.Util;
 
 namespace SMOO.Client;
 
@@ -12,9 +11,9 @@ internal class PlayerHolder : IPlayerHolder
     public byte MaxSize => (byte)_players.Length;
     public ReaderWriterLockSlim ReadWriteLock { get; }
 
-    public PlayerHolder(byte size = Config.DefaultRoomSize)
+    public PlayerHolder(byte size = Constants.DefaultRoomSize)
     {
-        _players = new PlayerList(Math.Min(size, Config.MaxRoomSize));
+        _players = new PlayerList(Math.Min(size, Constants.MaxRoomSize));
         ReadWriteLock = new ReaderWriterLockSlim();
     }
 
@@ -45,8 +44,8 @@ internal class PlayerHolder : IPlayerHolder
             WorldInfo = new PlayerWorldInfo()
             {
                 CurrentStage = string.Empty,
-                CostumeBody = Config.DefaultCostumeName,
-                CostumeCap = Config.DefaultCostumeName
+                CostumeBody = Constants.DefaultCostumeName,
+                CostumeCap = Constants.DefaultCostumeName
             },
             SyncData = new PlayerSyncData()
         };

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace SMOO.Util;
+namespace SMOO.Server;
 
-internal static class LockstepLogger
+internal static class ServerLogger
 {
     private static ILogger _logger = null!;
     private static ILoggerFactory _loggerFactory = null!;

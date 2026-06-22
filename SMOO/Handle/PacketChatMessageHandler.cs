@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using SMOO.Attributes;
 using SMOO.Protocol;
+using SMOO.Serialization;
 using SMOO.Server;
 using SMOO.Util;
 
@@ -16,12 +17,12 @@ internal class PacketChatMessageHandler : IPacketHandler
 
     private struct PacketChatMessageRequest : IDeserializableStruct
     {
-        [DynamicField(MaxSize = Config.MaxChatMessageLength)]
+        [DynamicField(MaxSize = Constants.MaxChatMessageLength)]
         public StreamStringView<ushort> Message;
 
         public void Deserialize(ref SpanReader reader)
         {
-            Message.Deserialize(ref reader, Config.MaxChatMessageLength);
+            Message.Deserialize(ref reader, Constants.MaxChatMessageLength);
         }
     }
 

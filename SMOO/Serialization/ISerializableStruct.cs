@@ -1,4 +1,6 @@
-﻿namespace SMOO.Util;
+﻿using SMOO.Util;
+
+namespace SMOO.Serialization;
 
 internal interface ISerializableStruct
 {

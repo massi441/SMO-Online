@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using SMOO.Client;
 using SMOO.Protocol;
+using SMOO.Serialization;
 using SMOO.Server;
 using SMOO.Services.Interface;
 using SMOO.Util;
@@ -38,7 +39,7 @@ internal class PlayerDisconnector : IPlayerDisconnector
             {
                 Type = PacketType.Disconnect,
                 Flags = (byte)PacketFlags.None,
-                Version = Config.Version,
+                Version = Constants.Version,
                 RoomId = player.Room.Id,
             },
             PlayerSlot = player.Slot

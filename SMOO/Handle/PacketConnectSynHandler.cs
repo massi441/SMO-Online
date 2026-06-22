@@ -4,6 +4,7 @@ using SMOO.Attributes;
 using SMOO.Client;
 using SMOO.Enumerator;
 using SMOO.Protocol;
+using SMOO.Serialization;
 using SMOO.Server;
 using SMOO.Util;
 
@@ -19,12 +20,12 @@ internal class PacketConnectSynHandler : IPacketHandler
 
     private struct PacketConnectPayload : IDeserializableStruct
     {
-        [DynamicField(MaxSize = Config.MaxPlayerNameLength)]
+        [DynamicField(MaxSize = Constants.MaxPlayerNameLength)]
         public StreamStringView<byte> Name;
 
         public void Deserialize(ref SpanReader reader)
         {
-            Name.Deserialize(ref reader, Config.MaxPlayerNameLength);    
+            Name.Deserialize(ref reader, Constants.MaxPlayerNameLength);    
         }
     }
 
@@ -71,9 +72,9 @@ internal class PacketConnectSynHandler : IPacketHandler
             PlayerInfos = playerInfos
         };
 
-        using SharedBuffer ackBuffer = PacketSerializer.SerializeShared(ref ackPacket, Config.MaxBufferSize);
+        using SharedBuffer ackBuffer = PacketSerializer.SerializeShared(ref ackPacket, Constants.MaxBufferSize);
 
-        context.PacketSender.SendReliably(ackBuffer, newPlayer, room.ReliableStore, resendDelay: Config.PlayerSynAckDelay);
+        context.PacketSender.SendReliably(ackBuffer, newPlayer, room.ReliableStore, resendDelay: Constants.PlayerSynAckDelay);
 
         context.Logger.LogTrace("Player {Name} joined Room #{RoomId} in slot {Slot}, waiting for a confirmation...", newPlayer.Name, packet.Header.RoomId, newPlayer.Slot);
     }
@@ -99,6 +100,6 @@ internal class PacketConnectSynHandler : IPacketHandler
 
     private static bool IsValidNameLength(int nameLength)
     {
-        return nameLength > 0 && nameLength <= Config.MaxPlayerNameLength;
+        return nameLength > 0 && nameLength <= Constants.MaxPlayerNameLength;
     }
 }

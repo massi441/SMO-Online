@@ -1,5 +1,7 @@
 ﻿using SMOO.Client;
 using SMOO.Protocol;
+using SMOO.Server;
+using SMOO.Threading;
 using SMOO.Util;
 
 namespace SMOO.Services.Interface;
@@ -8,7 +10,7 @@ internal interface IReliablePacketStore
 {
     public LockedDictionary<ushort, ReliablePacket> PendingPackets { get; }
 
-    public ReliablePacket UploadPacket(SharedBuffer buffer, Player receiver, byte maxRetries = Config.MaxRetries, int resendDelay = Config.DefaultResendDelay);
+    public ReliablePacket UploadPacket(SharedBuffer buffer, Player receiver, byte maxRetries = Constants.MaxRetries, int resendDelay = Constants.DefaultResendDelay);
 
     public void ClearPlayer(Player player);
 

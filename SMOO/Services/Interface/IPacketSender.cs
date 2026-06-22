@@ -23,5 +23,5 @@ internal interface IPacketSender
     /// <summary>
     /// Sends a packet
     /// </summary>
-    void SendReliably(SharedBuffer buffer, Player receiver, IReliablePacketStore reliableStore, byte maxRetries = Config.MaxRetries, int resendDelay = Config.DefaultResendDelay);
+    void SendReliably(SharedBuffer buffer, Player receiver, IReliablePacketStore reliableStore, byte maxRetries = Constants.MaxRetries, int resendDelay = Constants.DefaultResendDelay);
 }

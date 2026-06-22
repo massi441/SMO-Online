@@ -1,5 +1,4 @@
 ﻿using SMOO.Server;
-using SMOO.Util;
 using Microsoft.Extensions.Logging;
 
 namespace SMOO;
@@ -10,7 +9,7 @@ class Program
     {
         int port = 5001;
 
-        ILogger logger = LockstepLogger.Instance();
+        ILogger logger = ServerLogger.Instance();
 
         try
         {

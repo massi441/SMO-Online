@@ -41,7 +41,7 @@ internal class Broadcaster : IBroadcaster
         }
     }
 
-    public void BroadcastReliably<TEnumerator>(SharedBuffer buffer, TEnumerator players, byte maxRetries = Config.MaxRetries) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
+    public void BroadcastReliably<TEnumerator>(SharedBuffer buffer, TEnumerator players, byte maxRetries = Constants.MaxRetries) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
     {
         using ScopedReadLock readScope = _playerHolder.ReadWriteLock.EnterReadScope();
 
@@ -87,7 +87,7 @@ internal class Broadcaster : IBroadcaster
             TryClearPacket(deadPacket);
         }
 
-        await Task.Delay(Config.ResendThreadTick);
+        await Task.Delay(Constants.ResendThreadTick);
     }
 
     private void TryResendPacket(ReliablePacket packet)
