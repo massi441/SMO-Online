@@ -34,9 +34,10 @@ internal class PacketEventHandler : IPacketHandler
             return;
         }
 
+        eventPacket.EventHeader.PlayerSlot = packet.SenderPlayer!.Slot;
+
         unsafe
         {
-            eventPacket.EventHeader.PlayerSlot = packet.SenderPlayer!.Slot;
             handler.Handle(eventPacket, room, context);
         }
     }

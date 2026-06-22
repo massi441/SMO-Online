@@ -20,11 +20,11 @@ internal class Room
     private readonly CancellationTokenSource _healthCheckToken;
 
     public ushort Id { get; }
-    public Channel<Packet> Packets { get; }
     public IPlayerHolder PlayerHolder { get; }
     public IBroadcaster Broadcaster { get; }
-    public PlayerList Players => PlayerHolder.Players;
     public IReliablePacketStore ReliableStore => Broadcaster.ReliablePacketStore;
+    public Channel<Packet> Packets { get; }
+    public PlayerList Players => PlayerHolder.Players;
 
     public Room(ushort roomId, ServerContext conxtext, IPlayerHolder playerHolder, IBroadcaster broadcaster)
     {
