@@ -16,7 +16,6 @@ internal class Room
     private readonly ServerContext _context;
     private readonly Task _processTask;
     private readonly Task _healthCheckTask;
-    private readonly ConcurrentQueue<Action> _commands = [];
     private readonly CancellationTokenSource _healthCheckToken;
 
     public ushort Id { get; }
@@ -49,27 +48,17 @@ internal class Room
         return Task.WhenAll(_processTask, _healthCheckTask, Broadcaster.Shutdown());
     }
 
-    public void UploadCommand(Action action)
-    {
-        _commands.Enqueue(action);
-    }
-
     public void DisconnectPlayer(Player player)
     {
-        player.MarkDisconnected();
-
-        UploadCommand(() =>
+        ServerResult disconnectResult = _context.PlayerDisconnector.Disconnect(player);
+        if (disconnectResult.IsSuccess)
         {
-            ServerResult disconnectResult = _context.PlayerDisconnector.Disconnect(player);
-            if (disconnectResult.IsSuccess)
-            {
-                _context.Logger.LogInformation("Successfully disconnected {PlayerName} from Room #{RoomId}", player.Name, player.Room.Id);
-            }
-            else
-            {
-                _context.Logger.LogError("Failed to disconnect player {PlayerName} in Room #{RoomId}: {Error}", player.Name, Id, disconnectResult.Error!.Value);
-            }
-        });
+            _context.Logger.LogInformation("Successfully disconnected {PlayerName} from Room #{RoomId}", player.Name, player.Room.Id);
+        }
+        else
+        {
+            _context.Logger.LogError("Failed to disconnect player {PlayerName} in Room #{RoomId}: {Error}", player.Name, Id, disconnectResult.Error!.Value);
+        }
     }
 
     private async Task ProcessAsync()
@@ -79,12 +68,6 @@ internal class Room
             try
             {
                 using SharedBuffer buffer = packet.Buffer;
-
-                while (_commands.TryDequeue(out Action? command))
-                {
-                    _context.Logger.LogTrace("Processing command in room #{RoomId}", Id);
-                    command!.Invoke();
-                }
 
                 if (!IsAllowedInRoom(packet.Sender, packet.Header, out Player? player))
                 {
@@ -139,15 +122,10 @@ internal class Room
         {
             foreach (Player player in PlayerHolder.Players)
             {
-                if (player.IsDisconnected)
-                {
-                    continue;
-                }
-
                 if (player.IsConnectionLost())
                 {
-                    DisconnectPlayer(player);
                     _context.Logger.LogWarning("Player {PlayerName} has lost connection in Room #{RoomId} and will be disconnected", player.Name, Id);
+                    DisconnectPlayer(player);
                     continue;
                 }
                 

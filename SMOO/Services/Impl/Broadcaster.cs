@@ -108,20 +108,15 @@ internal class Broadcaster : IBroadcaster
             return;
         }
 
-        reliablePacket.Receiver.MarkDisconnected();
-
-        reliablePacket.Receiver.Room.UploadCommand(() =>
+        ServerResult disconnectResult = _context.PlayerDisconnector.Disconnect(reliablePacket.Receiver);
+        if (disconnectResult.IsSuccess)
         {
-            ServerResult disconnectResult = _context.PlayerDisconnector.Disconnect(reliablePacket.Receiver);
-            if (disconnectResult.IsSuccess)
-            {
-                _context.Logger.LogWarning("Disconnected player {PlayerName} for not Acking {PacketType} packet (#{SequenceNumber}) in room #{RoomId}", reliablePacket.Receiver.Name, packetType, reliablePacket.SequenceNumber, reliablePacket.Receiver.Room.Id);
-            }
-            else
-            {
-                _context.Logger.LogError("Failed to disconnect player {PlayerName} for no Acking packet #{PacketId} in room #{RoomId}", reliablePacket.Receiver.Name, reliablePacket.SequenceNumber, reliablePacket.Receiver.Room.Id);
-            }
-        });
+            _context.Logger.LogWarning("Disconnected player {PlayerName} for not Acking {PacketType} packet (#{SequenceNumber}) in room #{RoomId}", reliablePacket.Receiver.Name, packetType, reliablePacket.SequenceNumber, reliablePacket.Receiver.Room.Id);
+        }
+        else
+        {
+            _context.Logger.LogError("Failed to disconnect player {PlayerName} for not Acking packet #{PacketId} in room #{RoomId}", reliablePacket.Receiver.Name, reliablePacket.SequenceNumber, reliablePacket.Receiver.Room.Id);
+        }
     }
 
     public Task Shutdown()

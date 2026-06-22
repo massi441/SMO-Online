@@ -7,7 +7,6 @@ namespace SMOO.Client;
 
 internal class Player
 {
-    private AtomicBool _isDisconnected = new AtomicBool(false);
     public required PlayerId Id { get; init; }
     public required string Name { get; init; }
     public required PlayerWorldInfo WorldInfo { get; init; }
@@ -16,8 +15,6 @@ internal class Player
     public required byte Slot { get; init; }
     public DateTime LastSeen { get; private set; } = DateTime.UtcNow;
     public IPEndPoint Endpoint => Id.Endpoint;
-
-    public bool IsDisconnected => _isDisconnected.Value;
 
     public void RefreshLastSeen()
     {
@@ -32,10 +29,5 @@ internal class Player
     public bool IsNeedHealthCheck()
     {
         return (DateTime.UtcNow - LastSeen).TotalMilliseconds > Config.PlayerHealthCheckThreshold;
-    }
-
-    public void MarkDisconnected()
-    {
-        _isDisconnected.Set(true);
     }
 }
