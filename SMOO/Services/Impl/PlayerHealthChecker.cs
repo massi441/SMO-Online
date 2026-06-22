@@ -1,0 +1,106 @@
+﻿using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
+using SMOO.Client;
+using SMOO.Protocol;
+using SMOO.Server;
+using SMOO.Services.Interface;
+using SMOO.Threading;
+using SMOO.Util;
+
+namespace SMOO.Services.Impl;
+
+internal class PlayerHealthChecker : IPlayerHealthChecker
+{
+    private readonly ServerContext _context;
+    private readonly IPlayerHolder _playerHolder;
+    private readonly Stack<Player> _disconnectedPlayers;
+    private readonly Task _healthCheckTask;
+    private readonly CancellationTokenSource _healthCheckToken;
+
+    public PlayerHealthChecker(ServerContext context, IPlayerHolder playerHolder)
+    {
+        _context = context;
+        _playerHolder = playerHolder;
+        _disconnectedPlayers = new Stack<Player>(_playerHolder.MaxSize);
+
+        _healthCheckToken = CancellationTokenSource.CreateLinkedTokenSource(_context.CancellationToken);
+        _healthCheckTask = Task.Run(HealthCheckLoop, _healthCheckToken.Token);
+    }
+
+    public Task Shutdown()
+    {
+        _healthCheckToken.Cancel();
+        _healthCheckToken.Dispose();
+
+        return _healthCheckTask;
+    }
+
+    private async Task HealthCheckLoop()
+    {
+        while (!_healthCheckToken.IsCancellationRequested)
+        {
+            CheckIdlePlayers();
+
+            try
+            {
+                await Task.Delay(Config.PlayerHealthCheckTick, _healthCheckToken.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                _context.Logger.LogTrace("Health check delay was cancelled, Room is shutting down...");
+            }
+        }
+    }
+
+    private void CheckIdlePlayers()
+    {
+        using (_playerHolder.ReadWriteLock.EnterReadScope())
+        {
+            foreach (Player player in _playerHolder.Players)
+            {
+                if (player.IsConnectionLost())
+                {
+                    _disconnectedPlayers.Push(player);
+                    _context.Logger.LogWarning("Player {PlayerName} has lost connection in Room #{RoomId} and will be disconnected", player.Name, player.Room.Id);
+                    continue;
+                }
+
+                if (player.IsNeedHealthCheck())
+                {
+                    PacketHeader header = new PacketHeader()
+                    {
+                        Type = PacketType.HealthCheck,
+                        Flags = 0,
+                        Version = Config.Version,
+                        RoomId = player.Room.Id
+                    };
+
+                    using SharedBuffer buffer = PacketSerializer.SerializeShared(ref header, Unsafe.SizeOf<PacketHeader>());
+
+                    _context.Logger.LogTrace("Player {PlayerName} has been idle for too long in Room #{RoomId}, a health check request will be sent", player.Name, player.Room.Id);
+
+                    _context.PacketSender.Send(buffer, player);
+                }
+            }
+        }
+
+        while (_disconnectedPlayers.TryPop(out Player? disconnectedPlayer))
+        {
+            DisconnectPlayer(disconnectedPlayer);
+        }
+    }
+
+    private void DisconnectPlayer(Player player)
+    {
+        ServerResult disconnectResult = _context.PlayerDisconnector.Disconnect(player);
+        if (disconnectResult.IsSuccess)
+        {
+            _context.Logger.LogInformation("Successfully disconnected {PlayerName} from Room #{RoomId}", player.Name, player.Room.Id);
+        }
+        else
+        {
+            _context.Logger.LogError("Failed to disconnect player {PlayerName} in Room #{RoomId}: {Error}", player.Name, player.Room.Id, disconnectResult.Error!.Value);
+        }
+    }
+
+}

@@ -117,6 +117,8 @@ internal class PlayerHolder : IPlayerHolder
         return null;
     }
 
+    // TODO: Merge into one single operation
+
     private bool TryFindSlot(out byte index)
     {
         index = 0;

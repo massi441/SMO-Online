@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Net;
-using System.Runtime.CompilerServices;
+﻿using System.Net;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using SMOO.Client;
@@ -15,9 +13,8 @@ internal class Room
 {
     private readonly ServerContext _context;
     private readonly Task _processTask;
-    private readonly Task _healthCheckTask;
-    private readonly CancellationTokenSource _healthCheckToken;
-
+    private readonly IPlayerHealthChecker _healthChecker;
+    
     public ushort Id { get; }
     public IPlayerHolder PlayerHolder { get; }
     public IBroadcaster Broadcaster { get; }
@@ -25,40 +22,23 @@ internal class Room
     public Channel<Packet> Packets { get; }
     public PlayerList Players => PlayerHolder.Players;
 
-    public Room(ushort roomId, ServerContext conxtext, IPlayerHolder playerHolder, IBroadcaster broadcaster)
+    public Room(ushort roomId, ServerContext conxtext, IPlayerHolder playerHolder, IBroadcaster broadcaster, IPlayerHealthChecker healthChecker)
     {
         _context = conxtext;
+        _healthChecker = healthChecker;
 
         Id = roomId;
         PlayerHolder = playerHolder;
         Packets = Channel.CreateUnbounded<Packet>();
         Broadcaster = broadcaster;
 
-        _healthCheckToken = CancellationTokenSource.CreateLinkedTokenSource(_context.CancellationToken);
-
         _processTask = Task.Run(ProcessAsync, _context.CancellationToken);
-        _healthCheckTask = Task.Run(CheckIdlePlayers, _context.CancellationToken);
     }
 
     public Task Shutdown()
     {
         Packets.Writer.Complete();
-        _healthCheckToken.Cancel();
-        _healthCheckToken.Dispose();
-        return Task.WhenAll(_processTask, _healthCheckTask, Broadcaster.Shutdown());
-    }
-
-    public void DisconnectPlayer(Player player)
-    {
-        ServerResult disconnectResult = _context.PlayerDisconnector.Disconnect(player);
-        if (disconnectResult.IsSuccess)
-        {
-            _context.Logger.LogInformation("Successfully disconnected {PlayerName} from Room #{RoomId}", player.Name, player.Room.Id);
-        }
-        else
-        {
-            _context.Logger.LogError("Failed to disconnect player {PlayerName} in Room #{RoomId}: {Error}", player.Name, Id, disconnectResult.Error!.Value);
-        }
+        return Task.WhenAll(_processTask, _healthChecker.Shutdown(), Broadcaster.Shutdown());
     }
 
     private async Task ProcessAsync()
@@ -116,47 +96,6 @@ internal class Room
         _context.Logger.LogInformation("Room #{RoomId} was shutdown sucessfully", Id);
     }
 
-    private async Task CheckIdlePlayers()
-    {
-        while (!_healthCheckToken.IsCancellationRequested)
-        {
-            foreach (Player player in PlayerHolder.Players)
-            {
-                if (player.IsConnectionLost())
-                {
-                    _context.Logger.LogWarning("Player {PlayerName} has lost connection in Room #{RoomId} and will be disconnected", player.Name, Id);
-                    DisconnectPlayer(player);
-                    continue;
-                }
-                
-                if (player.IsNeedHealthCheck())
-                {
-                    PacketHeader header = new PacketHeader()
-                    {
-                        Type = PacketType.HealthCheck,
-                        Flags = 0,
-                        Version = Config.Version,
-                        RoomId = Id
-                    };
-
-                    using SharedBuffer buffer = PacketSerializer.SerializeShared(ref header, Unsafe.SizeOf<PacketHeader>());
-
-                    _context.Logger.LogTrace("Player {PlayerName} has been idle for too long in Room #{RoomId}, a health check request will be sent", player.Name, Id);
-
-                    _context.PacketSender.Send(buffer, player);
-                }
-            }
-
-            try
-            {
-                await Task.Delay(Config.PlayerHealthCheckTick, _healthCheckToken.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                _context.Logger.LogTrace("Health check delay was cancelled, Room is shutting down...");
-            }
-        }
-    }
 
     private bool IsAllowedInRoom(IPEndPoint sender, PacketHeader header, out Player? player)
     {
