@@ -12,6 +12,6 @@ internal readonly ref struct ScopedReadLock : IDisposable
 
     public void Dispose()
     {
-        _lock.ExitWriteLock();
+        _lock.ExitReadLock();
     }
 }
