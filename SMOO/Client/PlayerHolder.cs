@@ -20,6 +20,8 @@ internal class PlayerHolder : IPlayerHolder
 
     public ServerResult<Player> RegisterPlayer(in PlayerInfo playerInfo)
     {
+        using ScopedUpgradeableLock upgradeScope = ReadWriteLock.EnterUpgradeableScope();
+
         if (ContainsPlayer(playerInfo))
         {
             return ServerResult<Player>.Failure(ServerError.PlayerAlreadyInRoom);
