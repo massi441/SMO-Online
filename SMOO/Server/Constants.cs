@@ -1,4 +1,6 @@
-﻿namespace SMOO.Server;
+﻿using Microsoft.Extensions.Logging;
+
+namespace SMOO.Server;
 
 internal class Constants
 {
@@ -31,4 +33,9 @@ internal class Constants
 
     // Player
     public static readonly string DefaultCostumeName = "Mario";
+
+    // Server Config
+    public const int DefaultPort = 5001;
+    public const LogLevel DefaultLogLevel = LogLevel.Trace;
+    public const string ConfigFileName = "Config.json";
 }
