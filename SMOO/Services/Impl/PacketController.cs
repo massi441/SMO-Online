@@ -9,11 +9,12 @@ using SMOO.Memory;
 
 namespace SMOO.Services.Impl;
 
-internal class PacketSender : IPacketSender
+
+internal class PacketController : IPacketController
 {
     private readonly Socket _socket;
 
-    public PacketSender(Socket socket)
+    public PacketController(Socket socket)
     {
         _socket = socket;
     }
@@ -55,5 +56,10 @@ internal class PacketSender : IPacketSender
         reliableStore.UploadPacket(buffer, receiver, maxRetries, resendDelay);
 
         Send(buffer.UsedSpan, receiver);
+    }
+
+    public ValueTask<SocketReceiveFromResult> ReceiveFromAsync(Memory<byte> buffer, SocketFlags flags, EndPoint remoteEndPoint, CancellationToken cancellationToken = default)
+    {
+        return _socket.ReceiveFromAsync(buffer, flags, remoteEndPoint, cancellationToken);
     }
 }
