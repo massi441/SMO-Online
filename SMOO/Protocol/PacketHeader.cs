@@ -1,12 +1,14 @@
 ﻿using System.Runtime.InteropServices;
-using SMOO.Util;
+using SMOO.Serialization;
+using SMOO.Server;
+using SMOO.Memory;
 
 namespace SMOO.Protocol;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 internal record struct PacketHeader : ISerializableStruct
 {
-    public readonly uint Magic = Config.Magic;
+    public readonly uint Magic = Constants.Magic;
     public required PacketType Type;
     public required byte Flags;
     public required byte Version;

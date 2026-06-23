@@ -1,8 +1,9 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using SMOO.Serialization;
 
-namespace SMOO.Util;
+namespace SMOO.Memory;
 
 internal ref struct SpanWriter
 {
@@ -17,6 +18,8 @@ internal ref struct SpanWriter
     /// Returns a span starting at the current offset of the writer
     /// </summary>
     public readonly Span<byte> RemainingSpan => _span[_offset..];
+
+    public readonly bool IsDone => _offset == _span.Length;
 
     public SpanWriter(Span<byte> span)
     {

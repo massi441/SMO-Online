@@ -2,8 +2,9 @@ using Microsoft.Extensions.Logging;
 using SMOO.Attributes;
 using SMOO.Client;
 using SMOO.Protocol;
+using SMOO.Serialization;
 using SMOO.Server;
-using SMOO.Util;
+using SMOO.Memory;
 
 namespace SMOO.Event;
 
@@ -14,12 +15,12 @@ internal class EventChangeCostumeHandler : IEventHandler
 
     private ref struct ChangeCostumeData : IDeserializableStruct
     {
-        [DynamicField(MaxSize = Config.MaxCostumeNameLength)]
+        [DynamicField(MaxSize = Constants.MaxCostumeNameLength)]
         public StreamStringView<byte> CostumeName;
 
         public void Deserialize(ref SpanReader reader)
         {
-            CostumeName.Deserialize(ref reader, Config.MaxCostumeNameLength);
+            CostumeName.Deserialize(ref reader, Constants.MaxCostumeNameLength);
         }
     }
 

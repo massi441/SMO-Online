@@ -4,8 +4,9 @@ using SMOO.Attributes;
 using SMOO.Client;
 using SMOO.Enumerator;
 using SMOO.Protocol;
+using SMOO.Serialization;
 using SMOO.Server;
-using SMOO.Util;
+using SMOO.Memory;
 
 namespace SMOO.Event;
 
@@ -25,16 +26,16 @@ internal class EventPlayerSyncHandler : IEventHandler
         [RequiredField]
         public float AnimRate;
 
-        [DynamicField(MaxSize = Config.MaxAnimNameLength)]
+        [DynamicField(MaxSize = Constants.MaxAnimNameLength)]
         public StreamStringView<byte> Anim;
         
-        [DynamicField(MaxSize = Config.MaxAnimNameLength)]
+        [DynamicField(MaxSize = Constants.MaxAnimNameLength)]
         public StreamStringView<byte> SubAnim;
         
-        [DynamicField(MaxSize = Config.MaxAnimNameLength)]
+        [DynamicField(MaxSize = Constants.MaxAnimNameLength)]
         public StreamStringView<byte> UpperAnim;
         
-        [DynamicField(MaxSize = Config.MaxBlendWeights * sizeof(float))]
+        [DynamicField(MaxSize = Constants.MaxBlendWeights * sizeof(float))]
         public StreamSpanView<byte, float> BlendWeights;
 
         public void Deserialize(ref SpanReader reader)
@@ -44,10 +45,10 @@ internal class EventPlayerSyncHandler : IEventHandler
 
             AnimRate = reader.ReadSingleLittleEndian();
 
-            Anim.Deserialize(ref reader, Config.MaxAnimNameLength);
-            SubAnim.Deserialize(ref reader, Config.MaxAnimNameLength);
-            UpperAnim.Deserialize(ref reader, Config.MaxAnimNameLength);
-            BlendWeights.Deserialize(ref reader, Config.MaxBlendWeights);
+            Anim.Deserialize(ref reader, Constants.MaxAnimNameLength);
+            SubAnim.Deserialize(ref reader, Constants.MaxAnimNameLength);
+            UpperAnim.Deserialize(ref reader, Constants.MaxAnimNameLength);
+            BlendWeights.Deserialize(ref reader, Constants.MaxBlendWeights);
         }
     }
 
@@ -59,7 +60,7 @@ internal class EventPlayerSyncHandler : IEventHandler
         [RequiredField]
         public Quaternion Quat;
 
-        [DynamicField(MaxSize = Config.MaxAnimNameLength)]
+        [DynamicField(MaxSize = Constants.MaxAnimNameLength)]
         StreamStringView<byte> Anim;
 
         [RequiredField]
@@ -73,7 +74,7 @@ internal class EventPlayerSyncHandler : IEventHandler
             reader.ReadInto(ref Position);
             reader.ReadInto(ref Quat);
 
-            Anim.Deserialize(ref reader, Config.MaxAnimNameLength);
+            Anim.Deserialize(ref reader, Constants.MaxAnimNameLength);
 
             reader.ReadInto(ref SpinRotation);
             reader.ReadInto(ref IsVisible);

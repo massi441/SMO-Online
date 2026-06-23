@@ -2,8 +2,9 @@
 using SMOO.Attributes;
 using SMOO.Client;
 using SMOO.Protocol;
+using SMOO.Serialization;
 using SMOO.Server;
-using SMOO.Util;
+using SMOO.Memory;
 
 namespace SMOO.Event;
 
@@ -15,12 +16,12 @@ internal class EventChangeCapHandler : IEventHandler
 
     private ref struct ChangeCapData : IDeserializableStruct
     {
-        [DynamicField(MaxSize = Config.MaxCostumeNameLength)]
+        [DynamicField(MaxSize = Constants.MaxCostumeNameLength)]
         public StreamStringView<byte> CapName;
 
         public void Deserialize(ref SpanReader reader)
         {
-            CapName.Deserialize(ref reader, Config.MaxCostumeNameLength);
+            CapName.Deserialize(ref reader, Constants.MaxCostumeNameLength);
         }
     }
 

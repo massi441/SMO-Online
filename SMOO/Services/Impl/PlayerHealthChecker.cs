@@ -2,10 +2,11 @@
 using Microsoft.Extensions.Logging;
 using SMOO.Client;
 using SMOO.Protocol;
+using SMOO.Serialization;
 using SMOO.Server;
 using SMOO.Services.Interface;
 using SMOO.Threading;
-using SMOO.Util;
+using SMOO.Memory;
 
 namespace SMOO.Services.Impl;
 
@@ -43,7 +44,7 @@ internal class PlayerHealthChecker : IPlayerHealthChecker
 
             try
             {
-                await Task.Delay(Config.PlayerHealthCheckTick, _healthCheckToken.Token);
+                await Task.Delay(Constants.PlayerHealthCheckTick, _healthCheckToken.Token);
             }
             catch (OperationCanceledException)
             {
@@ -71,7 +72,7 @@ internal class PlayerHealthChecker : IPlayerHealthChecker
                     {
                         Type = PacketType.HealthCheck,
                         Flags = 0,
-                        Version = Config.Version,
+                        Version = Constants.Version,
                         RoomId = player.Room.Id
                     };
 

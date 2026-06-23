@@ -1,6 +1,6 @@
-﻿namespace SMOO.Util;
+﻿namespace SMOO.Threading;
 
-internal struct RefCounter
+internal struct AtomicCounter
 {
     private int _count;
 

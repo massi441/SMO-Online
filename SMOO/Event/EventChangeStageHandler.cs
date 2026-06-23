@@ -3,8 +3,9 @@ using SMOO.Attributes;
 using SMOO.Client;
 using SMOO.Enumerator;
 using SMOO.Protocol;
+using SMOO.Serialization;
 using SMOO.Server;
-using SMOO.Util;
+using SMOO.Memory;
 
 namespace SMOO.Event;
 
@@ -18,13 +19,13 @@ internal class EventChangeStageHandler : IEventHandler
         [RequiredField]
         public byte ScenarioId;
 
-        [DynamicField(MaxSize = Config.MaxStageNameLength)]
+        [DynamicField(MaxSize = Constants.MaxStageNameLength)]
         public StreamStringView<byte> NewStage; // string.Empty is the "Left" stage signal
 
         public void Deserialize(ref SpanReader reader)
         {
             ScenarioId = reader.ReadByte();
-            NewStage.Deserialize(ref reader, Config.MaxStageNameLength);
+            NewStage.Deserialize(ref reader, Constants.MaxStageNameLength);
         }
     }
 

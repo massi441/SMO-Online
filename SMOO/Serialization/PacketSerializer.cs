@@ -1,6 +1,6 @@
-﻿using SMOO.Util;
+﻿using SMOO.Memory;
 
-namespace SMOO.Protocol;
+namespace SMOO.Serialization;
 
 internal static class PacketSerializer
 {

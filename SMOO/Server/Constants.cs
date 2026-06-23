@@ -1,6 +1,6 @@
-﻿namespace SMOO.Util;
+﻿namespace SMOO.Server;
 
-internal class Config
+internal class Constants
 {
     // Packet
     public const uint Magic = 0x534D4F4F; // "SMOO"

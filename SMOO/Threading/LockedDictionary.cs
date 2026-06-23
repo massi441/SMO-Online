@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace SMOO.Util;
+namespace SMOO.Threading;
 
 internal class LockedDictionary<TKey, TValue> where TKey : notnull
 {

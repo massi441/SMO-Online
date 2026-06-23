@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Services.Impl;
-using SMOO.Util;
+using SMOO.Memory;
 
 namespace SMOO.Server;
 
@@ -56,7 +56,7 @@ internal class UdpServer
     {
         while (!cancellationTokenSource.IsCancellationRequested)
         {
-            using SharedBuffer buffer = new SharedBuffer(Config.MaxBufferSize);
+            using SharedBuffer buffer = new SharedBuffer(Constants.MaxBufferSize);
             IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
             try
             {
@@ -123,7 +123,7 @@ internal class UdpServer
 
         ref PacketHeader header = ref packet.Header;
 
-        if (header.Magic != Config.Magic)
+        if (header.Magic != Constants.Magic)
         {
             return ServerResult.Failure(ServerError.InvalidMagic);
         }
@@ -164,7 +164,7 @@ internal class UdpServer
 
     private static bool IsValidVersion(byte version)
     {
-        return version == Config.Version;
+        return version == Constants.Version;
     }
 
     private static bool IsValidHeaderSize(ReadOnlySpan<byte> span)
@@ -181,7 +181,7 @@ internal class UdpServer
     {
         _context = new ServerContext()
         {
-            Logger = LockstepLogger.Instance(),
+            Logger = ServerLogger.Instance(),
             RoomHolder = new RoomHolder(),
             PacketSender = new PacketSender(socket),
             PlayerDisconnector = new PlayerDisconnector(),

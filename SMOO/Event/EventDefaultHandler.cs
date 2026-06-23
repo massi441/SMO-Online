@@ -1,14 +1,13 @@
 using Microsoft.Extensions.Logging;
 using SMOO.Protocol;
 using SMOO.Server;
-using SMOO.Util;
 
 namespace SMOO.Event;
 
 internal class EventDefaultHandler : IEventHandler
 {
     public static ushort MinDataSize => 0;
-    public static ushort MaxDataSize => Config.MaxBufferSize;
+    public static ushort MaxDataSize => Constants.MaxBufferSize;
 
     public static void Handle(ParsedEventPacket packet, Room room, ServerContext context)
     {

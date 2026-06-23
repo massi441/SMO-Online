@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using SMOO.Util;
+using SMOO.Memory;
 
 namespace SMOO.Protocol;
 

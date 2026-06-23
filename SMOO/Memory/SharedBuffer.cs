@@ -1,6 +1,7 @@
 ﻿using System.Buffers;
+using SMOO.Threading;
 
-namespace SMOO.Util;
+namespace SMOO.Memory;
 
 /// <summary>
 /// A wrapper around a rented byte buffer from the array pool
@@ -9,7 +10,7 @@ internal class SharedBuffer : IDisposable
 {
     private byte[] _ref;
     private int _usedBytes;
-    private RefCounter _refCounter;
+    private AtomicCounter _refCounter;
 
     public int UsedBytes => _usedBytes;
     public Span<byte> UsedSpan => Ref.AsSpan(0, UsedBytes);

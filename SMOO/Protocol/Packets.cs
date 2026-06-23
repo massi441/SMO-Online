@@ -1,7 +1,9 @@
 ﻿using SMOO.Attributes;
 using SMOO.Client;
 using SMOO.Enumerator;
-using SMOO.Util;
+using SMOO.Serialization;
+using SMOO.Server;
+using SMOO.Memory;
 
 namespace SMOO.Protocol;
 
@@ -76,7 +78,7 @@ internal ref struct PacketChatMessage : ISerializableStruct
     [RequiredField]
     public required byte PlayerSlot;
 
-    [DynamicField(MaxSize = Config.MaxChatMessageLength)]
+    [DynamicField(MaxSize = Constants.MaxChatMessageLength)]
     public required StreamStringView<ushort> Message;
 
     public readonly void Serialize(ref SpanWriter writer)
@@ -99,7 +101,7 @@ internal ref struct PacketPlayersInStage : ISerializableStruct
     [RequiredField]
     public required byte PlayerCount;
 
-    [DynamicRepeatedField(Type = typeof(PlayerInStageInfo), MaxRepeatCount = Config.MaxRoomSize)]
+    [DynamicRepeatedField(Type = typeof(PlayerInStageInfo), MaxRepeatCount = Constants.MaxRoomSize)]
     public required PlayerSameStageEnumerator PlayersInStage;
 
     internal ref struct PlayerInStageInfo : ISerializableStruct
@@ -107,13 +109,13 @@ internal ref struct PacketPlayersInStage : ISerializableStruct
         [RequiredField]
         public byte PlayerSlot;
 
-        [DynamicField(MaxSize = Config.MaxAnimNameLength)]
+        [DynamicField(MaxSize = Constants.MaxAnimNameLength)]
         public StreamStringView<byte> Anim;
 
-        [DynamicField(MaxSize = Config.MaxAnimNameLength)]
+        [DynamicField(MaxSize = Constants.MaxAnimNameLength)]
         public StreamStringView<byte> SubAnim;
 
-        [DynamicField(MaxSize = Config.MaxAnimNameLength)]
+        [DynamicField(MaxSize = Constants.MaxAnimNameLength)]
         public StreamStringView<byte> UpperAnim;
 
         public PlayerInStageInfo(Player player)
