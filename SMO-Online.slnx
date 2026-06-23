@@ -3,6 +3,7 @@
     <File Path=".editorconfig" />
     <File Path="README.md" />
   </Folder>
+  <Project Path="SMOO.Benchmarks/SMOO.Benchmarks.csproj" Id="90b19de1-f216-4bc2-8a71-6ca7de05ac4c" />
   <Project Path="SMOO.Test/SMOO.Test.csproj" Id="1a2c671c-ac8c-4dd4-b0a6-2950c2291274" />
   <Project Path="SMOO/SMOO.csproj" Id="de86b91d-be52-4e9e-96c8-e11a6e4e171f" />
 </Solution>
