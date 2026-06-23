@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace SMOO.Server;
 
@@ -9,6 +10,7 @@ internal static class Configurator
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() },
     };
 
     public static ServerConfig Load()
@@ -44,7 +46,7 @@ internal static class Configurator
         {
             string json = File.ReadAllText(configPath);
 
-            ServerConfig? deserialized = JsonSerializer.Deserialize<ServerConfig>(json);
+            ServerConfig? deserialized = JsonSerializer.Deserialize<ServerConfig>(json, JsonOptions);
             if (deserialized != null)
             {
                 config = deserialized;
