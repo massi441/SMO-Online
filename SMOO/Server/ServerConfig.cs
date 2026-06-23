@@ -4,6 +4,6 @@ namespace SMOO.Server;
 
 internal record class ServerConfig
 {
-    public int Port { get; set; } = Constants.DefaultPort;
-    public LogLevel LogLevel { get; set; } = Constants.DefaultLogLevel;
+    public int Port { get; init; } = Constants.DefaultPort;
+    public LogLevel LogLevel { get; init; } = Constants.DefaultLogLevel;
 }

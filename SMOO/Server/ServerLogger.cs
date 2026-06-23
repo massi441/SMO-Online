@@ -8,7 +8,7 @@ internal static class ServerLogger
     private static ILoggerFactory _loggerFactory = null!;
     private static readonly Lock _lock = new Lock();
 
-    public static ILogger Instance()
+    public static ILogger Instance(LogLevel logLevel)
     {
         if (_logger == null)
         {

@@ -18,7 +18,7 @@ internal class ServerContext
     /// <summary>
     /// The packet sender used across the server
     /// </summary>
-    public required IPacketSender PacketSender { get; init; }
+    public required IPacketController PacketController { get; init; }
 
     /// <summary>
     /// The player disconnector used across the server
@@ -29,4 +29,9 @@ internal class ServerContext
     /// The cancellation used to signal a server shutdown
     /// </summary>
     public required CancellationToken CancellationToken { get; init; }
+
+    /// <summary>
+    /// The configuration used by the server
+    /// </summary>
+    public required ServerConfig Config { get; init; }
 }

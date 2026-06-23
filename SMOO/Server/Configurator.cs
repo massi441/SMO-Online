@@ -38,10 +38,21 @@ internal static class Configurator
             return config;
         }
 
+        Console.WriteLine($"Loading configuration from {configPath}");
+
         try
         {
             string json = File.ReadAllText(configPath);
-            config = JsonSerializer.Deserialize<ServerConfig>("") ?? new ServerConfig();
+
+            ServerConfig? deserialized = JsonSerializer.Deserialize<ServerConfig>(json);
+            if (deserialized != null)
+            {
+                config = deserialized;
+            }
+            else
+            {
+                Console.WriteLine("Loaded configuration was empty, using default as fallback");
+            }
         }
         catch (JsonException ex)
         {
@@ -59,7 +70,7 @@ internal static class Configurator
         {
             return Path.Combine(Directory.GetCurrentDirectory(), Constants.ConfigFileName);
         }
-        catch (UnauthorizedAccessException ex)
+        catch (UnauthorizedAccessException)
         {
             Console.WriteLine("Access not given to read configuration file");
             return null;
