@@ -37,7 +37,7 @@ internal class Broadcaster : IBroadcaster
 
         foreach (Player player in players)
         {
-             _context.PacketSender.Send(payload, player.Endpoint);
+             _context.PacketController.Send(payload, player.Endpoint);
         }
     }
 
@@ -48,7 +48,7 @@ internal class Broadcaster : IBroadcaster
         foreach (Player player in players)
         {
             _resendStore.UploadPacket(buffer, player, maxRetries);
-            _context.PacketSender.Send(buffer, player);
+            _context.PacketController.Send(buffer, player);
         }
     }
 
@@ -101,7 +101,7 @@ internal class Broadcaster : IBroadcaster
 
         packet.WriteSequenceNumber(); // write the packet's sequence number into the payload in case the buffer is shared
 
-        ServerResult sendResult = _context.PacketSender.Send(packet.Buffer, packet.Receiver);
+        ServerResult sendResult = _context.PacketController.Send(packet.Buffer, packet.Receiver);
         if (!sendResult.IsSuccess)
         {
             _context.Logger.LogError("An error occured while trying to resend the packet");

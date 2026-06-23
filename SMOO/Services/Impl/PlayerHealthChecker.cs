@@ -80,7 +80,7 @@ internal class PlayerHealthChecker : IPlayerHealthChecker
 
                     _context.Logger.LogTrace("Player {PlayerName} has been idle for too long in Room #{RoomId}, a health check request will be sent", player.Name, player.Room.Id);
 
-                    _context.PacketSender.Send(buffer, player);
+                    _context.PacketController.Send(buffer, player);
                 }
             }
         }

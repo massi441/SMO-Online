@@ -3,42 +3,36 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
-using SMOO.Client;
 using SMOO.Protocol;
-using SMOO.Services.Impl;
 using SMOO.Memory;
 
 namespace SMOO.Server;
 
 internal class UdpServer
 {
-    private readonly int _port;
     private readonly Channel<Packet> _packets;
 
-    private ServerContext _context = null!;
+    private readonly ServerContext _context;
 
-    public UdpServer(int port)
+    public UdpServer(ServerContext context, bool addDefaultRoom = true)
     {
-        _port = port;
+        _context = context;
         _packets = Channel.CreateUnbounded<Packet>();
+
+        if (addDefaultRoom)
+        {
+            _context.RoomHolder.AddRoom(_context);
+        }
     }
 
     public async Task RunAsync(CancellationToken cancellationToken)
     {
-        using Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-
-        IPEndPoint listenEndpoint = new IPEndPoint(IPAddress.Any, _port);
-
-        socket.Bind(listenEndpoint);
-
-        InitContext(socket, cancellationToken);
-
-        _context.Logger.LogInformation("Server listening on port {Port}...", _port);
+        _context.Logger.LogInformation("Server listening on port {Port}...", _context.Config.Port);
 
         try
         {
             await Task.WhenAll(
-                ReceiveLoop(socket, cancellationToken),
+                ReceiveLoop(cancellationToken),
                 ProcessLoop(cancellationToken)
             );
         }
@@ -52,7 +46,7 @@ internal class UdpServer
         await _context.RoomHolder.ShutdownRooms();
     }
 
-    private async Task ReceiveLoop(Socket socket, CancellationToken cancellationTokenSource)
+    private async Task ReceiveLoop(CancellationToken cancellationTokenSource)
     {
         while (!cancellationTokenSource.IsCancellationRequested)
         {
@@ -60,7 +54,7 @@ internal class UdpServer
             IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
             try
             {
-                SocketReceiveFromResult receiveResult = await socket.ReceiveFromAsync(buffer.Ref, SocketFlags.None, sender, cancellationTokenSource);
+                SocketReceiveFromResult receiveResult = await _context.PacketController.ReceiveFromAsync(buffer.Ref, SocketFlags.None, sender, cancellationTokenSource);
                 if (receiveResult.ReceivedBytes > 0)
                 {
                     buffer.Restrict(receiveResult.ReceivedBytes);
@@ -141,7 +135,7 @@ internal class UdpServer
         if (header.Type == PacketType.Ping)
         {
             context.Logger.LogTrace("Ping received from {Address}:{Port}", packet.Sender.Address, packet.Sender.Port);
-            ServerResult result = context.PacketSender.Send(packet.Buffer, packet.Sender);
+            ServerResult result = context.PacketController.Send(packet.Buffer, packet.Sender);
             return result;
         }
 
@@ -175,19 +169,5 @@ internal class UdpServer
     private static bool IsValidType(byte packetType)
     {
         return packetType >= 0 && packetType < (byte)PacketType.Invalid;
-    }
-
-    private void InitContext(Socket socket, CancellationToken cancellationToken)
-    {
-        _context = new ServerContext()
-        {
-            Logger = ServerLogger.Instance(),
-            RoomHolder = new RoomHolder(),
-            PacketSender = new PacketSender(socket),
-            PlayerDisconnector = new PlayerDisconnector(),
-            CancellationToken = cancellationToken
-        };
-
-        _context.RoomHolder.AddRoom(_context);
     }
 }

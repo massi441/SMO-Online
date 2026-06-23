@@ -19,7 +19,7 @@ internal static class PacketUtil
 
     public static void AckPacket(ParsedPacket originalPacket, ServerContext context)
     {
-        ServerResult ackResult = context.PacketSender.SendAck(originalPacket);
+        ServerResult ackResult = context.PacketController.SendAck(originalPacket);
         if (ackResult.IsSuccess)
         {
             context.Logger.LogTrace("Sent ack to {PlayerName}'s reliable {PacketType} packet #{SequenceNumber}", originalPacket.SenderPlayer?.Name, originalPacket.Header.Type, originalPacket.Header.SequenceNumber);
@@ -34,7 +34,7 @@ internal static class PacketUtil
     {
         ParsedPacket basePacket = originalPacket.BasePacket;
 
-        ServerResult ackResult = context.PacketSender.SendAck(basePacket);
+        ServerResult ackResult = context.PacketController.SendAck(basePacket);
         if (ackResult.IsSuccess)
         {
             context.Logger.LogTrace("Sent ack to {PlayerName}'s reliable {PacketType} event packet #{SequenceNumber}", basePacket.SenderPlayer?.Name, originalPacket.EventHeader.Type, basePacket.Header.SequenceNumber);

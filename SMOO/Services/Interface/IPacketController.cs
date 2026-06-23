@@ -3,10 +3,11 @@ using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Memory;
+using System.Net.Sockets;
 
 namespace SMOO.Services.Interface;
 
-internal interface IPacketSender
+internal interface IPacketController
 {
     /// <summary>
     /// Sends a payload to any receiver
@@ -24,4 +25,6 @@ internal interface IPacketSender
     /// Sends a packet
     /// </summary>
     void SendReliably(SharedBuffer buffer, Player receiver, IReliablePacketStore reliableStore, byte maxRetries = Constants.MaxRetries, int resendDelay = Constants.DefaultResendDelay);
+
+    ValueTask<SocketReceiveFromResult> ReceiveFromAsync(Memory<byte> buffer, SocketFlags flags, EndPoint remoteEndPoint, CancellationToken cancellationToken = default);
 }

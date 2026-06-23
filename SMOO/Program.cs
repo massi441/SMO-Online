@@ -1,5 +1,7 @@
-﻿using SMOO.Server;
-using Microsoft.Extensions.Logging;
+﻿using System.Net;
+using System.Net.Sockets;
+using SMOO.Server;
+using SMOO.Services.Impl;
 
 namespace SMOO;
 
@@ -7,14 +9,20 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        int port = 5001;
-
-        ILogger logger = ServerLogger.Instance();
+        ServerConfig config = Configurator.Load();
 
         try
         {
-            UdpServer server = new UdpServer(port);
+            using Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+
+            IPEndPoint listenEndpoint = new IPEndPoint(IPAddress.Any, config.Port);
+
+            socket.Bind(listenEndpoint);
+
             using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
+            ServerContext context = CreateContext(socket, cancellationTokenSource.Token, config);
+            UdpServer server = new UdpServer(context);
 
             Console.CancelKeyPress += (_, e) =>
             {
@@ -37,7 +45,20 @@ class Program
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An unexpected error occurred while the server was running");
+            Console.WriteLine($"An unexpected error occurred while the server was running: {ex.Message}");
         }
+    }
+
+    private static ServerContext CreateContext(Socket socket, CancellationToken cancellationToken, ServerConfig config)
+    {
+        return new ServerContext()
+        {
+            CancellationToken = cancellationToken,
+            Logger = ServerLogger.Instance(config.LogLevel),
+            PacketController = new PacketController(socket),
+            PlayerDisconnector = new PlayerDisconnector(),
+            RoomHolder = new RoomHolder(),
+            Config = config
+        };
     }
 }
