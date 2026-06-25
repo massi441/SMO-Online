@@ -52,7 +52,7 @@ internal static unsafe class PacketHandlerTable
 
     static PacketHandlerTable()
     {
-        Debug.Assert(Handlers.Length == (byte)PacketType.Invalid, "Handlers table is out of sync with PacketType enum");
+        Debug.Assert(Handlers.Length == (byte)PacketType.OutOfRange, "Handlers table is out of sync with PacketType enum");
     }
 
     public static PacketHandler GetHandler(PacketType type)

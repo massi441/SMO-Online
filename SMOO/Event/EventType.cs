@@ -8,7 +8,7 @@ internal enum EventType : ushort
     PlayerSync,
 
     /// <summary>
-    /// An reserved EventType for server side validation
+    /// A reserved EventType for server side validation
     /// </summary>
     OutOfRange
 }
