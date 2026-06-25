@@ -59,12 +59,7 @@ internal static unsafe class PacketHandlerTable
     {
         byte index = (byte)type;
 
-        if (index < Handlers.Length)
-        {
-            return Handlers[index];
-        }
-
-        return DefaultHandler;
+        return Handlers[index];
     }
 
     private static PacketHandler MakeHandler<T>() where T : IPacketHandler
