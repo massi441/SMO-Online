@@ -32,7 +32,7 @@ internal class Room
         Packets = Channel.CreateUnbounded<Packet>();
         Broadcaster = broadcaster;
 
-        _processTask = Task.Run(ProcessAsync, _context.CancellationToken);
+        _processTask = Task.Run(ProcessPackets, _context.CancellationToken);
     }
 
     public Task Shutdown()
@@ -41,7 +41,7 @@ internal class Room
         return Task.WhenAll(_processTask, _healthChecker.Shutdown(), Broadcaster.Shutdown());
     }
 
-    private async Task ProcessAsync()
+    private async Task ProcessPackets()
     {
         await foreach (Packet packet in Packets.Reader.ReadAllAsync())
         {
