@@ -17,6 +17,12 @@ internal class PacketEventHandler : IPacketHandler
 
         EventType eventType = eventPacket.EventHeader.Type;
 
+        if (eventType >= EventType.OutOfRange)
+        {
+            context.Logger.LogWarning("{PlayeName} sent an invalid event type ({EventType}) in Room #{RoomId}", packet.SenderPlayer!.Name, eventType, room.Id);
+            return;
+        }
+
         //context.Logger.LogTrace("Dispatching event {EventType} from {PlayerName}", eventType, packet.SenderPlayer?.Name); // TODO: add verbose level
 
         Event.EventHandler handler = EventHandlerTable.GetHandler(eventType);
