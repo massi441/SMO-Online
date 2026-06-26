@@ -15,6 +15,7 @@ internal ref struct PacketConnectSynAck : ISerializableStruct
     public required PacketHeader Header;
     public required Guid SessionId;
     public required byte RoomSize;
+    public required byte SelfSlot;
     public required byte OtherPlayersCount;
     public required PlayerInRoomInfoEnumerator PlayerInfos;
 
@@ -23,6 +24,7 @@ internal ref struct PacketConnectSynAck : ISerializableStruct
         writer.Write(Header);
         writer.Write(SessionId);
         writer.Write(RoomSize);
+        writer.Write(SelfSlot);
         writer.Write(OtherPlayersCount);
 
         foreach (PlayerInRoomInfo playerInfo in PlayerInfos)
@@ -32,6 +34,9 @@ internal ref struct PacketConnectSynAck : ISerializableStruct
     }
 }
 
+/// <summary>
+/// The packet sent to acknowledge a reliable server packet
+/// </summary>
 internal ref struct PacketAck : ISerializableStruct
 {
     [RequiredField]
