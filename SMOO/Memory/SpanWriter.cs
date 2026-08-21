@@ -56,7 +56,7 @@ internal ref struct SpanWriter
 
     public void WriteString(string str)
     {
-        Encoding.UTF8.GetBytes(str, RemainingSpan);
-        _offset += Encoding.UTF8.GetByteCount(str.AsSpan());
+        int writtenBytes = Encoding.UTF8.GetBytes(str, RemainingSpan);
+        _offset += writtenBytes;
     }
 }

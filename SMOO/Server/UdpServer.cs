@@ -51,10 +51,13 @@ internal class UdpServer
         while (!cancellationTokenSource.IsCancellationRequested)
         {
             using SharedBuffer buffer = new SharedBuffer(Constants.MaxBufferSize);
+
+            Memory<byte> receiveBuffer = buffer.Ref.AsMemory(0, buffer.UsedBytes);
             IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+
             try
             {
-                SocketReceiveFromResult receiveResult = await _context.PacketController.ReceiveFromAsync(buffer.Ref, SocketFlags.None, sender, cancellationTokenSource);
+                SocketReceiveFromResult receiveResult = await _context.PacketController.ReceiveFromAsync(receiveBuffer, SocketFlags.None, sender, cancellationTokenSource);
                 if (receiveResult.ReceivedBytes > 0)
                 {
                     buffer.Restrict(receiveResult.ReceivedBytes);

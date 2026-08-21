@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 using SMOO.Attributes;
 
 namespace SMOO.Memory;
@@ -42,10 +43,10 @@ internal ref struct StreamSpanView<TLengthPrefix, T>
             throw new InvalidDataException($"The span length prefix ({_length}) was bigger than the maximum size allowed ({maxReadLength})");
         }
 
-        int length = int.CreateChecked(_length);
-        if (length > reader.RemainingByteCount)
+        int bytesToRead = int.CreateChecked(_length) * Unsafe.SizeOf<T>();
+        if (bytesToRead > reader.RemainingByteCount)
         {
-            throw new InvalidDataException($"The span length prefix ({_length}) was bigger than the remaining bytes ({reader.RemainingByteCount}) in the reader");
+            throw new InvalidDataException($"The span length prefix ({bytesToRead}) was bigger than the remaining bytes ({reader.RemainingByteCount}) in the reader");
         }
 
         _span = reader.ReadView<T>(int.CreateChecked(Length));

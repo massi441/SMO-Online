@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Serialization;
@@ -7,6 +6,7 @@ using SMOO.Server;
 using SMOO.Services.Interface;
 using SMOO.Threading;
 using SMOO.Memory;
+using System.Runtime.CompilerServices;
 
 namespace SMOO.Services.Impl;
 
@@ -25,31 +25,37 @@ internal class PlayerHealthChecker : IPlayerHealthChecker
         _disconnectedPlayers = new Stack<Player>(_playerHolder.MaxSize);
 
         _healthCheckToken = CancellationTokenSource.CreateLinkedTokenSource(_context.CancellationToken);
-        _healthCheckTask = Task.Run(HealthCheckLoop, _healthCheckToken.Token);
+        _healthCheckTask = Task.Run(HealthCheckLoop);
     }
 
     public Task Shutdown()
     {
         _healthCheckToken.Cancel();
-        _healthCheckToken.Dispose();
 
         return _healthCheckTask;
     }
 
     private async Task HealthCheckLoop()
     {
-        while (!_healthCheckToken.IsCancellationRequested)
+        try
         {
-            CheckIdlePlayers();
+            while (!_healthCheckToken.IsCancellationRequested)
+            {
+                CheckIdlePlayers();
 
-            try
-            {
-                await Task.Delay(Constants.PlayerHealthCheckTick, _healthCheckToken.Token);
+                try
+                {
+                    await Task.Delay(Constants.PlayerHealthCheckTick, _healthCheckToken.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    _context.Logger.LogTrace("Health check delay was cancelled, Room is shutting down...");
+                }
             }
-            catch (OperationCanceledException)
-            {
-                _context.Logger.LogTrace("Health check delay was cancelled, Room is shutting down...");
-            }
+        }
+        finally
+        {
+            _healthCheckToken.Dispose();
         }
     }
 
@@ -68,19 +74,7 @@ internal class PlayerHealthChecker : IPlayerHealthChecker
 
                 if (player.IsNeedHealthCheck())
                 {
-                    PacketHeader header = new PacketHeader()
-                    {
-                        Type = PacketType.HealthCheck,
-                        Flags = 0,
-                        Version = Constants.Version,
-                        RoomId = player.Room.Id
-                    };
-
-                    using SharedBuffer buffer = PacketSerializer.SerializeShared(ref header, Unsafe.SizeOf<PacketHeader>());
-
-                    _context.Logger.LogTrace("Player {PlayerName} has been idle for too long in Room #{RoomId}, a health check request will be sent", player.Name, player.Room.Id);
-
-                    _context.PacketController.Send(buffer, player);
+                    SendHealthCheck(player);
                 }
             }
         }
@@ -89,6 +83,31 @@ internal class PlayerHealthChecker : IPlayerHealthChecker
         {
             DisconnectPlayer(disconnectedPlayer);
         }
+    }
+
+    private void SendHealthCheck(Player player)
+    {
+        PacketHeader header = new PacketHeader()
+        {
+            Type = PacketType.HealthCheck,
+            Flags = 0,
+            Version = Constants.Version,
+            RoomId = player.Room.Id
+        };
+
+        using SharedBuffer buffer = PacketSerializer.SerializeShared(ref header, Unsafe.SizeOf<PacketHeader>());
+
+        _context.Logger.LogTrace("Player {PlayerName} has been idle for too long in Room #{RoomId}, a health check request will be sent", player.Name, player.Room.Id);
+
+        try
+        {
+            _context.PacketController.Send(buffer, player);
+        }
+        catch (Exception ex)
+        {
+            _context.Logger.LogError("An error occured while sending health check to {PlayerName}: {Message}", player.Name, ex.Message);
+        }
+
     }
 
     private void DisconnectPlayer(Player player)

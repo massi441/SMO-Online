@@ -34,7 +34,6 @@ internal class ReliablePacket
     {
         return (DateTime.UtcNow - LastSent).TotalMilliseconds > ResendMsDelay;
     }
-
     public void WriteSequenceNumber()
     {
         PacketUtil.WriteSequenceNumber(Buffer.UsedSpan, SequenceNumber);

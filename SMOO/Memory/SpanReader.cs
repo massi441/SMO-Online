@@ -126,6 +126,12 @@ internal ref struct SpanReader
         return result;
     }
 
+    /// <summary>
+    /// Reads a view of item inside the memory stream
+    /// </summary>
+    /// <typeparam name="T">The type of item to read</typeparam>
+    /// <param name="count">The count of items to read</param>
+    /// <returns>A ReadOnlySpan of the elements in the stream</returns>
     public ReadOnlySpan<T> ReadView<T>(int count) where T : unmanaged
     {
         int totalBytes = count * Unsafe.SizeOf<T>();

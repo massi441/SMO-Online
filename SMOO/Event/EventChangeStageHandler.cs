@@ -5,6 +5,7 @@ using SMOO.Enumerator;
 using SMOO.Protocol;
 using SMOO.Serialization;
 using SMOO.Server;
+using SMOO.Threading;
 using SMOO.Memory;
 
 namespace SMOO.Event;
@@ -48,23 +49,30 @@ internal class EventChangeStageHandler : IEventHandler
 
             PlayerSameStageEnumerator playersInStage = room.Players.SameStageAs(player);
 
+            room.PlayerHolder.ReadWriteLock.EnterReadLock();
+
             byte inStageCount = (byte)playersInStage.Count<Player, PlayerSameStageEnumerator>();
 
-            if (inStageCount > 0)
+            if (inStageCount == 0)
             {
-                PacketPlayersInStage playersInStagePacket = new PacketPlayersInStage()
-                {
-                    Header = packet.BasePacket.Header.WithType(PacketType.PlayersInStage),
-                    PlayerCount = inStageCount,
-                    PlayersInStage = playersInStage
-                };
-
-                using SharedBuffer buffer = PacketSerializer.SerializeShared(ref playersInStagePacket, RequiredSize<PacketPlayersInStage>.MaxSize);
-
-                context.Logger.LogInformation("{PlayerCount} players were already in stage {StageName}, {PlayerName} will be notified", inStageCount, data.NewStage, player.Name);
-
-                context.PacketController.SendReliably(buffer, player, room.ReliableStore);
+                room.PlayerHolder.ReadWriteLock.ExitReadLock();
+                return;
             }
+
+            PacketPlayersInStage playersInStagePacket = new PacketPlayersInStage()
+            {
+                Header = packet.BasePacket.Header.WithType(PacketType.PlayersInStage),
+                PlayerCount = inStageCount,
+                PlayersInStage = playersInStage
+            };
+
+            using SharedBuffer buffer = PacketSerializer.SerializeShared(ref playersInStagePacket, RequiredSize<PacketPlayersInStage>.MaxSize);
+
+            room.PlayerHolder.ReadWriteLock.ExitReadLock();
+
+            context.Logger.LogInformation("{PlayerCount} players were already in stage {StageName}, {PlayerName} will be notified", inStageCount, data.NewStage, player.Name);
+
+            context.PacketController.SendReliably(buffer, player, room.ReliableStore);
         }
         else
         {
