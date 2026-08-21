@@ -12,23 +12,23 @@ namespace SMOO.Services.Impl;
 internal class Broadcaster : IBroadcaster
 {
     private readonly ServerContext _context;
-    private readonly IReliablePacketStore _resendStore;
+    private readonly IReliablePacketStore _reliablePacketStore;
     private readonly IPlayerHolder _playerHolder;
     private readonly CancellationTokenSource _resendToken;
     private readonly Task _resendTask;
     private readonly Stack<ReliablePacket> _deadPackets;
 
-    public IReliablePacketStore ReliablePacketStore => _resendStore;
+    public IReliablePacketStore ReliablePacketStore => _reliablePacketStore;
 
-    public Broadcaster(ServerContext context, IReliablePacketStore resendStore, IPlayerHolder holder)
+    public Broadcaster(ServerContext context, IReliablePacketStore reliablePacketStore, IPlayerHolder holder)
     {
         _context = context;
-        _resendStore = resendStore;
+        _reliablePacketStore = reliablePacketStore;
         _playerHolder = holder;
         _resendToken = CancellationTokenSource.CreateLinkedTokenSource(_context.CancellationToken);
         _deadPackets = new Stack<ReliablePacket>();
 
-        _resendTask = Task.Run(ResendLoop, _resendToken.Token);
+        _resendTask = Task.Run(ResendLoop);
     }
 
     public void Broadcast<TEnumerator>(ReadOnlySpan<byte> payload, TEnumerator players) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
@@ -45,49 +45,65 @@ internal class Broadcaster : IBroadcaster
     {
         using ScopedReadLock readScope = _playerHolder.ReadWriteLock.EnterReadScope();
 
+        _reliablePacketStore.UploadBroadcast(buffer, players, maxRetries);
+
         foreach (Player player in players)
         {
-            _resendStore.UploadPacket(buffer, player, maxRetries);
             _context.PacketController.Send(buffer, player);
         }
     }
 
     private async Task ResendLoop()
     {
-        while (!_resendToken.IsCancellationRequested)
+        try
         {
-            await CheckPackets();
+            while (!_resendToken.IsCancellationRequested)
+            {
+                await CheckPackets();
+            }
         }
-
-        _context.Logger.LogInformation("Room Broadcaster was shutdown successfully");
+        finally
+        {
+            _resendToken.Dispose();
+            _context.Logger.LogInformation("Room Broadcaster was shutdown successfully");
+        }
     }
 
     private async Task CheckPackets()
     {
-        _resendStore.PendingPackets.Lock();
+        _reliablePacketStore.PendingPackets.Lock();
 
-        foreach (var pair in _resendStore.PendingPackets)
+        foreach (var playerPackets in _reliablePacketStore.PendingPackets)
         {
-            ReliablePacket packet = pair.Value;
-
-            if (packet.HasTriesLeft)
+            foreach (var playerPacket in playerPackets.Value)
             {
-                TryResendPacket(packet);
-            }
-            else
-            {
-                _deadPackets.Push(packet);
+                ReliablePacket reliablePacket = playerPacket.Value;
+                if (reliablePacket.HasTriesLeft)
+                {
+                    TryResendPacket(reliablePacket);
+                }
+                else
+                {
+                    _deadPackets.Push(reliablePacket);
+                }
             }
         }
 
-        _resendStore.PendingPackets.Unlock();
+        _reliablePacketStore.PendingPackets.Unlock();
 
         while (_deadPackets.TryPop(out ReliablePacket? deadPacket))
         {
             TryClearPacket(deadPacket);
         }
 
-        await Task.Delay(Constants.ResendThreadTick);
+        try
+        {
+            await Task.Delay(Constants.ResendThreadTick, _resendToken.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            _context.Logger.LogTrace("Broadcaster resend delay was cancelled, Room is shutting down...");
+        }
     }
 
     private void TryResendPacket(ReliablePacket packet)
@@ -99,12 +115,17 @@ internal class Broadcaster : IBroadcaster
 
         _context.Logger.LogTrace("Resending {Type} packet #{Id} to {PlayerName} in room {#RoomdId}", packet.Header.Type, packet.SequenceNumber, packet.Receiver.Name, packet.Receiver.Room.Id);
 
-        packet.WriteSequenceNumber(); // write the packet's sequence number into the payload in case the buffer is shared
-
-        ServerResult sendResult = _context.PacketController.Send(packet.Buffer, packet.Receiver);
-        if (!sendResult.IsSuccess)
+        try
         {
-            _context.Logger.LogError("An error occured while trying to resend the packet");
+            ServerResult sendResult = _context.PacketController.Send(packet.Buffer, packet.Receiver);
+            if (!sendResult.IsSuccess)
+            {
+                _context.Logger.LogError("An error occured while trying to resend the packet: {Error}", sendResult.Error);
+            }
+        }
+        catch(Exception ex)
+        {
+            _context.Logger.LogError("Failed to resend packet: {Message}", ex.Message);
         }
 
         packet.DecrementTries();
@@ -113,9 +134,7 @@ internal class Broadcaster : IBroadcaster
 
     private void TryClearPacket(ReliablePacket reliablePacket)
     {
-        PacketType packetType = reliablePacket.Header.Type; // need to capture here as packet store frees the rented buffer
-
-        ReliablePacket? expiredPacket = _resendStore.RemovePacket(reliablePacket.Receiver, reliablePacket.SequenceNumber);
+        ReliablePacket? expiredPacket = _reliablePacketStore.RemovePacket(reliablePacket.Receiver, reliablePacket.SequenceNumber);
         if (expiredPacket == null)
         {
             _context.Logger.LogWarning("Expired packet already removed");
@@ -125,7 +144,7 @@ internal class Broadcaster : IBroadcaster
         ServerResult disconnectResult = _context.PlayerDisconnector.Disconnect(reliablePacket.Receiver);
         if (disconnectResult.IsSuccess)
         {
-            _context.Logger.LogWarning("Disconnected player {PlayerName} for not Acking {PacketType} packet (#{SequenceNumber}) in room #{RoomId}", reliablePacket.Receiver.Name, packetType, reliablePacket.SequenceNumber, reliablePacket.Receiver.Room.Id);
+            _context.Logger.LogWarning("Disconnected player {PlayerName} for not acking packet (#{SequenceNumber}) in room #{RoomId}", reliablePacket.Receiver.Name, reliablePacket.SequenceNumber, reliablePacket.Receiver.Room.Id);
         }
         else
         {
@@ -136,7 +155,6 @@ internal class Broadcaster : IBroadcaster
     public Task Shutdown()
     {
         _resendToken.Cancel();
-        _resendToken.Dispose();
 
         return _resendTask;
     }

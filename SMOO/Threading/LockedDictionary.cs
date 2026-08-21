@@ -27,7 +27,7 @@ internal class LockedDictionary<TKey, TValue> where TKey : notnull
         }
     }
 
-    public bool TryGetValue(TKey key, out TValue? value)
+    public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
     {
         using (_lock.EnterScope())
         {
@@ -49,6 +49,11 @@ internal class LockedDictionary<TKey, TValue> where TKey : notnull
         {
             return _dictionary.Remove(key, out value);
         }
+    }
+
+    public bool Remove(TKey key)
+    {
+        return Remove(key, out TValue? _);
     }
 
     public bool ContainsKey(TKey key)

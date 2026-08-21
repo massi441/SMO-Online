@@ -1,23 +1,25 @@
 ﻿using SMOO.Client;
+using SMOO.Enumerator;
+using SMOO.Memory;
 using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Threading;
-using SMOO.Memory;
 
 namespace SMOO.Services.Interface;
 
 internal interface IReliablePacketStore
 {
-    public LockedDictionary<ushort, ReliablePacket> PendingPackets { get; }
+    LockedDictionary<Player, Dictionary<ushort, ReliablePacket>> PendingPackets { get; }
 
-    public ReliablePacket UploadPacket(SharedBuffer buffer, Player receiver, byte maxRetries = Constants.MaxRetries, int resendDelay = Constants.DefaultResendDelay);
+    ReliablePacket UploadPacket(SharedBuffer buffer, Player receiver, byte maxRetries = Constants.MaxRetries, int resendDelay = Constants.DefaultResendDelay);
+    void UploadBroadcast<TEnumerator>(SharedBuffer buffer, TEnumerator players, byte maxRetries = Constants.MaxRetries, int resendDelay = Constants.DefaultResendDelay) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct;
 
-    public void ClearPlayer(Player player);
+    void ClearPlayer(Player player);
 
     /// <summary>
     /// Removes a reliable packet, and returns its rented buffer to the array pool.
     /// </summary>
     /// <param name="sequenceNumber">The sequence number of the packet to remove</param>
     /// <returns>The removed packed</returns>
-    public ReliablePacket? RemovePacket(Player requester, ushort sequenceNumber);
+    ReliablePacket? RemovePacket(Player requester, ushort sequenceNumber);
 }

@@ -45,9 +45,10 @@ internal class Room
     {
         await foreach (Packet packet in Packets.Reader.ReadAllAsync())
         {
+            using SharedBuffer buffer = packet.Buffer;
+
             try
             {
-                using SharedBuffer buffer = packet.Buffer;
 
                 if (!IsAllowedInRoom(packet.Sender, packet.Header, out Player? player))
                 {
