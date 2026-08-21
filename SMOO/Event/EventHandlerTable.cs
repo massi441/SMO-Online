@@ -42,11 +42,8 @@ internal static unsafe class EventHandlerTable
     public static EventHandler GetHandler(EventType type)
     {
         ushort index = (ushort)type;
-        if (index < Handlers.Length)
-        {
-            return Handlers[index];
-        }
-        return DefaultHandler;
+
+        return Handlers[index];
     }
 
     private static EventHandler MakeHandler<T>() where T : IEventHandler

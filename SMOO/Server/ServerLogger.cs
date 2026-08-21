@@ -24,7 +24,7 @@ internal static class ServerLogger
                             options.TimestampFormat = "HH:mm:ss ";
                         });
 
-                        builder.SetMinimumLevel(LogLevel.Trace);
+                        builder.SetMinimumLevel(logLevel);
                     });
 
                     _logger = _loggerFactory.CreateLogger("Server");

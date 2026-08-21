@@ -18,5 +18,5 @@ internal enum PacketType : byte
     /// <summary>
     /// A reserved packet type for server side validation
     /// </summary>
-    Invalid
+    OutOfRange
 }

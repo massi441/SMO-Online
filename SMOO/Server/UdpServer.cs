@@ -171,6 +171,6 @@ internal class UdpServer
 
     private static bool IsValidType(byte packetType)
     {
-        return packetType >= 0 && packetType < (byte)PacketType.Invalid;
+        return packetType < (byte)PacketType.OutOfRange;
     }
 }

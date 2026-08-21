@@ -70,6 +70,7 @@ internal class PacketConnectSynHandler : IPacketHandler
         {
             Header = packet.Header.WithType(PacketType.ConnectSynAck),
             RoomSize = room.PlayerHolder.MaxSize,
+            SelfSlot = newPlayer.Slot,
             SessionId = newPlayer.Id.SessionId,
             OtherPlayersCount = (byte)(room.Players.ActiveCount() - 1),
             PlayerInfos = playerInfos
