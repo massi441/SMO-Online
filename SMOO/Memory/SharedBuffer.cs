@@ -3,8 +3,11 @@ using SMOO.Threading;
 
 namespace SMOO.Memory;
 
+// Potential TODO: Rename to RentedBuffer
+
 /// <summary>
-/// A wrapper around a rented byte buffer from the array pool
+/// A wrapper around a rented byte buffer from the array pool, with an atomic reference counter.
+/// A shared buffer automatically returns its rented array to the array pool once the reference count reaches 0
 /// </summary>
 internal class SharedBuffer : IDisposable
 {
