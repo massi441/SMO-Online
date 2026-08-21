@@ -49,7 +49,6 @@ internal class Room
 
             try
             {
-
                 if (!IsAllowedInRoom(packet.Sender, packet.Header, out Player? player))
                 {
                     _context.Logger.LogWarning("{Address}:{Port} illegally tried to access room #{RoomId}", packet.Sender.Address, packet.Sender.Port, Id);
