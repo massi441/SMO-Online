@@ -31,7 +31,7 @@ internal struct StreamStringView<TLengthPrefix> where TLengthPrefix : unmanaged,
             throw new InvalidDataException($"The string length prefix ({_length}) was bigger than the maximum size allowed ({maxReadLength})");
         }
 
-        int bytesToRead = int.CreateChecked(_length) * sizeof(char); // sizeof(char) as a reminder that its
+        int bytesToRead = int.CreateChecked(_length); // each character in the stream is a byte so we use the length directly
         if (bytesToRead > reader.RemainingByteCount)
         {
             throw new InvalidDataException($"The string length prefix ({_length}) was bigger than the remaining bytes ({reader.RemainingByteCount}) in the reader");
