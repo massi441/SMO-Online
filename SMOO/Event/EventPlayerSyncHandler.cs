@@ -12,8 +12,8 @@ namespace SMOO.Event;
 
 internal class EventPlayerSyncHandler : IEventHandler
 {
-    public static ushort MinDataSize => (ushort)(RequiredSize<PlayerSyncData>.MinSize + RequiredSize<CapSyncData>.MinSize);
-    public static ushort MaxDataSize => (ushort)(RequiredSize<PlayerSyncData>.MaxSize + RequiredSize<CapSyncData>.MaxSize);
+    public static ushort MinDataSize => RequiredSize<SyncEventData>.MinSize;
+    public static ushort MaxDataSize => RequiredSize<SyncEventData>.MaxSize;
 
     private ref struct PlayerSyncData : IDeserializableStruct
     {
@@ -81,30 +81,49 @@ internal class EventPlayerSyncHandler : IEventHandler
         }
     }
 
+    private ref struct SyncEventData : IDeserializableStruct
+    {
+        [RequiredField]
+        public int Frame;
+
+        [RequiredField]
+        public PlayerSyncData PlayerSyncData;
+
+        [RequiredField]
+        public CapSyncData CapSyncData;
+
+        public void Deserialize(ref SpanReader reader)
+        {
+            Frame = reader.ReadInt32LittleEndian();
+
+            PlayerSyncData.Deserialize(ref reader);
+            CapSyncData.Deserialize(ref reader);
+        }
+    }
+
     public static void Handle(ParsedEventPacket eventPacket, Room room, ServerContext context)
     {
         try
         {
             SpanReader reader = new SpanReader(eventPacket.EventData);
 
-            PlayerSyncData playerSyncData = PacketSerializer.Deserialize<PlayerSyncData>(ref reader);
-            CapSyncData capSyncData = PacketSerializer.Deserialize<CapSyncData>(ref reader);
+            SyncEventData syncData = PacketSerializer.Deserialize<SyncEventData>(ref reader);
 
             Player player = eventPacket.BasePacket.SenderPlayer!;
 
-            if (playerSyncData.Anim.HasData())
+            if (syncData.PlayerSyncData.Anim.HasData())
             {
-                player.SyncData.Anim = playerSyncData.Anim.String; 
+                player.SyncData.Anim = syncData.PlayerSyncData.Anim.String; 
             }
 
-            if (playerSyncData.SubAnim.HasData())
+            if (syncData.PlayerSyncData.SubAnim.HasData())
             {
-                player.SyncData.SubAnim = playerSyncData.SubAnim.String;
+                player.SyncData.SubAnim = syncData.PlayerSyncData.SubAnim.String;
             }
 
-            if (playerSyncData.UpperAnim.HasData())
+            if (syncData.PlayerSyncData.UpperAnim.HasData())
             {
-                player.SyncData.UpperAnim = playerSyncData.UpperAnim.String;
+                player.SyncData.UpperAnim = syncData.PlayerSyncData.UpperAnim.String;
             }
 
             PlayerSameStageEnumerator playersInStage = room.Players.SameStageAs(player);
