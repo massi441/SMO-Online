@@ -9,7 +9,7 @@ internal class RoomHolder : IRoomHolder
 {
     private readonly Dictionary<ushort, Room> _rooms = [];
 
-    public ushort AddRoom(ServerContext context)
+    public Room AddRoom(ServerContext context)
     {
         ushort nextId = 0;
 
@@ -18,13 +18,25 @@ internal class RoomHolder : IRoomHolder
             nextId = (ushort)(_rooms.Keys.Max() + 1); 
         }
 
-        IPlayerHolder playerHolder = new PlayerHolder();
-        IBroadcaster roomBroadcaster = new Broadcaster(context, new ReliablePacketStore(context), playerHolder);
-        IPlayerHealthChecker healthChecker = new PlayerHealthChecker(context, playerHolder);
+        // Generic services
+        PlayerHolder playerHolder = new PlayerHolder();
+        ReliablePacketStore reliablePacketStore = new ReliablePacketStore(context);
+        Broadcaster roomBroadcaster = new Broadcaster(context, reliablePacketStore);
 
-        _rooms.Add(nextId, new Room(nextId, context, playerHolder, roomBroadcaster, healthChecker));
+        // Room services (IRoomService and IRoomServiceList)
+        PacketMessageProcessor packetProcessor = new PacketMessageProcessor(context);
+        PacketResendMessageProcessor packetResendProcessor = new PacketResendMessageProcessor(context, reliablePacketStore);
+        PlayerHealthMessageProcessor playerHealthProcessor = new PlayerHealthMessageProcessor(context, playerHolder);
 
-        return nextId;
+        RoomMessageProcessorList roomServices = new RoomMessageProcessorList(packetProcessor, packetResendProcessor, playerHealthProcessor);
+
+        RoomMessageScheduler messageScheduler = new RoomMessageScheduler(context);
+
+        Room room = new Room(nextId, context, playerHolder, roomBroadcaster, roomServices, messageScheduler);
+
+        _rooms.Add(nextId, room);
+
+        return room;
     }
 
     public async Task<bool> RemoveRoom(ushort id)

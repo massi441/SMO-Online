@@ -21,7 +21,7 @@ class Program
 
             using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
-            ServerContext context = CreateContext(socket, cancellationTokenSource.Token, config);
+            ServerContext context = CreateContext(socket, config, cancellationTokenSource.Token);
             UdpServer server = new UdpServer(context);
 
             Console.CancelKeyPress += (_, e) =>
@@ -41,7 +41,7 @@ class Program
                 }
             };
 
-            await server.RunAsync(cancellationTokenSource.Token);
+            await server.Start(cancellationTokenSource.Token);
         }
         catch (Exception ex)
         {
@@ -49,7 +49,7 @@ class Program
         }
     }
 
-    private static ServerContext CreateContext(Socket socket, CancellationToken cancellationToken, ServerConfig config)
+    private static ServerContext CreateContext(Socket socket, ServerConfig config, CancellationToken cancellationToken)
     {
         return new ServerContext()
         {

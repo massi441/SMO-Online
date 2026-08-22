@@ -51,9 +51,9 @@ internal class PacketController : IPacketController
         return Send(buffer, originalPacket.SenderIp);
     }
 
-    public void SendReliably(SharedBuffer buffer, Player receiver, IReliablePacketStore reliableStore, byte maxRetries, int resendDelay)
+    public void SendReliably(SharedBuffer buffer, Player receiver, Room room, byte maxRetries, int resendDelay)
     {
-        reliableStore.UploadPacket(buffer, receiver, maxRetries, resendDelay);
+        room.Broadcaster.ReliablePacketStore.UploadPacket(buffer, receiver, maxRetries, resendDelay);
 
         Send(buffer.UsedSpan, receiver);
     }

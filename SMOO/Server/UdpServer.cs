@@ -10,27 +10,28 @@ namespace SMOO.Server;
 
 internal class UdpServer
 {
+    private readonly ServerContext _context;
     private readonly Channel<Packet> _packets;
 
-    private readonly ServerContext _context;
-
-    public UdpServer(ServerContext context, bool addDefaultRoom = true)
+    public UdpServer(ServerContext context)
     {
         _context = context;
         _packets = Channel.CreateUnbounded<Packet>();
-
-        if (addDefaultRoom)
-        {
-            _context.RoomHolder.AddRoom(_context);
-        }
     }
 
-    public async Task RunAsync(CancellationToken cancellationToken)
+    public async Task Start(CancellationToken cancellationToken, bool addDefaultRoom = true)
     {
         _context.Logger.LogInformation("Server listening on port {Port}...", _context.Config.Port);
 
         try
         {
+            if (addDefaultRoom)
+            {
+                Room defaultRoom = _context.RoomHolder.AddRoom(_context);
+
+                defaultRoom.Start();
+            }
+
             await Task.WhenAll(
                 ReceiveLoop(cancellationToken),
                 ProcessLoop(cancellationToken)
@@ -38,7 +39,7 @@ internal class UdpServer
         }
         catch (OperationCanceledException)
         {
-            _context.Logger.LogWarning("Operations canceled.");
+            _context.Logger.LogWarning("Server was canceled and will be shutdown");
         }
 
         _context.Logger.LogInformation("Shutting down server...");
@@ -154,7 +155,11 @@ internal class UdpServer
             Sender = packet.Sender
         };
 
-        room.Packets.Writer.TryWrite(roomPacket);
+        room.UploadMessage(new RoomMessage()
+        { 
+            Packet = roomPacket, 
+            Type = RoomMessageType.Packet
+        });
 
         return ServerResult.Success();
     }

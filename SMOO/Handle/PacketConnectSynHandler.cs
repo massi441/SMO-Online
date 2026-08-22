@@ -64,8 +64,6 @@ internal class PacketConnectSynHandler : IPacketHandler
 
         PlayerInRoomInfoEnumerator playerInfos = room.Players.PlayerInfosExcept(newPlayer);
 
-        room.PlayerHolder.ReadWriteLock.EnterReadLock();
-
         PacketConnectSynAck ackPacket = new PacketConnectSynAck()
         {
             Header = packet.Header.WithType(PacketType.ConnectSynAck),
@@ -78,9 +76,7 @@ internal class PacketConnectSynHandler : IPacketHandler
 
         using SharedBuffer ackBuffer = PacketSerializer.SerializeShared(ref ackPacket, Constants.MaxBufferSize);
 
-        room.PlayerHolder.ReadWriteLock.ExitReadLock();
-
-        context.PacketController.SendReliably(ackBuffer, newPlayer, room.ReliableStore, resendDelay: Constants.PlayerSynAckDelay);
+        context.PacketController.SendReliably(ackBuffer, newPlayer, room, resendDelay: Constants.PlayerSynAckDelay);
 
         context.Logger.LogTrace("Player {Name} joined Room #{RoomId} in slot {Slot}, waiting for a confirmation...", newPlayer.Name, packet.Header.RoomId, newPlayer.Slot);
     }
