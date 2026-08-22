@@ -4,5 +4,5 @@ namespace SMOO.Services.Interface;
 
 internal interface IRoomMessageProcessorList
 {
-    IRoomMessageProcessor GetService(RoomMessageType type);
+    IRoomMessageProcessor GetProcessor(RoomMessageType type);
 }

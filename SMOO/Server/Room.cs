@@ -84,7 +84,7 @@ internal class Room
     {
         await foreach (RoomMessage message in _messages.Reader.ReadAllAsync())
         {
-            IRoomMessageProcessor service = _serviceList.GetService(message.Type);
+            IRoomMessageProcessor service = _serviceList.GetProcessor(message.Type);
 
             Packet? packet = message.Packet;
             if (packet != null)

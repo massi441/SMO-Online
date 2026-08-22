@@ -30,7 +30,7 @@ internal class RoomMessageProcessorList : IRoomMessageProcessorList
         }
     }
 
-    public IRoomMessageProcessor GetService(RoomMessageType type)
+    public IRoomMessageProcessor GetProcessor(RoomMessageType type)
     {
         return this[type];
     }
