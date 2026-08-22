@@ -6,7 +6,7 @@ namespace SMOO.Services.Interface;
 
 internal interface IRoomHolder
 {
-    ushort AddRoom(ServerContext context);
+    Room AddRoom(ServerContext context);
     Task<bool> RemoveRoom(ushort id);
     Room? GetRoom(ushort id);
     Player? FindPlayerByHost(IPEndPoint endpoint);

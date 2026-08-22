@@ -5,28 +5,25 @@ using SMOO.Memory;
 using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Services.Interface;
-using SMOO.Threading;
 
 namespace SMOO.Services.Impl;
 
 internal class ReliablePacketStore : IReliablePacketStore
 {
     private readonly ServerContext _context;
-    private readonly LockedDictionary<Player, Dictionary<ushort, ReliablePacket>> _pendingPackets;
+    private readonly Dictionary<Player, Dictionary<ushort, ReliablePacket>> _pendingPackets;
     private ushort _nextSequenceNumber = 0;
 
-    public LockedDictionary<Player, Dictionary<ushort, ReliablePacket>> PendingPackets => _pendingPackets;
+    public Dictionary<Player, Dictionary<ushort, ReliablePacket>> PendingPackets => _pendingPackets;
 
     public ReliablePacketStore(ServerContext context)
     {
         _context = context;
-        _pendingPackets = new LockedDictionary<Player, Dictionary<ushort, ReliablePacket>>();
+        _pendingPackets = [];
     }
 
     public ReliablePacket UploadPacket(SharedBuffer buffer, Player receiver, byte maxRetries, int resendDelay)
     {
-        using Lock.Scope scope = _pendingPackets.EnterScope();
-
         ReliablePacket reliablePacket = UploadPlayer(buffer, receiver, maxRetries, resendDelay);
 
         _nextSequenceNumber++;
@@ -38,8 +35,6 @@ internal class ReliablePacketStore : IReliablePacketStore
 
     public void UploadBroadcast<TEnumerator>(SharedBuffer buffer, TEnumerator players, byte maxRetries, int resendDelay) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
     {
-        using Lock.Scope scope = _pendingPackets.EnterScope();
-
         foreach (Player player in players)
         {
             ReliablePacket reliablePacket = UploadPlayer(buffer, player, maxRetries, resendDelay);
@@ -51,8 +46,6 @@ internal class ReliablePacketStore : IReliablePacketStore
 
     public ReliablePacket? RemovePacket(Player requester, ushort sequenceNumber)
     {
-        using Lock.Scope scope = _pendingPackets.EnterScope();
-
         if (_pendingPackets.TryGetValue(requester, out Dictionary<ushort, ReliablePacket>? playerPackets)) 
         {
             if (!playerPackets.Remove(sequenceNumber, out ReliablePacket? pendingPacket))
@@ -79,8 +72,6 @@ internal class ReliablePacketStore : IReliablePacketStore
 
     public void ClearPlayer(Player player)
     {
-        using Lock.Scope scope = _pendingPackets.EnterScope();
-
         if (_pendingPackets.TryGetValue(player, out Dictionary<ushort, ReliablePacket>? playerDict))
         {
             foreach (var entry in playerDict)
@@ -94,7 +85,6 @@ internal class ReliablePacketStore : IReliablePacketStore
         }
     }
 
-    // note: lock free, make sure to always call with a lock
     private ReliablePacket UploadPlayer(SharedBuffer buffer, Player receiver, byte maxRetries, int resendDelay)
     {
         ReliablePacket reliablePacket = new ReliablePacket()

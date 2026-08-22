@@ -3,79 +3,46 @@ using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Serialization;
 using SMOO.Server;
-using SMOO.Services.Interface;
-using SMOO.Threading;
 using SMOO.Memory;
+using SMOO.Services.Interface;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
 namespace SMOO.Services.Impl;
 
-internal class PlayerHealthChecker : IPlayerHealthChecker
+/// <summary>
+/// Sends health check packets to players that have been idle for too long, and disconnects
+/// players that are unresponsive.
+/// </summary>
+internal class PlayerHealthMessageProcessor : IRoomMessageProcessor
 {
     private readonly ServerContext _context;
     private readonly IPlayerHolder _playerHolder;
     private readonly Stack<Player> _disconnectedPlayers;
-    private readonly Task _healthCheckTask;
-    private readonly CancellationTokenSource _healthCheckToken;
 
-    public PlayerHealthChecker(ServerContext context, IPlayerHolder playerHolder)
+    public PlayerHealthMessageProcessor(ServerContext context, IPlayerHolder playerHolder)
     {
         _context = context;
         _playerHolder = playerHolder;
         _disconnectedPlayers = new Stack<Player>(_playerHolder.MaxSize);
-
-        _healthCheckToken = CancellationTokenSource.CreateLinkedTokenSource(_context.CancellationToken);
-        _healthCheckTask = Task.Run(HealthCheckLoop);
     }
 
-    public Task Shutdown()
+    public void Process(Room room, Packet packet)
     {
-        _healthCheckToken.Cancel();
+        Debug.Assert(room.PlayerHolder == _playerHolder, "PlayerHolder in health check is different from the room it is processing");
 
-        return _healthCheckTask;
-    }
-
-    private async Task HealthCheckLoop()
-    {
-        try
+        foreach (Player player in _playerHolder.Players)
         {
-            while (!_healthCheckToken.IsCancellationRequested)
+            if (player.IsConnectionLost())
             {
-                CheckIdlePlayers();
-
-                try
-                {
-                    await Task.Delay(Constants.PlayerHealthCheckTick, _healthCheckToken.Token);
-                }
-                catch (OperationCanceledException)
-                {
-                    _context.Logger.LogTrace("Health check delay was cancelled, Room is shutting down...");
-                }
+                _disconnectedPlayers.Push(player);
+                _context.Logger.LogWarning("Player {PlayerName} has lost connection in Room #{RoomId} and will be disconnected", player.Name, player.Room.Id);
+                continue;
             }
-        }
-        finally
-        {
-            _healthCheckToken.Dispose();
-        }
-    }
 
-    private void CheckIdlePlayers()
-    {
-        using (_playerHolder.ReadWriteLock.EnterReadScope())
-        {
-            foreach (Player player in _playerHolder.Players)
+            if (player.IsNeedHealthCheck())
             {
-                if (player.IsConnectionLost())
-                {
-                    _disconnectedPlayers.Push(player);
-                    _context.Logger.LogWarning("Player {PlayerName} has lost connection in Room #{RoomId} and will be disconnected", player.Name, player.Room.Id);
-                    continue;
-                }
-
-                if (player.IsNeedHealthCheck())
-                {
-                    SendHealthCheck(player);
-                }
+                SendHealthCheck(player);
             }
         }
 
@@ -122,5 +89,4 @@ internal class PlayerHealthChecker : IPlayerHealthChecker
             _context.Logger.LogError("Failed to disconnect player {PlayerName} in Room #{RoomId}: {Error}", player.Name, player.Room.Id, disconnectResult.Error!.Value);
         }
     }
-
 }

@@ -49,13 +49,10 @@ internal class EventChangeStageHandler : IEventHandler
 
             PlayerSameStageEnumerator playersInStage = room.Players.SameStageAs(player);
 
-            room.PlayerHolder.ReadWriteLock.EnterReadLock();
-
             byte inStageCount = (byte)playersInStage.Count<Player, PlayerSameStageEnumerator>();
 
             if (inStageCount == 0)
             {
-                room.PlayerHolder.ReadWriteLock.ExitReadLock();
                 return;
             }
 
@@ -68,11 +65,9 @@ internal class EventChangeStageHandler : IEventHandler
 
             using SharedBuffer buffer = PacketSerializer.SerializeShared(ref playersInStagePacket, RequiredSize<PacketPlayersInStage>.MaxSize);
 
-            room.PlayerHolder.ReadWriteLock.ExitReadLock();
-
             context.Logger.LogInformation("{PlayerCount} players were already in stage {StageName}, {PlayerName} will be notified", inStageCount, data.NewStage, player.Name);
 
-            context.PacketController.SendReliably(buffer, player, room.ReliableStore);
+            context.PacketController.SendReliably(buffer, player, room);
         }
         else
         {

@@ -24,10 +24,8 @@ internal class Constants
     public const byte MaxRoomSize = 10;
 
     // Threading/Time
-    public const int ResendThreadTick = 1000;
     public const int DefaultResendDelay = 500;
     public const int PlayerHealthCheckThreshold = 3000;
-    public const int PlayerHealthCheckTick = 1500;
     public const int PlayerConnectionLostThreshold = 10000;
     public const int PlayerSynAckDelay = 10000;
 
