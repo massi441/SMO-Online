@@ -105,9 +105,14 @@ internal class Room
     /// Shuts down the room by stopping the processing loop and waiting on the message scheduler to be done
     /// </summary>
     /// <returns>A task to await for a full shutdown of the room</returns>
-    public Task Shutdown()
+    public async Task Shutdown()
     {
+        _context.Logger.LogInformation("Shutting down room #{RoomId}", Id);
+
+        await _messageScheduler.Shutdown(); // need to wait as the scheduler uploads stuff to the writer
+
         _messages.Writer.Complete();
-        return Task.WhenAll(_processTask, _messageScheduler.Shutdown());
+
+        await _processTask;
     }
 }
