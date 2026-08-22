@@ -7,15 +7,15 @@ internal class RoomMessageProcessorList : IRoomMessageProcessorList
 {
     private readonly IRoomMessageProcessor[] _services;
 
-    public RoomMessageProcessorList(PacketProcessingService packetService, PacketResendService resendService, PlayerHealthCheckService healthCheckService)
+    public RoomMessageProcessorList(PacketMessageProcessor packetProcessor, PacketResendMessageProcessor packetResendProcessor, PlayerHealthMessageProcessor playerHealthProcessor)
     {
         int serviceCount = Enum.GetNames<RoomMessageType>().Length;
 
         _services = new IRoomMessageProcessor[serviceCount];
 
-        this[RoomMessageType.Packet] = packetService;
-        this[RoomMessageType.PacketResend] = resendService;
-        this[RoomMessageType.PlayerHealthCheck] = healthCheckService;
+        this[RoomMessageType.Packet] = packetProcessor;
+        this[RoomMessageType.PacketResend] = packetResendProcessor;
+        this[RoomMessageType.PlayerHealthCheck] = playerHealthProcessor;
     }
 
     private IRoomMessageProcessor this[RoomMessageType type]
