@@ -7,7 +7,6 @@ using SMOO.Protocol;
 using SMOO.Serialization;
 using SMOO.Server;
 using SMOO.Memory;
-using SMOO.Threading;
 
 namespace SMOO.Handle;
 
@@ -81,6 +80,7 @@ internal class PacketConnectSynHandler : IPacketHandler
         context.Logger.LogTrace("Player {Name} joined Room #{RoomId} in slot {Slot}, waiting for a confirmation...", newPlayer.Name, packet.Header.RoomId, newPlayer.Slot);
     }
 
+    // TODO: Figure out lightweight synchronization
     private static bool IsInOtherRoom(IPEndPoint sender, ServerContext context, out Player player, out Room takenRoom)
     {
         foreach (Room room in context.RoomHolder.GetRooms())

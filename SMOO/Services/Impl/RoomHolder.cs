@@ -9,6 +9,7 @@ internal class RoomHolder : IRoomHolder
 {
     private readonly Dictionary<ushort, Room> _rooms = [];
 
+    // TODO: Figure out lightweight synchronization
     public Room AddRoom(ServerContext context)
     {
         ushort nextId = 0;
