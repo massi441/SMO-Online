@@ -24,7 +24,7 @@ The server listens on **UDP** port **5001**, but can be configured with a `Confi
 
 ## Client
 
-The game client is a **C++** mod that connects to this server and processes packets.
+The game client is a **C++** mod that connects to this server, but currently isn't publicly available.
 
 ## Code Design
 
