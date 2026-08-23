@@ -4,6 +4,10 @@ using SMOO.Server;
 
 namespace SMOO.Handle;
 
+/// <summary>
+/// Represents an SMOO packet handler. Wraps a Minimum and Maximum payload size for data integrity,
+/// and a function pointer to the appropriate handler function.
+/// </summary>
 internal readonly unsafe struct PacketHandler
 {
     public readonly ushort MinPayloadSize;
@@ -18,6 +22,9 @@ internal readonly unsafe struct PacketHandler
     }
 }
 
+/// <summary>
+/// Represents a packet handler table, where each slot in the table maps to the handler of a given PacketType.
+/// </summary>
 internal static unsafe class PacketHandlerTable
 {
     private static readonly PacketHandler DefaultHandler        = MakeHandler<PacketDefaultHandler>();
@@ -62,6 +69,12 @@ internal static unsafe class PacketHandlerTable
         return Handlers[index];
     }
 
+    /// <summary>
+    /// Creates a PacketHandlerTable handler entry out of an IPacketHandler type.
+    /// Wraps its size bounds and stores a pointer to the handle function
+    /// </summary>
+    /// <typeparam name="T">Type type of packet handler</typeparam>
+    /// <returns>A PacketHandler for the PacketHandlerTable</returns>
     private static PacketHandler MakeHandler<T>() where T : IPacketHandler
     {
         return new PacketHandler(T.MinPayloadSize, T.MaxPayloadSize, &T.Handle);

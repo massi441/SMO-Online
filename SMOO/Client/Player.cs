@@ -4,6 +4,8 @@ using SMOO.Server;
 
 namespace SMOO.Client;
 
+// Potential TODO: add connection handshake status flag
+
 internal class Player
 {
     public required PlayerId Id { get; init; }

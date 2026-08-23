@@ -9,7 +9,10 @@ using SMOO.Memory;
 
 namespace SMOO.Services.Impl;
 
-
+/// <summary>
+/// Controls packet sending/receiving in the server.
+/// Can send both reliable and unreliable packets.
+/// </summary>
 internal class PacketController : IPacketController
 {
     private readonly Socket _socket;
