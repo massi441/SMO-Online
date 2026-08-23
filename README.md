@@ -54,15 +54,15 @@ More details about packet reliability below.
 Each SMOO packet is made up of a [`Packet Header`](SMOO/Protocol/PacketHeader.cs), and in most cases a payload. Each packet goes roughly through this flow:
 
 **1. Arrival:** The packet reaches the [`Server`](SMOO/Server/UdpServer.cs) which waits with a UDP socket in a receive loop. When a packet arrives, it is copied into a buffer rented from the ArrayPool 
-and wrapped into a [`SharedBuffer`](SMOO/Memory/SharedBuffer.cs). The shared buffer returns the buffer to the ArrayPool once its atomic reference counter reaches 0.
+and wrapped into a [`SharedBuffer`](SMOO/Memory/SharedBuffer.cs).
 
 **2. Validation & Routing:** Before being processed, the header of the packet is validated by the server (Magic Number, Packet Type, Room Id...). If validation passes, it is uploaded to a [`Room`](SMOO/Server/Room.cs)'s messaging queue
-as a packet [`Packet Message`](SMOO/Server/RoomMessage.cs). If validation fails, the packet is dropped.
+as a **packet** [`Room Message`](SMOO/Server/RoomMessage.cs). If validation fails, the packet is dropped.
 
-**3. Processing:** Each room has its own processing loop, which waits forever until a new message arrives, or if the room is shutdown. When a message arrives it dispatched to its corresponding [`Message Processor`](SMOO/Services/Interface/IRoomMessageProcessor.cs).
-When a packet message arrives, it is routed to the [`Packet Processor`](SMOO/Services/Impl/PacketMessageProcessor.cs). This processor performs extra validation on the header and the payload of the Packet, before dispatching the packet to its 
-appropriate handler through the [`Packet Handler Table`](SMOO/Handle/PacketHandlerTable.cs). This table stores a list of packet handlers, which wrap a pointer to a handler function. Each entry in the table maps directly to a handler for a given 
-[`Packet Type`](SMOO/Protocol/PacketType.cs), allowing for direct indexing from a given packet type.
+**3. Processing:** Each room has its own processing loop, which waits forever until a new room message arrives, or if the room is shutdown. When a message arrives, it dispatched to its corresponding [`Message Processor`](SMOO/Services/Interface/IRoomMessageProcessor.cs).
+
+When a **packet** message arrives, it is routed to the [`Packet Processor`](SMOO/Services/Impl/PacketMessageProcessor.cs). This processor performs extra validation on the header and the payload of the Packet, before dispatching the packet to its appropriate handler through the [`Packet Handler Table`](SMOO/Handle/PacketHandlerTable.cs). Each entry in that table maps directly to a handler for a given 
+[`Packet Type`](SMOO/Protocol/PacketType.cs), allowing for direct indexing from a packet type.
 
 > **Note:** Game packets are wrapped into Event packets. They are dispatched with the same mechanism as network packets by the [`Packet Event Handler`](SMOO/Handle/PacketEventHandler.cs)
 
@@ -74,7 +74,7 @@ appropriate handler through the [`Packet Handler Table`](SMOO/Handle/PacketHandl
 
 **Reliable** is used for packets that must reach other players in the room, as they contain state that cannot afford to be lost: Level changes, chat messages, costume changes, etc... Reliable
 packets are stored in the [`Reliable Packet Store`](SMOO/Services/Impl/ReliablePacketStore.cs). They are resent by the [`Packet Resender`](SMOO/Services/Impl/PacketResendMessageProcessor.cs) at a fixed time interval, until they are acknowledged by the receiver. 
-If a receiver fails to acknowledge a reliable packet after a certain period of time, they are disconnected by the [`Player Disconnector`](SMOO/Services/Impl/PlayerDisconnector.cs).
+If a receiver fails to acknowledge a reliable packet after a certain period of time, they are disconnected from ther server.
 
 </dd>
 
