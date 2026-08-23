@@ -35,6 +35,8 @@ The game client is a **C++** mod that connects to this server, but currently isn
 - **GC reduction:** [`Ref struct Enumerators`](SMOO/Enumerator) for 0 alloc enumerations of players in hot paths.
 - **Threading:** Each room processes its messages sequentially, on its own processing loop. Room state is only ever mutated from that loop, meaning no thread synchronization is needed anywhere inside a room. Messages are uploaded to the room periodically by the [`Room Message Scheduler`](SMOO/Services/Impl/RoomMessageScheduler.cs).
 
+More on packet flow [Here](DESIGN.md)
+
 ## References
 
 N/A
