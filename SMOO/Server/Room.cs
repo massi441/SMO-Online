@@ -84,17 +84,17 @@ internal class Room
     {
         await foreach (RoomMessage message in _messages.Reader.ReadAllAsync())
         {
-            IRoomMessageProcessor service = _serviceList.GetProcessor(message.Type);
+            IRoomMessageProcessor processor = _serviceList.GetProcessor(message.Type);
 
             Packet? packet = message.Packet;
             if (packet != null)
             {
                 using SharedBuffer buffer = packet.Value.Buffer;
-                service.Process(this, packet.Value);
+                processor.Process(this, packet.Value);
             }
             else
             {
-                service.Process(this, default(Packet));
+                processor.Process(this, default(Packet));
             }
         }
 
