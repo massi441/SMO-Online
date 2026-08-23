@@ -7,7 +7,7 @@ namespace SMOO.Memory;
 
 /// <summary>
 /// A wrapper around a rented byte buffer from the array pool, with an atomic reference counter.
-/// A shared buffer automatically returns its rented array to the array pool once the reference count reaches 0
+/// A shared buffer automatically returns its rented array to the array pool once it is dispoed, and its reference counter reaches 0
 /// </summary>
 internal class SharedBuffer : IDisposable
 {
