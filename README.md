@@ -22,10 +22,6 @@ The server listens on **UDP** port **5001**, but can be configured with a `Confi
 }
 ```
 
-## Client
-
-The game client is a **C++** mod that connects to this server, but currently isn't publicly available.
-
 ## Code Design
 
 - **Dependencies:** [`ServerContext`](SMOO/Server/ServerContext.cs) stores all services required by the server (packet controller, room manager, logger, etc...). Dependency injection is manual.
