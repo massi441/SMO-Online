@@ -4,34 +4,32 @@ namespace SMOO.Server;
 
 internal static class ServerLogger
 {
-    private static ILogger _logger = null!;
-    private static ILoggerFactory _loggerFactory = null!;
-    private static readonly Lock _lock = new Lock();
+    private static readonly ILoggerFactory _loggerFactory = null!;
+    private static readonly ILogger _logger = null!;
 
-    public static ILogger Instance(LogLevel logLevel)
+    public static LogLevel LogLevel { get; set; } = LogLevel.Information; // default to Information so config loading is visible
+
+    static ServerLogger()
     {
-        if (_logger == null)
+        _loggerFactory = LoggerFactory.Create(builder =>
         {
-            lock (_lock)
+            builder.AddSimpleConsole(options =>
             {
-                if (_logger == null)
-                {
-                    _loggerFactory = LoggerFactory.Create(builder =>
-                    {
-                        builder.AddSimpleConsole(options =>
-                        {
-                            options.SingleLine = true;
-                            options.TimestampFormat = "HH:mm:ss ";
-                        });
+                options.SingleLine = true;
+                options.TimestampFormat = "HH:mm:ss ";
+            });
 
-                        builder.SetMinimumLevel(logLevel);
-                    });
+            builder.AddFilter((miggy, level) =>
+            {
+                return level >= LogLevel;
+            });
+        });
 
-                    _logger = _loggerFactory.CreateLogger("Server");
-                }
-            }
-        }
+        _logger = _loggerFactory.CreateLogger("Server");
+    }
 
+    public static ILogger Instance()
+    {
         return _logger;
     }
 }
