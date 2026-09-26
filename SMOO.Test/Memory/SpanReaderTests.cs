@@ -29,7 +29,7 @@ public class SpanReaderTests
         for (int i = 0; i < numberStream.Length; i++)
         {
             int expected = numberStream[i];
-            int actual = reader.ReadInt32LittleEndian();
+            int actual = reader.ReadInt32();
 
             Assert.Equal(expected, actual);
         }
@@ -56,7 +56,7 @@ public class SpanReaderTests
         // Act
         for (int i = 0; i < numberOfReads; i++)
         {
-            reader.ReadInt32LittleEndian();
+            reader.ReadInt32();
         }
 
         // Assert

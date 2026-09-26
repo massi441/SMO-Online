@@ -8,6 +8,8 @@ using SMOO.Services.Interface;
 
 namespace SMOO.Services.Impl;
 
+// TODO: Use ring array as backing container
+
 internal class ReliablePacketStore : IReliablePacketStore
 {
     private readonly ServerContext _context;

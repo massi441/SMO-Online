@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 using SMOO.Server;
 using SMOO.Services.Impl;
 
@@ -10,6 +11,12 @@ class Program
     static async Task Main(string[] args)
     {
         ServerConfig config = Configurator.Load();
+
+        if (ServerLogger.LogLevel != config.LogLevel)
+        {
+            ServerLogger.Instance().LogInformation("Updating log level from {OldLevel} to {NewLevel}", ServerLogger.LogLevel, config.LogLevel);
+            ServerLogger.LogLevel = config.LogLevel;
+        }
 
         try
         {
@@ -54,7 +61,7 @@ class Program
         return new ServerContext()
         {
             CancellationToken = cancellationToken,
-            Logger = ServerLogger.Instance(config.LogLevel),
+            Logger = ServerLogger.Instance(),
             PacketController = new PacketController(socket),
             PlayerDisconnector = new PlayerDisconnector(),
             RoomHolder = new RoomHolder(),

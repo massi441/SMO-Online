@@ -5,6 +5,9 @@ using SMOO.Serialization;
 
 namespace SMOO.Memory;
 
+/// <summary>
+/// A safe writer to arbitrary memory
+/// </summary>
 internal ref struct SpanWriter
 {
     private int _offset;

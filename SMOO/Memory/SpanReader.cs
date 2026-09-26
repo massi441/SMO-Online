@@ -6,6 +6,9 @@ using SMOO.Serialization;
 
 namespace SMOO.Memory;
 
+/// <summary>
+/// A safe little endian reader of arbitrary memory
+/// </summary>
 internal ref struct SpanReader
 {
     private int _offset;
@@ -63,56 +66,56 @@ internal ref struct SpanReader
         return result;
     }
 
-    public short ReadInt16LittleEndian()
+    public short ReadInt16()
     {
         short result = BinaryPrimitives.ReadInt16LittleEndian(RemainingSpan);
         _offset += sizeof(short);
         return result;
     }
 
-    public ushort ReadUInt16LittleEndian()
+    public ushort ReadUInt16()
     {
         ushort result = BinaryPrimitives.ReadUInt16LittleEndian(RemainingSpan);
         _offset += sizeof(ushort);
         return result;
     }
 
-    public int ReadInt32LittleEndian()
+    public int ReadInt32()
     {
         int result = BinaryPrimitives.ReadInt32LittleEndian(RemainingSpan);
         _offset += sizeof(int);
         return result;
     }
 
-    public uint ReadUInt32LittleEndian()
+    public uint ReadUInt32()
     {
         uint result = BinaryPrimitives.ReadUInt32LittleEndian(RemainingSpan);
         _offset += sizeof(uint);
         return result;
     }
 
-    public long ReadInt64LittleEndian()
+    public long ReadInt64()
     {
         long result = BinaryPrimitives.ReadInt64LittleEndian(RemainingSpan);
         _offset += sizeof(long);
         return result;
     }
 
-    public ulong ReadUInt64LittleEndian()
+    public ulong ReadUInt64()
     {
         ulong result = BinaryPrimitives.ReadUInt64LittleEndian(RemainingSpan);
         _offset += sizeof(ulong);
         return result;
     }
 
-    public float ReadSingleLittleEndian()
+    public float ReadSingle()
     {
         float result = BinaryPrimitives.ReadSingleLittleEndian(RemainingSpan);
         _offset += sizeof(float);
         return result;
     }
 
-    public double ReadDoubleLittleEndian()
+    public double ReadDouble()
     {
         double result = BinaryPrimitives.ReadDoubleLittleEndian(RemainingSpan);
         _offset += sizeof(double);
