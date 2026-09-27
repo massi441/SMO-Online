@@ -8,12 +8,15 @@ using SMOO.Memory;
 
 namespace SMOO.Server;
 
-internal class UdpServer
+/// <summary>
+/// The UDP implementation of the SMOO server
+/// </summary>
+internal class GameServer
 {
     private readonly ServerContext _context;
     private readonly Channel<Packet> _packets;
 
-    public UdpServer(ServerContext context)
+    public GameServer(ServerContext context)
     {
         _context = context;
         _packets = Channel.CreateUnbounded<Packet>();

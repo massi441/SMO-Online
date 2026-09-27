@@ -16,7 +16,7 @@ internal static class Configurator
 
     public static ServerConfig Load()
     {
-        ILogger logger = ServerLogger.Instance();
+        ILogger logger = ServerLoggerFactory.Instance();
 
         ServerConfig config = new ServerConfig();
 

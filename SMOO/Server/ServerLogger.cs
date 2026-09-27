@@ -2,14 +2,48 @@
 
 namespace SMOO.Server;
 
-internal static class ServerLogger
+/// <summary>
+/// A decorator around an existing logger, with an mutable log level
+/// </summary>
+internal class ServerLogger : ILogger
+{
+    private readonly ILogger _logger;
+
+    public LogLevel LogLevel { get; set; }
+
+    public ServerLogger(ILogger logger, LogLevel level = LogLevel.Information)
+    {
+        _logger = logger;
+        LogLevel = level;
+    }
+
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+    {
+        if (!IsEnabled(logLevel))
+        {
+            return;
+        }
+
+        _logger.Log(logLevel, eventId, state, exception, formatter);
+    }
+
+    public bool IsEnabled(LogLevel logLevel)
+    {
+        return logLevel >= LogLevel && _logger.IsEnabled(logLevel);
+    }
+
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+    {
+        return _logger.BeginScope(state);
+    }
+}
+
+internal static class ServerLoggerFactory
 {
     private static readonly ILoggerFactory _loggerFactory = null!;
-    private static readonly ILogger _logger = null!;
+    private static readonly ServerLogger _serverLogger = null!;
 
-    public static LogLevel LogLevel { get; set; } = LogLevel.Information; // default to Information so config loading is visible
-
-    static ServerLogger()
+    static ServerLoggerFactory()
     {
         _loggerFactory = LoggerFactory.Create(builder =>
         {
@@ -19,17 +53,16 @@ internal static class ServerLogger
                 options.TimestampFormat = "HH:mm:ss ";
             });
 
-            builder.AddFilter((miggy, level) =>
-            {
-                return level >= LogLevel;
-            });
+            builder.SetMinimumLevel(LogLevel.Trace); // that way it always passes the log level check in the decorator
         });
 
-        _logger = _loggerFactory.CreateLogger("Server");
+        ILogger logger = _loggerFactory.CreateLogger("Server");
+        _serverLogger = new ServerLogger(logger);
     }
 
-    public static ILogger Instance()
+    public static ServerLogger Instance()
     {
-        return _logger;
+        return _serverLogger;
     }
+
 }
