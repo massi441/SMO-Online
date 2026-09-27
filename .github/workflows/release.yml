@@ -7,6 +7,7 @@ on:
 
 env:
   SMOO_PATH: ./SMOO/SMOO.csproj
+  UPDATER_PATH: ./SMOO.Updater/SMOO.Updater.csproj
 
 # Potential TODO: Test app before publishing
 
@@ -27,6 +28,9 @@ jobs:
       - name: Publish SMOO
         run: dotnet publish $SMOO_PATH -c Release -r win-x64 --self-contained false -p:Version=${GITHUB_REF_NAME#v} -o output/win-x64
 
+      - name: Publish Updater
+        run: dotnet publish $UPDATER_PATH -c Release -r win-x64 --self-contained false -p:Version=${GITHUB_REF_NAME#v} -o output/win-x64
+
       - name: Zip the output
         run: cd output/win-x64 && zip -r ../../SMOO-win-x64.zip .
 
@@ -34,4 +38,3 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" SMOO-win-x64.zip --notes "Release $GITHUB_REF_NAME"
-        

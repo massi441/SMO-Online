@@ -41,6 +41,8 @@ internal class Program
                     return;
                 }
 
+                // TODO: Validate against current version
+
                 if (await FindAndDownloadRelease(githubRelease))
                 {
                     TryStartServer();
