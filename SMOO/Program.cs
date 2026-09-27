@@ -12,7 +12,7 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        SMOOUpdater.WipeUpdateTempDir();
+        SMOOUpdater.WipeUpdateTempDirFrom<Program>();
 
         SMOOUpdater updater = new SMOOUpdater();
 

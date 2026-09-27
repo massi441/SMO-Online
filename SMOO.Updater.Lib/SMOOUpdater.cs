@@ -52,9 +52,9 @@ public class SMOOUpdater
         return ProcessUtil.TryStartNewProcess(GetUpdaterPath());
     }
 
-    public static void WipeUpdateTempDir()
+    public static void WipeUpdateTempDirFrom<TCaller>()
     {
-        Process[] updaterProcesses = Process.GetProcessesByName(ReflectionUtil.GetAssemblyNameOf<SMOOUpdater>());
+        Process[] updaterProcesses = Process.GetProcessesByName(ReflectionUtil.GetAssemblyNameOf<TCaller>());
         foreach (Process updater in updaterProcesses)
         {
             updater.WaitForExit();
