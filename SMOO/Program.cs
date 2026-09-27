@@ -30,6 +30,7 @@ class Program
 
                 if (input == "y" && SMOOUpdater.StartUpdater())
                 {
+                    Console.WriteLine("Launching updater");
                     return;
                 }
             }
