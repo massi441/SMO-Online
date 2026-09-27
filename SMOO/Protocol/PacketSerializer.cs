@@ -1,6 +1,6 @@
-﻿using SMOO.Memory;
+﻿using Core.Memory;
 
-namespace SMOO.Serialization;
+namespace SMOO.Protocol;
 
 internal static class PacketSerializer
 {
@@ -11,9 +11,9 @@ internal static class PacketSerializer
         packet.Serialize(ref writer);
     }
 
-    public static SharedBuffer SerializeShared<T>(ref T packet, int requiredSize) where T : struct, ISerializableStruct, allows ref struct
+    public static RentedBuffer SerializeShared<T>(ref T packet, int requiredSize) where T : struct, ISerializableStruct, allows ref struct
     {
-        SharedBuffer buffer = new SharedBuffer(requiredSize);
+        RentedBuffer buffer = new RentedBuffer(requiredSize);
         SpanWriter writer = new SpanWriter(buffer);
 
         packet.Serialize(ref writer);

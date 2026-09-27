@@ -1,9 +1,8 @@
-﻿using SMOO.Attributes;
-using SMOO.Client;
+﻿using SMOO.Client;
 using SMOO.Enumerator;
-using SMOO.Serialization;
 using SMOO.Server;
-using SMOO.Memory;
+using Core.Memory;
+using Core.Memory.Attributes;
 
 namespace SMOO.Protocol;
 

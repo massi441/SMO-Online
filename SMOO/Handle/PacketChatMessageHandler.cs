@@ -1,9 +1,8 @@
 using Microsoft.Extensions.Logging;
-using SMOO.Attributes;
 using SMOO.Protocol;
-using SMOO.Serialization;
 using SMOO.Server;
-using SMOO.Memory;
+using Core.Memory;
+using Core.Memory.Attributes;
 
 namespace SMOO.Handle;
 
@@ -39,7 +38,7 @@ internal class PacketChatMessageHandler : IPacketHandler
             Message = request.Message,
         };
 
-        using SharedBuffer chatBuffer = PacketSerializer.SerializeShared(ref chatPacket, RequiredSize<PacketChatMessage>.MaxSize);
+        using RentedBuffer chatBuffer = PacketSerializer.SerializeShared(ref chatPacket, RequiredSize<PacketChatMessage>.MaxSize);
 
         room.Broadcaster.BroadcastReliably(chatBuffer, room.Players.Except(packet.SenderPlayer));
     }

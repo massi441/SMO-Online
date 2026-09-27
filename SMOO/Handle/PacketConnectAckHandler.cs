@@ -1,9 +1,8 @@
+using Core.Memory;
 using Microsoft.Extensions.Logging;
 using SMOO.Client;
 using SMOO.Protocol;
-using SMOO.Serialization;
 using SMOO.Server;
-using SMOO.Memory;
 
 namespace SMOO.Handle;
 
@@ -29,7 +28,7 @@ internal class PacketConnectAckHandler : IPacketHandler
             PlayerRoomInfo = new PlayerInRoomInfo(packet.SenderPlayer!)
         };
 
-        using SharedBuffer joinRoomBuffer = PacketSerializer.SerializeShared(ref joinPacket, RequiredSize<PacketPlayerJoinRoom>.MaxSize);
+        using RentedBuffer joinRoomBuffer = PacketSerializer.SerializeShared(ref joinPacket, RequiredSize<PacketPlayerJoinRoom>.MaxSize);
 
         context.Logger.LogInformation("Player {PlayerName} has confirmed their connection in Room #{RoomId}, room will be notified", packet.SenderPlayer!.Name, room.Id);
 

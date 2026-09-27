@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using SMOO.Protocol;
-using SMOO.Memory;
+using Core.Memory;
 
 namespace SMOO.Server;
 

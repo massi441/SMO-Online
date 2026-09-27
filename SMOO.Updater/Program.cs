@@ -1,7 +1,6 @@
-﻿using System.Diagnostics;
+﻿using Core.OS;
 using System.IO.Compression;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace SMOO.Updater;
 
@@ -11,7 +10,7 @@ internal class Program
     {
         Console.WriteLine("Starting SMOO updater...");
 
-        int closedCount = CloseProcessInstances("SMOO");
+        int closedCount = ProcessUtil.CloseProcessInstances("SMOO");
         if (closedCount > 0)
         {
             Console.WriteLine($"Closed {closedCount} of SMOO");
@@ -65,7 +64,7 @@ internal class Program
 
     private static async Task<bool> FindAndDownloadRelease(GithubRelease githubRelease)
     {
-        foreach (PlatformRelease platformRelease in githubRelease.PlatformReleases)
+        foreach (ReleaseAsset platformRelease in githubRelease.ReleaseAssets)
         {
             if (!IsCurrentPlatformRelease(platformRelease))
             {
@@ -103,7 +102,7 @@ internal class Program
         return false;
     }
 
-    private static bool IsCurrentPlatformRelease(PlatformRelease release)
+    private static bool IsCurrentPlatformRelease(ReleaseAsset release)
     {
         if (OperatingSystem.IsWindows())
         {
@@ -111,26 +110,6 @@ internal class Program
         }
 
         return false;
-    }
-
-    // TODO: Move this util into Core once Core is setup
-
-    /// <summary>
-    /// Counts and closes all instances of a given process 
-    /// </summary>
-    /// <param name="processName">The name of the process, without the extension</param>
-    /// <returns>The count of instances of the process that were closes</returns>
-    private static int CloseProcessInstances(string processName)
-    {
-        int closedCount = 0;
-        Process[] instances = Process.GetProcessesByName(processName);
-        foreach (Process process in instances)
-        {
-            process.Kill();
-            closedCount++;
-        }
-
-        return closedCount;
     }
 
     private static void TryStartServer()
@@ -145,23 +124,3 @@ internal class Program
     }
 }
 
-// TODO: Move to shared lib
-
-internal class GithubRelease
-{
-    [JsonPropertyName("tag_name")]
-    public required string Version { get; set; } = string.Empty;
-
-    [JsonPropertyName("assets")]
-    public required List<PlatformRelease> PlatformReleases { get; set; }
-
-}
-
-internal class PlatformRelease
-{
-    [JsonPropertyName("name")]
-    public required string Name { get; set; }
-
-    [JsonPropertyName("browser_download_url")]
-    public required string DownloadUrl { get; set; }
-}

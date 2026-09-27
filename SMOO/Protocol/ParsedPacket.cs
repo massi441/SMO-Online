@@ -1,8 +1,8 @@
 ﻿using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Core.Memory;
 using SMOO.Client;
-using SMOO.Memory;
 
 namespace SMOO.Protocol;
 
@@ -12,7 +12,7 @@ namespace SMOO.Protocol;
 internal readonly struct ParsedPacket
 {
     public required IPEndPoint SenderIp { get; init; }
-    public required SharedBuffer Buffer { get; init; }
+    public required RentedBuffer Buffer { get; init; }
     public Player? SenderPlayer { get; init; }
 
     /// <summary>

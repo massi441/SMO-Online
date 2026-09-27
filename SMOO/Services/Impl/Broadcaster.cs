@@ -2,7 +2,7 @@
 using SMOO.Enumerator;
 using SMOO.Server;
 using SMOO.Services.Interface;
-using SMOO.Memory;
+using Core.Memory;
 
 namespace SMOO.Services.Impl;
 
@@ -25,7 +25,7 @@ internal class Broadcaster : IBroadcaster
         }
     }
 
-    public void BroadcastReliably<TEnumerator>(SharedBuffer buffer, TEnumerator players, byte maxRetries = Constants.MaxRetries) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
+    public void BroadcastReliably<TEnumerator>(RentedBuffer buffer, TEnumerator players, byte maxRetries = Constants.MaxRetries) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
     {
         ReliablePacketStore.UploadBroadcast(buffer, players, maxRetries);
 

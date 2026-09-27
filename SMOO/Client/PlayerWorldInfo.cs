@@ -1,5 +1,4 @@
-﻿using SMOO.Serialization;
-using SMOO.Memory;
+﻿using Core.Memory;
 
 namespace SMOO.Client;
 

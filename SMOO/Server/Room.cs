@@ -1,7 +1,7 @@
-﻿using System.Threading.Channels;
+﻿using Core.Memory;
+using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using SMOO.Client;
-using SMOO.Memory;
 using SMOO.Protocol;
 using SMOO.Services.Interface;
 
@@ -89,7 +89,7 @@ internal class Room
             Packet? packet = message.Packet;
             if (packet != null)
             {
-                using SharedBuffer buffer = packet.Value.Buffer;
+                using RentedBuffer buffer = packet.Value.Buffer;
                 processor.Process(this, packet.Value);
             }
             else

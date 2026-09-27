@@ -2,8 +2,8 @@
 using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Server;
-using SMOO.Memory;
 using System.Net.Sockets;
+using Core.Memory;
 
 namespace SMOO.Services.Interface;
 
@@ -24,7 +24,7 @@ internal interface IPacketController
     /// <summary>
     /// Sends a packet
     /// </summary>
-    void SendReliably(SharedBuffer buffer, Player receiver, Room room, byte maxRetries = Constants.MaxRetries, int resendDelay = Constants.DefaultResendDelay);
+    void SendReliably(RentedBuffer buffer, Player receiver, Room room, byte maxRetries = Constants.MaxRetries, int resendDelay = Constants.DefaultResendDelay);
 
     ValueTask<SocketReceiveFromResult> ReceiveFromAsync(Memory<byte> buffer, SocketFlags flags, EndPoint remoteEndPoint, CancellationToken cancellationToken = default);
 }

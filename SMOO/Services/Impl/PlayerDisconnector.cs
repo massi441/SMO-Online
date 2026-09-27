@@ -1,11 +1,10 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Core.Memory;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using SMOO.Client;
 using SMOO.Protocol;
-using SMOO.Serialization;
 using SMOO.Server;
 using SMOO.Services.Interface;
-using SMOO.Memory;
 
 namespace SMOO.Services.Impl;
 
@@ -45,7 +44,7 @@ internal class PlayerDisconnector : IPlayerDisconnector
             PlayerSlot = player.Slot
         };
 
-        using SharedBuffer broadcastBuffer = PacketSerializer.SerializeShared(ref disconnectPacket, Unsafe.SizeOf<PacketDisconnect>());
+        using RentedBuffer broadcastBuffer = PacketSerializer.SerializeShared(ref disconnectPacket, Unsafe.SizeOf<PacketDisconnect>());
 
         player.Room.Broadcaster.BroadcastReliably(broadcastBuffer, player.Room.Players.Active);
 

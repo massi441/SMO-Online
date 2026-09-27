@@ -2,6 +2,8 @@
 
 namespace SMOO.Server;
 
+// TODO: Inline in files
+
 internal class Constants
 {
     // Packet

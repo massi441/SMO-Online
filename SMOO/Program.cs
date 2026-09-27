@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using SMOO.Server;
 using SMOO.Services.Impl;
+using SMOO.Updater;
 
 namespace SMOO;
 

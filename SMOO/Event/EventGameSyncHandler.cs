@@ -1,12 +1,11 @@
 ﻿using System.Numerics;
 using Microsoft.Extensions.Logging;
-using SMOO.Attributes;
 using SMOO.Client;
 using SMOO.Enumerator;
 using SMOO.Protocol;
-using SMOO.Serialization;
 using SMOO.Server;
-using SMOO.Memory;
+using Core.Memory;
+using Core.Memory.Attributes;
 
 namespace SMOO.Event;
 

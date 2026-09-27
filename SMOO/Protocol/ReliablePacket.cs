@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using SMOO.Client;
 using SMOO.Server;
-using SMOO.Memory;
+using Core.Memory;
 
 namespace SMOO.Protocol;
 
@@ -11,7 +11,7 @@ internal class ReliablePacket
     public byte Tries { get => _tries; init => _tries = value; }
     public required ushort SequenceNumber { get; init; }
     public required Player Receiver { get; init; }
-    public required SharedBuffer Buffer { get; init; }
+    public required RentedBuffer Buffer { get; init; }
     public required int ResendMsDelay { get; init; }
     public ref PacketHeader Header => ref MemoryMarshal.AsRef<PacketHeader>(Buffer.UsedSpan);
     public DateTime LastSent { get; private set; } = DateTime.UtcNow;
