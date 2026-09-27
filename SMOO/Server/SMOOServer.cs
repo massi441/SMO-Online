@@ -11,12 +11,12 @@ namespace SMOO.Server;
 /// <summary>
 /// The UDP implementation of the SMOO server
 /// </summary>
-internal class GameServer
+internal class SMOOServer
 {
     private readonly ServerContext _context;
     private readonly Channel<Packet> _packets;
 
-    public GameServer(ServerContext context)
+    public SMOOServer(ServerContext context)
     {
         _context = context;
         _packets = Channel.CreateUnbounded<Packet>();

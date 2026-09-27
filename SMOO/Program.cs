@@ -1,6 +1,7 @@
-﻿using System.Diagnostics;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
+using Core.Github;
+using Core.OS;
 using Microsoft.Extensions.Logging;
 using SMOO.Server;
 using SMOO.Services.Impl;
@@ -12,11 +13,15 @@ class Program
 {
     static async Task Main(string[] args)
     {
+        SMOOUpdater.CloseUpdater();
+
+        SMOOUpdater updater = new SMOOUpdater();
+
         ServerLogger logger = ServerLoggerFactory.Instance();
 
         try
         {
-            UpdateCheck updateCheck = await UpdateManager.CheckUpdate();
+            GithubUpdateCheck updateCheck = await updater.CheckUpdate();
             if (updateCheck.IsNeedUpdate())
             {
                 Console.WriteLine($"You are currently on version {updateCheck.CurrentVersion} of SMOO, but version {updateCheck.LatestVersion} is available.");
@@ -24,7 +29,7 @@ class Program
 
                 string? input = Console.ReadLine();
 
-                if (input == "y" && StartUpdater())
+                if (input == "y" && SMOOUpdater.StartUpdater())
                 {
                     return;
                 }
@@ -51,7 +56,7 @@ class Program
 
             ServerContext context = CreateContext(socket, config, cancellationTokenSource.Token);
 
-            GameServer server = new GameServer(context);
+            SMOOServer server = new SMOOServer(context);
 
             Console.CancelKeyPress += (_, e) =>
             {
@@ -89,17 +94,5 @@ class Program
             RoomHolder = new RoomHolder(),
             Config = config
         };
-    }
-
-    private static bool StartUpdater()
-    {
-        string updaterPath = Path.Combine(AppContext.BaseDirectory, "Updater.exe");
-
-        ProcessStartInfo startupInfo = new ProcessStartInfo(updaterPath)
-        {
-            UseShellExecute = true
-        };
-
-        return Process.Start(startupInfo) != null;
     }
 }
