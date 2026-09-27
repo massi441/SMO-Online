@@ -1,6 +1,6 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 using System.Net.Sockets;
-using System.Reflection;
 using Microsoft.Extensions.Logging;
 using SMOO.Server;
 using SMOO.Services.Impl;
@@ -11,15 +11,32 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        Version? version = Assembly.GetEntryAssembly()?.GetName().Version;
+        ServerLogger logger = ServerLoggerFactory.Instance();
+
+        try
+        {
+            UpdateCheck updateCheck = await UpdateManager.CheckUpdate();
+            if (updateCheck.IsNeedUpdate())
+            {
+                Console.WriteLine($"You are currently on version {updateCheck.CurrentVersion} of SMOO, but version {updateCheck.LatestVersion} is available.");
+                Console.Write("Would you like to download it? (y): ");
+
+                string? input = Console.ReadLine();
+
+                if (input == "y" && StartUpdater())
+                {
+                    return;
+                }
+            }
+
+            logger.LogInformation("Current SMOO version ({CurrentVersion}) is up to date", updateCheck.CurrentVersion);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning("An error occured while looking for an update: {Message}", ex.Message);
+        }
 
         ServerConfig config = Configurator.Load();
-
-        if (ServerLogger.LogLevel != config.LogLevel)
-        {
-            ServerLogger.Instance().LogInformation("Updating log level from {OldLevel} to {NewLevel}", ServerLogger.LogLevel, config.LogLevel);
-            ServerLogger.LogLevel = config.LogLevel;
-        }
 
         try
         {
@@ -32,7 +49,8 @@ class Program
             using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
             ServerContext context = CreateContext(socket, config, cancellationTokenSource.Token);
-            UdpServer server = new UdpServer(context);
+
+            GameServer server = new GameServer(context);
 
             Console.CancelKeyPress += (_, e) =>
             {
@@ -64,11 +82,23 @@ class Program
         return new ServerContext()
         {
             CancellationToken = cancellationToken,
-            Logger = ServerLogger.Instance(),
+            Logger = ServerLoggerFactory.Instance(),
             PacketController = new PacketController(socket),
             PlayerDisconnector = new PlayerDisconnector(),
             RoomHolder = new RoomHolder(),
             Config = config
         };
+    }
+
+    private static bool StartUpdater()
+    {
+        string updaterPath = Path.Combine(AppContext.BaseDirectory, "Updater.exe");
+
+        ProcessStartInfo startupInfo = new ProcessStartInfo(updaterPath)
+        {
+            UseShellExecute = true
+        };
+
+        return Process.Start(startupInfo) != null;
     }
 }
