@@ -13,8 +13,6 @@ class Program
     {
         Version? version = Assembly.GetEntryAssembly()?.GetName().Version;
 
-        Console.WriteLine("Yo Miggy: " + version);
-
         ServerConfig config = Configurator.Load();
 
         if (ServerLogger.LogLevel != config.LogLevel)
