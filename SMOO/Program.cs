@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using Microsoft.Extensions.Logging;
 using SMOO.Server;
 using SMOO.Services.Impl;
@@ -10,6 +11,10 @@ class Program
 {
     static async Task Main(string[] args)
     {
+        Version? version = Assembly.GetEntryAssembly()?.GetName().Version;
+
+        Console.WriteLine("Yo Miggy: " + version);
+
         ServerConfig config = Configurator.Load();
 
         if (ServerLogger.LogLevel != config.LogLevel)
