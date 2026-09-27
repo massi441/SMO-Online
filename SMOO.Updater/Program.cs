@@ -90,8 +90,6 @@ internal class Program
 
                 ZipFile.ExtractToDirectory(fileStream, AppContext.BaseDirectory, overwriteFiles: true);
 
-                File.Delete(oldUpdaterName);
-
                 Console.WriteLine("Successfully extracted release to disk");
 
                 return true;
