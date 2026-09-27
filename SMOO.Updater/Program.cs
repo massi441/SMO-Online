@@ -83,7 +83,14 @@ internal class Program
 
                 Console.WriteLine("Successfully downloaded release, unzipping it...");
 
+                string updaterName = Path.GetFileName(Environment.ProcessPath) ?? throw new Exception("Could not get the name of the currently running updater");
+                string oldUpdaterName = updaterName + ".old";
+
+                File.Move(Path.Combine(AppContext.BaseDirectory, updaterName), oldUpdaterName, overwrite: true);
+
                 ZipFile.ExtractToDirectory(fileStream, AppContext.BaseDirectory, overwriteFiles: true);
+
+                File.Delete(oldUpdaterName);
 
                 Console.WriteLine("Successfully extracted release to disk");
 
