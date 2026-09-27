@@ -1,11 +1,10 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using Core.Github;
-using Core.OS;
 using Microsoft.Extensions.Logging;
 using SMOO.Server;
 using SMOO.Services.Impl;
-using SMOO.Updater;
+using SMOO.Updater.Lib;
 
 namespace SMOO;
 
@@ -13,7 +12,7 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        SMOOUpdater.CloseUpdater();
+        SMOOUpdater.WipeUpdateTempDir();
 
         SMOOUpdater updater = new SMOOUpdater();
 

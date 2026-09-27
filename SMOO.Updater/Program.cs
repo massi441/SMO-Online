@@ -1,4 +1,5 @@
 ﻿using Core.Util;
+using SMOO.Updater.Lib;
 
 namespace SMOO.Updater;
 

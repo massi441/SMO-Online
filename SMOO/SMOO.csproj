@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
-    <ProjectReference Include="..\SMOO.Updater\SMOO.Updater.csproj" />
+    <ProjectReference Include="..\SMOO.Updater.Lib\SMOO.Updater.Lib.csproj" />
   </ItemGroup>
 
 </Project>

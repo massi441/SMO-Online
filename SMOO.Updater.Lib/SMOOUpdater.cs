@@ -3,7 +3,7 @@ using Core.Github;
 using Core.OS;
 using Core.Util;
 
-namespace SMOO.Updater;
+namespace SMOO.Updater.Lib;
 
 public class SMOOUpdater
 {
@@ -52,7 +52,7 @@ public class SMOOUpdater
         return ProcessUtil.TryStartNewProcess(GetUpdaterPath());
     }
 
-    public static void CloseUpdater()
+    public static void WipeUpdateTempDir()
     {
         Process[] updaterProcesses = Process.GetProcessesByName(ReflectionUtil.GetAssemblyNameOf<SMOOUpdater>());
         foreach (Process updater in updaterProcesses)
@@ -92,11 +92,19 @@ public class SMOOUpdater
         // the temp dir might not be created if the version is already up to date
         if (Directory.Exists(tempOutputPath))
         {
-            string currentUpdaterName = FileUtil.PathFromRunningDir(FileUtil.GetExecutingFileName());
-            string newUpdaterFileName = currentUpdaterName + ".old";
+            yield return ProgressStatus.InProgress("Extracting zip contents into SMOO folder...");
 
-            FileUtil.RenameFile(currentUpdaterName, newUpdaterFileName);
-            FileUtil.CopyDirectory(tempOutputPath, FileUtil.GetRunningDir());
+            string currentUpdaterName = FileUtil.GetExecutingFileName(); // Updater.exe
+            string oldUpdaterFileName = currentUpdaterName + ".old"; // Updater.exe.old
+
+            string currentUpdaterPath = FileUtil.PathFromRunningDir(currentUpdaterName);
+            string oldUpdaterPath = FileUtil.PathFromRunningDir(oldUpdaterFileName);
+
+            FileUtil.RenameFile(currentUpdaterPath, oldUpdaterPath);
+            FileUtil.CopyDirectory(tempOutputPath, FileUtil.GetExecutingDirectory());
+
+            string oldUpdaterTempPath = Path.Combine(tempOutputPath, oldUpdaterFileName);
+            File.Move(oldUpdaterPath, oldUpdaterTempPath, overwrite: true); // Updater.exe.old gets moved to Temp.Updater.exe.old, then gets wiped by server on next startup
 
             yield return ProgressStatus.InProgress("Restarting server...");
 
@@ -107,7 +115,7 @@ public class SMOOUpdater
             }
         }
 
-        yield return ProgressStatus.Success();
+        yield return ProgressStatus.Completed();
     }
 
     private static bool RestartServer()
