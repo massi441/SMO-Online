@@ -12,6 +12,8 @@ public class SMOOUpdater
     public static readonly string ReleaseUrl = "https://api.github.com/repos/massi441/SMO-Online/releases/latest";
     public static readonly string AppName = "SMOO";
     public static readonly string TempDirName = "DownloadTemp";
+    public static readonly string ServerName = "SMOO";
+    public static readonly string UpdaterName = "Updater";
 
     public SMOOUpdater()
     {
@@ -24,37 +26,14 @@ public class SMOOUpdater
         return new GithhubTagVersionPrefixConvertor(tagPrefix);
     }
 
-    private static string GetUpdaterPath()
-    {
-        string filePath = Path.Combine(AppContext.BaseDirectory, ReflectionUtil.GetAssemblyNameOf<SMOOUpdater>());
-        if (OperatingSystem.IsWindows())
-        {
-            return filePath + ".exe";
-        }
-
-        return filePath;
-    }
-
-    private static string GetServerPath()
-    {
-        string serverName = "SMOO";
-        string filePath = Path.Combine(AppContext.BaseDirectory, serverName);
-        if (OperatingSystem.IsWindows())
-        {
-            return filePath + ".exe";
-        }
-
-        return filePath;
-    }
-
     public static bool StartUpdater()
     {
         return ProcessUtil.TryStartNewProcess(GetUpdaterPath());
     }
 
-    public static void WipeUpdateTempDirFrom<TCaller>()
+    public static void WipeUpdateTempDirFrom()
     {
-        Process[] updaterProcesses = Process.GetProcessesByName(ReflectionUtil.GetAssemblyNameOf<TCaller>());
+        Process[] updaterProcesses = Process.GetProcessesByName(UpdaterName);
         foreach (Process updater in updaterProcesses)
         {
             updater.WaitForExit();
@@ -71,7 +50,7 @@ public class SMOOUpdater
 
     public async IAsyncEnumerable<ProgressStatus> DownloadLatest()
     {
-        int closedCount = ProcessUtil.CloseProcessInstances("SMOO");
+        int closedCount = ProcessUtil.CloseProcessInstances(ServerName);
         if (closedCount > 0)
         {
             yield return ProgressStatus.InProgress($"Closed {closedCount} instances of SMOO server");
@@ -131,5 +110,25 @@ public class SMOOUpdater
         }
 
         throw new Exception("Unsupported platform");
+    }
+
+    private static string GetUpdaterPath()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return FileUtil.PathFromRunningDir(UpdaterName + ".exe");
+        }
+
+        return FileUtil.PathFromRunningDir(UpdaterName);
+    }
+
+    private static string GetServerPath()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return FileUtil.PathFromRunningDir(ServerName + ".exe");
+        }
+
+        return FileUtil.PathFromRunningDir(ServerName);
     }
 }
