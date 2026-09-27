@@ -31,5 +31,8 @@ internal class Program
             Console.WriteLine($"An unexpected error occured: {ex.Message}");
             return;
         }
+
+        Console.Write("Press any key to exit... ");
+        Console.ReadKey();
     }
 }
