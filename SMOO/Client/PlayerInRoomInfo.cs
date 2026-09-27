@@ -1,6 +1,6 @@
-﻿using SMOO.Attributes;
+﻿using Core.Memory;
+using Core.Memory.Attributes;
 using SMOO.Server;
-using SMOO.Memory;
 
 namespace SMOO.Client;
 

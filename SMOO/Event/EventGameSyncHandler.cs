@@ -1,16 +1,15 @@
 ﻿using System.Numerics;
 using Microsoft.Extensions.Logging;
-using SMOO.Attributes;
 using SMOO.Client;
 using SMOO.Enumerator;
 using SMOO.Protocol;
-using SMOO.Serialization;
 using SMOO.Server;
-using SMOO.Memory;
+using Core.Memory;
+using Core.Memory.Attributes;
 
 namespace SMOO.Event;
 
-internal class EventPlayerSyncHandler : IEventHandler
+internal class EventGameSyncHandler : IEventHandler
 {
     public static ushort MinDataSize => RequiredSize<SyncEventData>.MinSize;
     public static ushort MaxDataSize => RequiredSize<SyncEventData>.MaxSize;
@@ -43,7 +42,7 @@ internal class EventPlayerSyncHandler : IEventHandler
             reader.ReadInto(ref Position);
             reader.ReadInto(ref Quat);
 
-            AnimRate = reader.ReadSingleLittleEndian();
+            AnimRate = reader.ReadSingle();
 
             Anim.Deserialize(ref reader, Constants.MaxAnimNameLength);
             SubAnim.Deserialize(ref reader, Constants.MaxAnimNameLength);
@@ -94,7 +93,7 @@ internal class EventPlayerSyncHandler : IEventHandler
 
         public void Deserialize(ref SpanReader reader)
         {
-            Frame = reader.ReadInt32LittleEndian();
+            Frame = reader.ReadInt32();
 
             PlayerSyncData.Deserialize(ref reader);
             CapSyncData.Deserialize(ref reader);

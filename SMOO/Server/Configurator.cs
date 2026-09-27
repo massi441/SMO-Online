@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace SMOO.Server;
 
@@ -15,9 +16,11 @@ internal static class Configurator
 
     public static ServerConfig Load()
     {
+        ServerLogger logger = ServerLoggerFactory.Instance();
+
         ServerConfig config = new ServerConfig();
 
-        string? configPath = GetConfigPath();
+        string? configPath = GetConfigPath(logger);
         if (configPath == null)
         {
             return config;
@@ -25,22 +28,22 @@ internal static class Configurator
 
         if (!Path.Exists(configPath))
         {
-            Console.WriteLine($"No configuration found at {configPath}, creating it.");
+            logger.LogInformation("No configuration found at {ConfigPath}, creating it.", configPath);
             try
             {
                 string json = JsonSerializer.Serialize(config, JsonOptions);
                 File.WriteAllText(configPath, json);
-                Console.WriteLine("Successfully created json configuration file");
+                logger.LogInformation("Successfully created JSON configuration file");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"An error occured while trying to create the JSON configuration file: {ex.Message}");
+                logger.LogError(ex, "An error occurred while trying to create the JSON configuration file");
             }
 
             return config;
         }
 
-        Console.WriteLine($"Loading configuration from {configPath}");
+        logger.LogInformation("Loading configuration from {ConfigPath}", configPath);
 
         try
         {
@@ -53,28 +56,30 @@ internal static class Configurator
             }
             else
             {
-                Console.WriteLine("Loaded configuration was empty, using default as fallback");
+                logger.LogWarning("Loaded configuration was empty, using default as fallback");
             }
         }
         catch (JsonException ex)
         {
-            Console.WriteLine($"The configuration was malformed, default configuration will be used. Error: {ex.Message}");
+            logger.LogError(ex, "The configuration was malformed, default configuration will be used");
         }
 
-        Console.WriteLine($"Using configuration for server: {config}");
+        logger.LogInformation("Using configuration for server: {Config}", config);
+
+        logger.LogLevel = config.LogLevel;
 
         return config;
     }
 
-    private static string? GetConfigPath()
+    private static string? GetConfigPath(ILogger logger)
     {
         try
         {
             return Path.Combine(Directory.GetCurrentDirectory(), Constants.ConfigFileName);
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
-            Console.WriteLine("Access not given to read configuration file");
+            logger.LogError(ex, "Access not given to read configuration file");
             return null;
         }
     }

@@ -3,6 +3,9 @@ using SMOO.Services.Interface;
 
 namespace SMOO.Services.Impl;
 
+/// <summary>
+/// Stores a list of RoomMessageProcessor's
+/// </summary>
 internal class RoomMessageProcessorList : IRoomMessageProcessorList
 {
     private readonly IRoomMessageProcessor[] _services;

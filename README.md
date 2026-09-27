@@ -6,6 +6,11 @@ Focuses on **high performance** for a smooth experience.
 
 Written in **C#** with **.NET 10**.
 
+## Download & Run
+
+Download the latest [release](https://github.com/massi441/SMO-Online/releases/latest) for your platform if available. 
+Make sure you have the [.NET 10 Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) installed on your machine.
+
 ## Build & Run
 
 ```sh

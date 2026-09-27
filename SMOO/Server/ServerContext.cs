@@ -3,6 +3,9 @@ using SMOO.Services.Interface;
 
 namespace SMOO.Server;
 
+/// <summary>
+/// The single object containing services needed to run the server
+/// </summary>
 internal class ServerContext
 {
     /// <summary>

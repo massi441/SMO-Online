@@ -1,12 +1,10 @@
 using Microsoft.Extensions.Logging;
-using SMOO.Attributes;
 using SMOO.Client;
 using SMOO.Enumerator;
 using SMOO.Protocol;
-using SMOO.Serialization;
 using SMOO.Server;
-using SMOO.Threading;
-using SMOO.Memory;
+using Core.Memory;
+using Core.Memory.Attributes;
 
 namespace SMOO.Event;
 
@@ -63,7 +61,7 @@ internal class EventChangeStageHandler : IEventHandler
                 PlayersInStage = playersInStage
             };
 
-            using SharedBuffer buffer = PacketSerializer.SerializeShared(ref playersInStagePacket, RequiredSize<PacketPlayersInStage>.MaxSize);
+            using RentedBuffer buffer = PacketSerializer.SerializeShared(ref playersInStagePacket, RequiredSize<PacketPlayersInStage>.MaxSize);
 
             context.Logger.LogInformation("{PlayerCount} players were already in stage {StageName}, {PlayerName} will be notified", inStageCount, data.NewStage, player.Name);
 

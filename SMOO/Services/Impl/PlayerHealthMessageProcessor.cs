@@ -1,9 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Core.Memory;
+using Microsoft.Extensions.Logging;
 using SMOO.Client;
 using SMOO.Protocol;
-using SMOO.Serialization;
 using SMOO.Server;
-using SMOO.Memory;
 using SMOO.Services.Interface;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
@@ -62,7 +61,7 @@ internal class PlayerHealthMessageProcessor : IRoomMessageProcessor
             RoomId = player.Room.Id
         };
 
-        using SharedBuffer buffer = PacketSerializer.SerializeShared(ref header, Unsafe.SizeOf<PacketHeader>());
+        using RentedBuffer buffer = PacketSerializer.SerializeShared(ref header, Unsafe.SizeOf<PacketHeader>());
 
         _context.Logger.LogTrace("Player {PlayerName} has been idle for too long in Room #{RoomId}, a health check request will be sent", player.Name, player.Room.Id);
 

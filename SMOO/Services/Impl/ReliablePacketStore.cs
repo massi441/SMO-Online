@@ -1,12 +1,14 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Core.Memory;
+using Microsoft.Extensions.Logging;
 using SMOO.Client;
 using SMOO.Enumerator;
-using SMOO.Memory;
 using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Services.Interface;
 
 namespace SMOO.Services.Impl;
+
+// TODO: Use ring array as backing container
 
 internal class ReliablePacketStore : IReliablePacketStore
 {
@@ -22,7 +24,7 @@ internal class ReliablePacketStore : IReliablePacketStore
         _pendingPackets = [];
     }
 
-    public ReliablePacket UploadPacket(SharedBuffer buffer, Player receiver, byte maxRetries, int resendDelay)
+    public ReliablePacket UploadPacket(RentedBuffer buffer, Player receiver, byte maxRetries, int resendDelay)
     {
         ReliablePacket reliablePacket = UploadPlayer(buffer, receiver, maxRetries, resendDelay);
 
@@ -33,7 +35,7 @@ internal class ReliablePacketStore : IReliablePacketStore
         return reliablePacket;
     }
 
-    public void UploadBroadcast<TEnumerator>(SharedBuffer buffer, TEnumerator players, byte maxRetries, int resendDelay) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
+    public void UploadBroadcast<TEnumerator>(RentedBuffer buffer, TEnumerator players, byte maxRetries, int resendDelay) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
     {
         foreach (Player player in players)
         {
@@ -85,7 +87,7 @@ internal class ReliablePacketStore : IReliablePacketStore
         }
     }
 
-    private ReliablePacket UploadPlayer(SharedBuffer buffer, Player receiver, byte maxRetries, int resendDelay)
+    private ReliablePacket UploadPlayer(RentedBuffer buffer, Player receiver, byte maxRetries, int resendDelay)
     {
         ReliablePacket reliablePacket = new ReliablePacket()
         {
@@ -99,12 +101,13 @@ internal class ReliablePacketStore : IReliablePacketStore
         reliablePacket.Buffer.Acquire();
         reliablePacket.WriteSequenceNumber();
 
-        if (!_pendingPackets.ContainsKey(receiver))
+        if (!_pendingPackets.TryGetValue(receiver, out Dictionary<ushort, ReliablePacket>? value))
         {
-            _pendingPackets[receiver] = [];
+            value = [];
+            _pendingPackets[receiver] = value;
         }
 
-        _pendingPackets[receiver][_nextSequenceNumber] = reliablePacket;
+        value[_nextSequenceNumber] = reliablePacket;
 
         return reliablePacket;
     }

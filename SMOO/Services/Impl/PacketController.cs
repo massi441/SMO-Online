@@ -1,11 +1,11 @@
-﻿using System.Net;
+﻿using Core.Memory;
+using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Services.Interface;
-using SMOO.Memory;
 
 namespace SMOO.Services.Impl;
 
@@ -54,7 +54,7 @@ internal class PacketController : IPacketController
         return Send(buffer, originalPacket.SenderIp);
     }
 
-    public void SendReliably(SharedBuffer buffer, Player receiver, Room room, byte maxRetries, int resendDelay)
+    public void SendReliably(RentedBuffer buffer, Player receiver, Room room, byte maxRetries, int resendDelay)
     {
         room.Broadcaster.ReliablePacketStore.UploadPacket(buffer, receiver, maxRetries, resendDelay);
 

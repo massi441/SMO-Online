@@ -1,12 +1,11 @@
 using System.Net;
 using Microsoft.Extensions.Logging;
-using SMOO.Attributes;
 using SMOO.Client;
 using SMOO.Enumerator;
 using SMOO.Protocol;
-using SMOO.Serialization;
 using SMOO.Server;
-using SMOO.Memory;
+using Core.Memory;
+using Core.Memory.Attributes;
 
 namespace SMOO.Handle;
 
@@ -73,7 +72,7 @@ internal class PacketConnectSynHandler : IPacketHandler
             PlayerInfos = playerInfos
         };
 
-        using SharedBuffer ackBuffer = PacketSerializer.SerializeShared(ref ackPacket, Constants.MaxBufferSize);
+        using RentedBuffer ackBuffer = PacketSerializer.SerializeShared(ref ackPacket, Constants.MaxBufferSize);
 
         context.PacketController.SendReliably(ackBuffer, newPlayer, room, resendDelay: Constants.PlayerSynAckDelay);
 

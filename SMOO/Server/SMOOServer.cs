@@ -1,19 +1,22 @@
-﻿using System.Net;
+﻿using Core.Memory;
+using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using SMOO.Protocol;
-using SMOO.Memory;
 
 namespace SMOO.Server;
 
-internal class UdpServer
+/// <summary>
+/// The UDP implementation of the SMOO server
+/// </summary>
+internal class SMOOServer
 {
     private readonly ServerContext _context;
     private readonly Channel<Packet> _packets;
 
-    public UdpServer(ServerContext context)
+    public SMOOServer(ServerContext context)
     {
         _context = context;
         _packets = Channel.CreateUnbounded<Packet>();
@@ -51,7 +54,7 @@ internal class UdpServer
     {
         while (!cancellationTokenSource.IsCancellationRequested)
         {
-            using SharedBuffer buffer = new SharedBuffer(Constants.MaxBufferSize);
+            using RentedBuffer buffer = new RentedBuffer(Constants.MaxBufferSize);
 
             Memory<byte> receiveBuffer = buffer.Ref.AsMemory(0, buffer.UsedBytes);
             IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
@@ -102,7 +105,7 @@ internal class UdpServer
     {
         await foreach (Packet packet in _packets.Reader.ReadAllAsync(cancellationTokenSource))
         {
-            using SharedBuffer buffer = packet.Buffer;
+            using RentedBuffer buffer = packet.Buffer;
 
             ServerResult dispatchResult = Dispatch(packet, _context);
             if (dispatchResult.IsFailed)

@@ -1,6 +1,6 @@
-﻿using SMOO.Client;
+﻿using Core.Memory;
+using SMOO.Client;
 using SMOO.Enumerator;
-using SMOO.Memory;
 using SMOO.Protocol;
 using SMOO.Server;
 
@@ -10,8 +10,8 @@ internal interface IReliablePacketStore
 {
     Dictionary<Player, Dictionary<ushort, ReliablePacket>> PendingPackets { get; }
 
-    ReliablePacket UploadPacket(SharedBuffer buffer, Player receiver, byte maxRetries = Constants.MaxRetries, int resendDelay = Constants.DefaultResendDelay);
-    void UploadBroadcast<TEnumerator>(SharedBuffer buffer, TEnumerator players, byte maxRetries = Constants.MaxRetries, int resendDelay = Constants.DefaultResendDelay) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct;
+    ReliablePacket UploadPacket(RentedBuffer buffer, Player receiver, byte maxRetries = Constants.MaxRetries, int resendDelay = Constants.DefaultResendDelay);
+    void UploadBroadcast<TEnumerator>(RentedBuffer buffer, TEnumerator players, byte maxRetries = Constants.MaxRetries, int resendDelay = Constants.DefaultResendDelay) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct;
 
     void ClearPlayer(Player player);
 

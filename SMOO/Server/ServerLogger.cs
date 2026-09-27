@@ -2,36 +2,67 @@
 
 namespace SMOO.Server;
 
-internal static class ServerLogger
+/// <summary>
+/// A decorator around an existing logger, with an mutable log level
+/// </summary>
+internal class ServerLogger : ILogger
 {
-    private static ILogger _logger = null!;
-    private static ILoggerFactory _loggerFactory = null!;
-    private static readonly Lock _lock = new Lock();
+    private readonly ILogger _logger;
 
-    public static ILogger Instance(LogLevel logLevel)
+    public LogLevel LogLevel { get; set; }
+
+    public ServerLogger(ILogger logger, LogLevel level = LogLevel.Information)
     {
-        if (_logger == null)
+        _logger = logger;
+        LogLevel = level;
+    }
+
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+    {
+        if (!IsEnabled(logLevel))
         {
-            lock (_lock)
-            {
-                if (_logger == null)
-                {
-                    _loggerFactory = LoggerFactory.Create(builder =>
-                    {
-                        builder.AddSimpleConsole(options =>
-                        {
-                            options.SingleLine = true;
-                            options.TimestampFormat = "HH:mm:ss ";
-                        });
-
-                        builder.SetMinimumLevel(logLevel);
-                    });
-
-                    _logger = _loggerFactory.CreateLogger("Server");
-                }
-            }
+            return;
         }
 
-        return _logger;
+        _logger.Log(logLevel, eventId, state, exception, formatter);
     }
+
+    public bool IsEnabled(LogLevel logLevel)
+    {
+        return logLevel >= LogLevel && _logger.IsEnabled(logLevel);
+    }
+
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+    {
+        return _logger.BeginScope(state);
+    }
+}
+
+internal static class ServerLoggerFactory
+{
+    private static readonly ILoggerFactory _loggerFactory = null!;
+    private static readonly ServerLogger _serverLogger = null!;
+
+    static ServerLoggerFactory()
+    {
+        _loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder.AddSimpleConsole(options =>
+            {
+                options.SingleLine = true;
+                options.TimestampFormat = "HH:mm:ss ";
+            });
+
+            builder.SetMinimumLevel(LogLevel.Trace); // that way it always passes the log level check in the decorator
+        });
+
+        ILogger logger = _loggerFactory.CreateLogger("Server");
+        _serverLogger = new ServerLogger(logger);
+    }
+
+    public static ServerLogger Instance()
+    {
+        return _serverLogger;
+    }
+
 }

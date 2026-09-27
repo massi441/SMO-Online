@@ -1,7 +1,10 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using Core.Github;
+using Microsoft.Extensions.Logging;
 using SMOO.Server;
 using SMOO.Services.Impl;
+using SMOO.Updater.Lib;
 
 namespace SMOO;
 
@@ -9,6 +12,36 @@ class Program
 {
     static async Task Main(string[] args)
     {
+        SMOOUpdater.WipeUpdateTempDirFrom();
+
+        SMOOUpdater updater = new SMOOUpdater();
+
+        ServerLogger logger = ServerLoggerFactory.Instance();
+
+        try
+        {
+            GithubUpdateCheck updateCheck = await updater.CheckUpdate();
+            if (updateCheck.IsNeedUpdate())
+            {
+                Console.WriteLine($"You are currently on version {updateCheck.CurrentVersion} of SMOO, but version {updateCheck.LatestVersion} is available.");
+                Console.Write("Would you like to download it? (y): ");
+
+                string? input = Console.ReadLine();
+
+                if (input == "y" && SMOOUpdater.StartUpdater())
+                {
+                    Console.WriteLine("Launching updater");
+                    return;
+                }
+            }
+
+            logger.LogInformation("Current SMOO version ({CurrentVersion}) is up to date", updateCheck.CurrentVersion);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning("An error occured while looking for an update: {Message}", ex.Message);
+        }
+
         ServerConfig config = Configurator.Load();
 
         try
@@ -22,7 +55,8 @@ class Program
             using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
             ServerContext context = CreateContext(socket, config, cancellationTokenSource.Token);
-            UdpServer server = new UdpServer(context);
+
+            SMOOServer server = new SMOOServer(context);
 
             Console.CancelKeyPress += (_, e) =>
             {
@@ -54,7 +88,7 @@ class Program
         return new ServerContext()
         {
             CancellationToken = cancellationToken,
-            Logger = ServerLogger.Instance(config.LogLevel),
+            Logger = ServerLoggerFactory.Instance(),
             PacketController = new PacketController(socket),
             PlayerDisconnector = new PlayerDisconnector(),
             RoomHolder = new RoomHolder(),

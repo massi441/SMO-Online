@@ -1,7 +1,7 @@
-﻿using System.Net;
+﻿using Core.Memory;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using SMOO.Memory;
 
 namespace SMOO.Protocol;
 
@@ -18,7 +18,7 @@ internal readonly struct Packet
     /// <summary>
     /// The rented buffer of the packet
     /// </summary>
-    public required SharedBuffer Buffer { get; init; }
+    public required RentedBuffer Buffer { get; init; }
 
     /// <summary>
     /// Returns a view of the header inside the packet's payload

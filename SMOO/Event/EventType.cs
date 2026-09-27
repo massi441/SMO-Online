@@ -5,7 +5,7 @@ internal enum EventType : ushort
     ChangeStage,
     ChangeCostume,
     ChangeCap,
-    PlayerSync,
+    GameSync,
 
     /// <summary>
     /// A reserved EventType for server side validation
