@@ -1,9 +1,6 @@
-﻿using System.Net;
-using System.Net.Sockets;
-using Core.Github;
+﻿using Core.Github;
 using Microsoft.Extensions.Logging;
 using SMOO.Server;
-using SMOO.Services.Impl;
 using SMOO.Updater.Lib;
 
 namespace SMOO;
@@ -14,52 +11,25 @@ class Program
     {
         SMOOUpdater.WipeUpdateTempDirFrom();
 
-        SMOOUpdater updater = new SMOOUpdater();
-
-        ServerLogger logger = ServerLoggerFactory.Instance();
-
-        try
+        if (await RequestUpdate())
         {
-            GithubUpdateCheck updateCheck = await updater.CheckUpdate();
-            if (updateCheck.IsNeedUpdate())
-            {
-                Console.WriteLine($"You are currently on version {updateCheck.CurrentVersion} of SMOO, but version {updateCheck.LatestVersion} is available.");
-                Console.Write("Would you like to download it? (y): ");
-
-                string? input = Console.ReadLine();
-
-                if (input == "y" && SMOOUpdater.StartUpdater())
-                {
-                    Console.WriteLine("Launching updater");
-                    return;
-                }
-            }
-            else
-            {
-                logger.LogInformation("Current SMOO version ({CurrentVersion}) is up to date", updateCheck.CurrentVersion);
-            }
-
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning("An error occured while looking for an update: {Message}", ex.Message);
+            return;
         }
 
-        ServerConfig config = Configurator.Load();
+        await Run();
+    }
 
+    private static async Task Run()
+    {
         try
         {
-            using Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            ServerLogger logger = ServerLoggerFactory.Instance();
 
-            IPEndPoint listenEndpoint = new IPEndPoint(IPAddress.Any, config.Port);
-
-            socket.Bind(listenEndpoint);
+            ServerConfig config = Configurator.Load();
 
             using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
-            ServerContext context = CreateContext(socket, config, cancellationTokenSource.Token);
-
-            SMOOServer server = new SMOOServer(context);
+            using SMOOServer server = ServerBuilder.Build(config, cancellationTokenSource.Token);
 
             Console.CancelKeyPress += (_, e) =>
             {
@@ -78,7 +48,7 @@ class Program
                 }
             };
 
-            await server.Start(cancellationTokenSource.Token);
+            await server.Run(cancellationTokenSource.Token);
         }
         catch (Exception ex)
         {
@@ -86,15 +56,40 @@ class Program
         }
     }
 
-    private static ServerContext CreateContext(Socket socket, ServerConfig config, CancellationToken cancellationToken)
+    private static async Task<bool> RequestUpdate()
     {
-        return new ServerContext()
+        ServerLogger logger = ServerLoggerFactory.Instance();
+
+        try
         {
-            CancellationToken = cancellationToken,
-            Logger = ServerLoggerFactory.Instance(),
-            PacketController = new PacketController(socket),
-            RoomHolder = new RoomHolder(),
-            Config = config
-        };
+
+            SMOOUpdater updater = new SMOOUpdater();
+
+            GithubUpdateCheck updateCheck = await updater.CheckUpdate();
+            if (updateCheck.IsNeedUpdate())
+            {
+                Console.WriteLine($"You are currently on version {updateCheck.CurrentVersion} of SMOO, but version {updateCheck.LatestVersion} is available.");
+                Console.Write("Would you like to download it? (y): ");
+
+                string? input = Console.ReadLine();
+
+                if (input == "y" && SMOOUpdater.StartUpdater())
+                {
+                    Console.WriteLine("Launching updater");
+                    return true;
+                }
+            }
+            else
+            {
+                logger.LogInformation("Current SMOO version ({CurrentVersion}) is up to date", updateCheck.CurrentVersion);
+            }
+
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning("An error occured while looking for an update: {Message}", ex.Message);
+        }
+
+        return false;
     }
 }

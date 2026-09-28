@@ -7,6 +7,7 @@ using SMOO.Server;
 using Core.Memory;
 using Core.Memory.Attributes;
 using SMOO.Services.Impl;
+using SMOO.Services.Interface;
 
 namespace SMOO.Handle;
 
@@ -32,7 +33,7 @@ internal class PacketConnectSynHandler : IPacketHandler
 
     public static void Handle(ParsedPacket packet, Room room, ServerContext context)
     {
-        if (IsInOtherRoom(packet.SenderIp, context, out Player? takenPlayer, out Room takenRoom))
+        if (IsInOtherRoom(packet.SenderIp, context, out Player? takenPlayer, out IRoom takenRoom))
         {
             context.Logger.LogWarning("Player {Name} ({Address}:{Port}) is already in room {RoomId}", takenPlayer.Name, takenPlayer.Endpoint.Address, takenPlayer.Endpoint.Port, takenRoom.Id);
             return;
@@ -87,9 +88,9 @@ internal class PacketConnectSynHandler : IPacketHandler
     }
 
     // TODO: Figure out lightweight synchronization
-    private static bool IsInOtherRoom(IPEndPoint sender, ServerContext context, out Player player, out Room takenRoom)
+    private static bool IsInOtherRoom(IPEndPoint sender, ServerContext context, out Player player, out IRoom takenRoom)
     {
-        foreach (Room room in context.RoomHolder.GetRooms())
+        foreach (IRoom room in context.RoomHolder.GetRooms())
         {
             Player? p = room.PlayerHolder.FindPlayerByHost(sender);
             if (p != null)

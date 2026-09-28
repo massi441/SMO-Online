@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using SMOO.Protocol;
-using SMOO.Services.Impl;
 using SMOO.Services.Interface;
 
 namespace SMOO.Server;
@@ -13,20 +12,24 @@ namespace SMOO.Server;
 /// <summary>
 /// The UDP implementation of the SMOO server
 /// </summary>
-internal class SMOOServer
+internal class SMOOServer : IDisposable
 {
     private readonly ServerContext _context;
+    private readonly Socket _socket;
     private readonly Channel<Packet> _packets;
 
-    public SMOOServer(ServerContext context)
+    private IPEndPoint LocalEndpoint => (IPEndPoint)(_socket!.LocalEndPoint!);
+
+    public SMOOServer(ServerContext context, Socket socket)
     {
         _context = context;
+        _socket = socket;
         _packets = Channel.CreateUnbounded<Packet>();
     }
 
-    public async Task Start(CancellationToken cancellationToken, bool addDefaultRoom = true)
+    public async Task Run(CancellationToken cancellationToken, bool addDefaultRoom = true)
     {
-        _context.Logger.LogInformation("Server listening on port {Port}...", _context.Config.Port);
+        _context.Logger.LogInformation("Server listening on port {Port}...", LocalEndpoint.Port);
 
         try
         {
@@ -109,7 +112,7 @@ internal class SMOOServer
         {
             using RentedBuffer buffer = packet.Buffer;
 
-            ServerResult dispatchResult = Dispatch(packet, _context);
+            ServerResult dispatchResult = ProcessPacket(packet, _context);
             if (dispatchResult.IsFailed)
             {
                 _context.Logger.LogWarning("Dispatch failed. Error: {Error}, Sender: {Address}:{Port}", dispatchResult.Error, packet.Sender.Address, packet.Sender.Port);
@@ -117,7 +120,7 @@ internal class SMOOServer
         }
     }
 
-    private static ServerResult Dispatch(Packet packet, ServerContext context)
+    private static ServerResult ProcessPacket(Packet packet, ServerContext context)
     {
         if (!IsValidHeaderSize(packet.Buffer))
         {
@@ -182,5 +185,11 @@ internal class SMOOServer
     private static bool IsValidType(byte packetType)
     {
         return packetType < (byte)PacketType.OutOfRange;
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _socket.Dispose();
     }
 }

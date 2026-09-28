@@ -16,7 +16,7 @@ internal class ServerContext
     /// <summary>
     /// The room holder used across the server
     /// </summary>
-    public required IRoomHolder RoomHolder { get; init; } // TODO: Remove
+    public required IRoomHolder RoomHolder { get; init; }
 
     /// <summary>
     /// The packet sender used across the server
@@ -27,9 +27,4 @@ internal class ServerContext
     /// The cancellation used to signal a server shutdown
     /// </summary>
     public required CancellationToken CancellationToken { get; init; }
-
-    /// <summary>
-    /// The configuration used by the server
-    /// </summary>
-    public required ServerConfig Config { get; init; } // TODO: Remove
 }
