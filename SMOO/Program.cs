@@ -34,8 +34,11 @@ class Program
                     return;
                 }
             }
+            else
+            {
+                logger.LogInformation("Current SMOO version ({CurrentVersion}) is up to date", updateCheck.CurrentVersion);
+            }
 
-            logger.LogInformation("Current SMOO version ({CurrentVersion}) is up to date", updateCheck.CurrentVersion);
         }
         catch (Exception ex)
         {
