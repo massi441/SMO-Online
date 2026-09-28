@@ -90,7 +90,6 @@ class Program
             CancellationToken = cancellationToken,
             Logger = ServerLoggerFactory.Instance(),
             PacketController = new PacketController(socket),
-            PlayerDisconnector = new PlayerDisconnector(),
             RoomHolder = new RoomHolder(),
             Config = config
         };

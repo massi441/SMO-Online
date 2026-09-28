@@ -47,7 +47,7 @@ internal class PlayerHealthMessageProcessor : IRoomMessageProcessor
 
         while (_disconnectedPlayers.TryPop(out Player? disconnectedPlayer))
         {
-            DisconnectPlayer(disconnectedPlayer);
+            room.RequestDisconnection(disconnectedPlayer);
         }
     }
 
@@ -74,18 +74,5 @@ internal class PlayerHealthMessageProcessor : IRoomMessageProcessor
             _context.Logger.LogError("An error occured while sending health check to {PlayerName}: {Message}", player.Name, ex.Message);
         }
 
-    }
-
-    private void DisconnectPlayer(Player player)
-    {
-        ServerResult disconnectResult = _context.PlayerDisconnector.Disconnect(player);
-        if (disconnectResult.IsSuccess)
-        {
-            _context.Logger.LogInformation("Successfully disconnected {PlayerName} from Room #{RoomId}", player.Name, player.Room.Id);
-        }
-        else
-        {
-            _context.Logger.LogError("Failed to disconnect player {PlayerName} in Room #{RoomId}: {Error}", player.Name, player.Room.Id, disconnectResult.Error!.Value);
-        }
     }
 }

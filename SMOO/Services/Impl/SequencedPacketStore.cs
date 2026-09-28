@@ -1,8 +1,6 @@
-﻿using System.Numerics;
-using Core.Memory;
+﻿using Core.Memory;
 using Microsoft.Extensions.Logging;
 using SMOO.Client;
-using SMOO.Exceptions;
 using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Services.Interface;
@@ -23,7 +21,7 @@ internal class SequencedPacketStore : ISequencedPacketStore
         _packets = new SequencedPacket[StoreSize];
     }
 
-    public SequencedPacket UploadPacket(Player receiver, RentedBuffer buffer, SequencedPacketParams packetParams = default)
+    public ServerResult<SequencedPacket> UploadPacket(Player receiver, RentedBuffer buffer, SequencedPacketParams packetParams = default)
     {
         ushort slot = CalcSlot(_nextSequenceNumber);
 
@@ -31,7 +29,8 @@ internal class SequencedPacketStore : ISequencedPacketStore
 
         if (existingPacket != null)
         {
-            throw new SequencedStoreFullException($"Tried to insert packet {_nextSequenceNumber} in slot {slot} for {receiver.Name}, but the store was full");
+            _context.Logger.LogWarning("Tried to insert packet #{SequenceNumber} in slot {Slot} for {PlayerName}, but the store was full", _nextSequenceNumber, slot, receiver.Name);
+            return ServerResult<SequencedPacket>.Failure(ServerError.PendingPacketStoreFull);
         }
 
         SequencedPacket newPacket = new SequencedPacket(packetParams)
@@ -48,7 +47,7 @@ internal class SequencedPacketStore : ISequencedPacketStore
 
         _nextSequenceNumber++;
 
-        return newPacket;
+        return ServerResult<SequencedPacket>.Success(newPacket);
     }
 
     public SequencedPacket? RemovePacket(ushort sequenceNumber)
@@ -97,8 +96,8 @@ internal class SequencedPacketStore : ISequencedPacketStore
             }
             else
             {
-                _context.PlayerDisconnector.Disconnect(packet.Receiver); // disconnect clears the player's store
-                _context.Logger.LogInformation("Disconnected {Player} from room #{RoomId} for not acking packet #{SequenceNumber}", packet.Receiver.Name, packet.Receiver.Room.Id, packet.SequenceNumber);
+                _context.Logger.LogInformation("{Player} in room #{RoomId} failed to ack packet #{SequenceNumber} and will be disconnected", packet.Receiver.Name, packet.Receiver.Room.Id, packet.SequenceNumber);
+                packet.Receiver.Room.RequestDisconnection(packet.Receiver);
                 return;
             }
         }

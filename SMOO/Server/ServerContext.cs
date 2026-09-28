@@ -24,11 +24,6 @@ internal class ServerContext
     public required IPacketController PacketController { get; init; }
 
     /// <summary>
-    /// The player disconnector used across the server
-    /// </summary>
-    public required IPlayerDisconnector PlayerDisconnector { get; init; }
-
-    /// <summary>
     /// The cancellation used to signal a server shutdown
     /// </summary>
     public required CancellationToken CancellationToken { get; init; }

@@ -56,7 +56,18 @@ internal class PacketController : IPacketController
 
     public void SendReliably(RentedBuffer buffer, Player receiver, SequencedPacketParams packetParams = default)
     {
-        receiver.SequencedPacketStore.UploadPacket(receiver, buffer, packetParams);
+        if (receiver.State == PlayerState.Disconnecting)
+        {
+            return;
+        }
+
+        ServerResult<SequencedPacket> uploadResult = receiver.SequencedPacketStore.UploadPacket(receiver, buffer, packetParams);
+        if (uploadResult.IsFailed)
+        {
+            receiver.Room.RequestDisconnection(receiver); // the receiver can't keep up with its sequenced packets
+            return;
+        }
+
         Send(buffer.UsedSpan, receiver);
     }
 

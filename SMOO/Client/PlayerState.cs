@@ -17,7 +17,7 @@ internal enum PlayerState : byte
     Connected,
 
     /// <summary>
-    /// The player has been disconnected from the server
+    /// The player will be disconnected from the server
     /// </summary>
-    Disconnected
+    Disconnecting
 }

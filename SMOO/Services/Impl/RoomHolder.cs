@@ -32,7 +32,9 @@ internal class RoomHolder : IRoomHolder
 
         RoomMessageScheduler messageScheduler = new RoomMessageScheduler(context);
 
-        Room room = new Room(nextId, context, playerHolder, roomBroadcaster, roomServices, messageScheduler);
+        PlayerDisconnector disconnector = new PlayerDisconnector();
+
+        Room room = new Room(nextId, context, playerHolder, roomBroadcaster, roomServices, messageScheduler, disconnector);
 
         _rooms.Add(nextId, room);
 

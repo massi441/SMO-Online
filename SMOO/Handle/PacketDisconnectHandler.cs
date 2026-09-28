@@ -20,13 +20,8 @@ internal class PacketDisconnectHandler : IPacketHandler
             return;
         }
 
-        ServerResult disconnectResult = context.PlayerDisconnector.Disconnect(player);
-        if (disconnectResult.IsFailed)
-        {
-            context.Logger.LogError("Unable to disconnect {PlayerName} in room #{RoomId}", player.Name, room.Id);
-            return;
-        }
+        room.RequestDisconnection(player);
 
-        context.Logger.LogWarning("Player {Name} left room {RoomId}", player.Name, room.Id);
+        context.Logger.LogWarning("Player {Name} left room {RoomId} and will be disconnected shortly", player.Name, room.Id);
     }
 }

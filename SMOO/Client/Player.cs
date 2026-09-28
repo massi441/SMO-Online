@@ -13,7 +13,7 @@ internal class Player
     public required PlayerSyncData SyncData { get; init; }
     public required Room Room { get; init; }
     public required byte Slot { get; init; }
-    //public PlayerState State { get; set; } = PlayerState.Connecting; // TODO: Uncomment and add auth to room
+    public PlayerState State { get; private set; } = PlayerState.Connecting; // TODO: Uncomment and add auth to room
     public DateTime LastSeen { get; private set; } = DateTime.UtcNow;
     public IPEndPoint Endpoint => Id.Endpoint;
     public required ISequencedPacketStore SequencedPacketStore { get; init; }
@@ -31,5 +31,15 @@ internal class Player
     public bool IsNeedHealthCheck()
     {
         return (DateTime.UtcNow - LastSeen).TotalMilliseconds > Constants.PlayerHealthCheckThreshold;
+    }
+
+    public void MarkConnected()
+    {
+        State = PlayerState.Connected;
+    }
+
+    public void MarkDisconnecting()
+    {
+        State = PlayerState.Disconnecting;
     }
 }

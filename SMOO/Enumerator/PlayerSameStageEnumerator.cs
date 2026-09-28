@@ -3,32 +3,32 @@
 namespace SMOO.Enumerator;
 
 /// <summary>
-/// An enumerator of players in the same stage as a target player. The enumerator does not include
+/// An enumerator of connected players in the same stage as a target player. The enumerator does not include
 /// the target player in the iteration
 /// </summary>
 internal ref struct PlayerSameStageEnumerator : IPlayerEnumerator<PlayerSameStageEnumerator>
 {
-    private PlayerActiveEnumerator _activeEnumerator;
+    private PlayerInStateEnumerator _connectedEnumerator;
     private readonly Player _targetPlayer;
-    public Player Current => _activeEnumerator.Current;
+    public Player Current => _connectedEnumerator.Current;
     public PlayerSameStageEnumerator GetEnumerator() => this;
 
     public PlayerSameStageEnumerator(ReadOnlySpan<Player> players, Player targetStagePlayer)
     {
-        _activeEnumerator = new PlayerActiveEnumerator(players);
+        _connectedEnumerator = new PlayerInStateEnumerator(players, PlayerState.Connected);
         _targetPlayer = targetStagePlayer;
     }
 
     public bool MoveNext()
     {
-        while (_activeEnumerator.MoveNext())
+        while (_connectedEnumerator.MoveNext())
         {
-            if (_activeEnumerator.Current == _targetPlayer)
+            if (_connectedEnumerator.Current == _targetPlayer)
             {
                 continue;
             }
 
-            if (_activeEnumerator.Current.WorldInfo.CurrentStage == _targetPlayer.WorldInfo.CurrentStage)
+            if (_connectedEnumerator.Current.WorldInfo.CurrentStage == _targetPlayer.WorldInfo.CurrentStage)
             {
                 return true;
             }
