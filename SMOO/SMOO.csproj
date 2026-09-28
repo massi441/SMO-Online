@@ -25,4 +25,9 @@
     <ProjectReference Include="..\SMOO.Updater.Lib\SMOO.Updater.Lib.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="SMOO.Test" />
+	<InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
 </Project>
