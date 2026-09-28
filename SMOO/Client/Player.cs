@@ -1,7 +1,6 @@
 ﻿
 using System.Net;
 using SMOO.Server;
-using SMOO.Services.Impl;
 using SMOO.Services.Interface;
 
 namespace SMOO.Client;

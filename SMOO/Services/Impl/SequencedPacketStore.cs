@@ -15,7 +15,7 @@ internal class SequencedPacketStore : ISequencedPacketStore
 
     internal const ushort MaxStoreSize = 32;
 
-    public int Size => _packets.Length;
+    public int Capacity => _packets.Length;
 
     public SequencedPacketStore(ServerContext context)
     {
@@ -70,16 +70,20 @@ internal class SequencedPacketStore : ISequencedPacketStore
         return ClearPacketIfPresent(slot);
     }
 
-    public void Clear()
+    public int Clear()
     {
+        int removedCount = 0;
         for (int i = 0; i < _packets.Length; i++)
         {
             SequencedPacket? releasedPacket = ClearPacketIfPresent(i);
             if (releasedPacket != null)
             {
+                removedCount++;
                 _context.Logger.LogInformation("Cleared sequenced {SequenceNumber} packet from {PlayerName}", releasedPacket.SequenceNumber, releasedPacket.Receiver.Name);
             }
         }
+
+        return removedCount;
     }
 
     public void ResendPackets()

@@ -10,5 +10,5 @@ internal interface ISequencedPacketStore
     ServerResult<SequencedPacket> UploadPacket(Player receiver, RentedBuffer buffer, SequencedPacketParams packetParams = default);
     SequencedPacket? RemovePacket(ushort sequenceNumber);
     void ResendPackets();
-    void Clear();
+    int Clear();
 }

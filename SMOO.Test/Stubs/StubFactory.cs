@@ -1,0 +1,58 @@
+﻿using Core.Memory;
+using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
+using SMOO.Client;
+using SMOO.Server;
+using SMOO.Services.Impl;
+using SMOO.Services.Interface;
+
+namespace SMOO.Test.Stubs;
+
+internal static class StubFactory
+{
+    /// <summary>
+    /// Creates a stub server context with everything 
+    /// </summary>
+    /// <returns></returns>
+    public static ServerContext CreateContext()
+    {
+        return new ServerContext()
+        {
+            CancellationToken = CancellationToken.None,
+            Config = new ServerConfig(),
+            Logger = NullLogger.Instance,
+            PacketController = Substitute.For<IPacketController>(),
+            RoomHolder = Substitute.For<IRoomHolder>(),
+        };
+    }
+
+    /// <summary>
+    /// Creates a stub player with a given sequenced store
+    /// </summary>
+    public static Player CreatePlayerWithStore(SequencedPacketStore store)
+    {
+        return new Player()
+        {
+            Id = default(PlayerId),
+            WorldInfo = new PlayerWorldInfo()
+            {
+                CostumeBody = string.Empty,
+                CostumeCap = string.Empty,
+                CurrentStage = string.Empty
+            },
+            SyncData = new PlayerSyncData(),
+            Name = "Player",
+            SequencedPacketStore = store,
+            Room = Substitute.For<IRoom>(),
+            Slot = 0
+        };
+    }
+
+    /// <summary>
+    /// Creates an owned rented buffer with a default size of 1024
+    /// </summary>
+    public static RentedBuffer CreateBuffer(int size = 1024)
+    {
+        return new RentedBuffer(size);
+    }
+}
