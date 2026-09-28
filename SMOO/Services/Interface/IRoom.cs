@@ -8,7 +8,6 @@ internal interface IRoom
     int Id { get; }
     IPlayerHolder PlayerHolder { get; }
     IBroadcaster Broadcaster { get; }
-    PlayerList Players => PlayerHolder.Players;
 
     void Start();
     Task Shutdown();
