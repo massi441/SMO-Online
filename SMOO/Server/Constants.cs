@@ -11,7 +11,6 @@ internal class Constants
     public const byte Version = 1;
 
     // Data constraints
-    public const byte MaxRetries = 5;
     public const byte MaxPlayerNameLength = 50;
 
     public const byte MaxCostumeNameLength = 64;
@@ -26,16 +25,11 @@ internal class Constants
     public const byte MaxRoomSize = 10;
 
     // Threading/Time
-    public const int DefaultResendDelay = 500;
     public const int PlayerHealthCheckThreshold = 3000;
     public const int PlayerConnectionLostThreshold = 10000;
-    public const int PlayerSynAckDelay = 10000;
 
     // Player
     public static readonly string DefaultCostumeName = "Mario";
 
     // Server Config
-    public const int DefaultPort = 5001;
-    public const LogLevel DefaultLogLevel = LogLevel.Trace;
-    public const string ConfigFileName = "Config.json";
 }

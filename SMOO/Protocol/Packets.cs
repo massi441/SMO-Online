@@ -34,7 +34,7 @@ internal ref struct PacketConnectSynAck : ISerializableStruct
 }
 
 /// <summary>
-/// The packet sent to acknowledge a reliable server packet
+/// The packet sent to acknowledge a sequenced server packet
 /// </summary>
 internal ref struct PacketAck : ISerializableStruct
 {

@@ -16,6 +16,7 @@ internal class PacketConnectSynHandler : IPacketHandler
     /// </summary>
     public static ushort MinPayloadSize => RequiredSize<PacketConnectPayload>.MinSize;
     public static ushort MaxPayloadSize => RequiredSize<PacketConnectPayload>.MaxSize;
+    public const int PlayerSynAckDelay = 10000;
 
     private struct PacketConnectPayload : IDeserializableStruct
     {
@@ -74,7 +75,12 @@ internal class PacketConnectSynHandler : IPacketHandler
 
         using RentedBuffer ackBuffer = PacketSerializer.SerializeShared(ref ackPacket, Constants.MaxBufferSize);
 
-        context.PacketController.SendReliably(ackBuffer, newPlayer, room, resendDelay: Constants.PlayerSynAckDelay);
+        SequencedPacketParams packetParams = new SequencedPacketParams()
+        {
+            ResendMsDelay = PlayerSynAckDelay
+        };
+
+        context.PacketController.SendReliably(ackBuffer, newPlayer, packetParams);
 
         context.Logger.LogTrace("Player {Name} joined Room #{RoomId} in slot {Slot}, waiting for a confirmation...", newPlayer.Name, packet.Header.RoomId, newPlayer.Slot);
     }

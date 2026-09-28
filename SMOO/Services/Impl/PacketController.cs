@@ -11,7 +11,7 @@ namespace SMOO.Services.Impl;
 
 /// <summary>
 /// Controls packet sending/receiving in the server.
-/// Can send both reliable and unreliable packets.
+/// Can send both sequenced and unsequenced packets.
 /// </summary>
 internal class PacketController : IPacketController
 {
@@ -54,10 +54,9 @@ internal class PacketController : IPacketController
         return Send(buffer, originalPacket.SenderIp);
     }
 
-    public void SendReliably(RentedBuffer buffer, Player receiver, Room room, byte maxRetries, int resendDelay)
+    public void SendReliably(RentedBuffer buffer, Player receiver, SequencedPacketParams packetParams = default)
     {
-        room.Broadcaster.ReliablePacketStore.UploadPacket(buffer, receiver, maxRetries, resendDelay);
-
+        receiver.SequencedPacketStore.UploadPacket(receiver, buffer, packetParams);
         Send(buffer.UsedSpan, receiver);
     }
 

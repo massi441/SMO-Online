@@ -13,7 +13,7 @@ internal class PacketAckHandler : IPacketHandler
     {
         ushort sequenceNumber = packet.Header.SequenceNumber;
 
-        ReliablePacket? pendingPacket = room.Broadcaster.ReliablePacketStore.RemovePacket(packet.SenderPlayer!, sequenceNumber);
+        SequencedPacket? pendingPacket = packet.SenderPlayer!.SequencedPacketStore.RemovePacket(sequenceNumber);
         if (pendingPacket == null)
         {
             context.Logger.LogWarning("The packet #{SequenceNumber} was not found in room #{RoomId}, likely already Acked", sequenceNumber, room.Id);

@@ -23,6 +23,7 @@ internal enum ServerError
     RoomFull,
     PlayerAlreadyInRoom,
     IllegalRoomAccess,
+    PlayerNotFound,
 
     // Generic
     OperationFailed,

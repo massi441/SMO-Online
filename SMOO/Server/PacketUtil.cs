@@ -22,11 +22,11 @@ internal static class PacketUtil
         ServerResult ackResult = context.PacketController.SendAck(originalPacket);
         if (ackResult.IsSuccess)
         {
-            context.Logger.LogTrace("Sent ack to {PlayerName}'s reliable {PacketType} packet #{SequenceNumber}", originalPacket.SenderPlayer?.Name, originalPacket.Header.Type, originalPacket.Header.SequenceNumber);
+            context.Logger.LogTrace("Sent ack to {PlayerName}'s sequenced {PacketType} packet #{SequenceNumber}", originalPacket.SenderPlayer?.Name, originalPacket.Header.Type, originalPacket.Header.SequenceNumber);
         }
         else
         {
-            context.Logger.LogError("Failed to ack {PlayerName}'s reliable {PacketType} packet #{SequenceNumber}", originalPacket.SenderPlayer?.Name, originalPacket.Header.Type, originalPacket.Header.SequenceNumber);
+            context.Logger.LogError("Failed to ack {PlayerName}'s sequenced {PacketType} packet #{SequenceNumber}", originalPacket.SenderPlayer?.Name, originalPacket.Header.Type, originalPacket.Header.SequenceNumber);
         }
     }
 
@@ -37,11 +37,11 @@ internal static class PacketUtil
         ServerResult ackResult = context.PacketController.SendAck(basePacket);
         if (ackResult.IsSuccess)
         {
-            context.Logger.LogTrace("Sent ack to {PlayerName}'s reliable {PacketType} event packet #{SequenceNumber}", basePacket.SenderPlayer?.Name, originalPacket.EventHeader.Type, basePacket.Header.SequenceNumber);
+            context.Logger.LogTrace("Sent ack to {PlayerName}'s sequenced {PacketType} event packet #{SequenceNumber}", basePacket.SenderPlayer?.Name, originalPacket.EventHeader.Type, basePacket.Header.SequenceNumber);
         }
         else
         {
-            context.Logger.LogError("Failed to ack {PlayerName}'s reliable {PacketType} event packet #{SequenceNumber}", basePacket.SenderPlayer?.Name, originalPacket.EventHeader.Type, basePacket.Header.SequenceNumber);
+            context.Logger.LogError("Failed to ack {PlayerName}'s sequenced {PacketType} event packet #{SequenceNumber}", basePacket.SenderPlayer?.Name, originalPacket.EventHeader.Type, basePacket.Header.SequenceNumber);
         }
     }
 }

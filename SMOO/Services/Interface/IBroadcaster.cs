@@ -1,6 +1,6 @@
-﻿using SMOO.Enumerator;
-using SMOO.Server;
-using Core.Memory;
+﻿using Core.Memory;
+using SMOO.Enumerator;
+using SMOO.Protocol;
 
 namespace SMOO.Services.Interface;
 
@@ -9,8 +9,6 @@ namespace SMOO.Services.Interface;
 /// </summary>
 internal interface IBroadcaster
 {
-    IReliablePacketStore ReliablePacketStore { get; }
-
     void Broadcast<TEnumerator>(ReadOnlySpan<byte> payload, TEnumerator players) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct;
-    void BroadcastReliably<TEnumerator>(RentedBuffer buffer, TEnumerator players, byte maxRetries = Constants.MaxRetries) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct;
+    void BroadcastReliably<TEnumerator>(RentedBuffer buffer, TEnumerator players, SequencedPacketParams packetParams = default) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct;
 }

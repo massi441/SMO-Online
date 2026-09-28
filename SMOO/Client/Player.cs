@@ -1,10 +1,9 @@
 ﻿
 using System.Net;
 using SMOO.Server;
+using SMOO.Services.Interface;
 
 namespace SMOO.Client;
-
-// Potential TODO: add connection handshake status flag
 
 internal class Player
 {
@@ -14,8 +13,10 @@ internal class Player
     public required PlayerSyncData SyncData { get; init; }
     public required Room Room { get; init; }
     public required byte Slot { get; init; }
+    //public PlayerState State { get; set; } = PlayerState.Connecting; // TODO: Uncomment and add auth to room
     public DateTime LastSeen { get; private set; } = DateTime.UtcNow;
     public IPEndPoint Endpoint => Id.Endpoint;
+    public required ISequencedPacketStore SequencedPacketStore { get; init; }
 
     public void RefreshLastSeen()
     {

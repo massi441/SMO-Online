@@ -1,20 +1,19 @@
-﻿using SMOO.Client;
+﻿using Core.Memory;
+using SMOO.Client;
 using SMOO.Enumerator;
+using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Services.Interface;
-using Core.Memory;
 
 namespace SMOO.Services.Impl;
 
 internal class Broadcaster : IBroadcaster
 {
     private readonly ServerContext _context;
-    public IReliablePacketStore ReliablePacketStore { get; }
 
-    public Broadcaster(ServerContext context, IReliablePacketStore reliablePacketStore)
+    public Broadcaster(ServerContext context)
     {
         _context = context;
-        ReliablePacketStore = reliablePacketStore;
     }
 
     public void Broadcast<TEnumerator>(ReadOnlySpan<byte> payload, TEnumerator players) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
@@ -25,13 +24,11 @@ internal class Broadcaster : IBroadcaster
         }
     }
 
-    public void BroadcastReliably<TEnumerator>(RentedBuffer buffer, TEnumerator players, byte maxRetries = Constants.MaxRetries) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
+    public void BroadcastReliably<TEnumerator>(RentedBuffer buffer, TEnumerator players, SequencedPacketParams packetParams = default) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
     {
-        ReliablePacketStore.UploadBroadcast(buffer, players, maxRetries);
-
         foreach (Player player in players)
         {
-            _context.PacketController.Send(buffer, player);
+            _context.PacketController.SendReliably(buffer, player, packetParams);
         }
     }
 }
