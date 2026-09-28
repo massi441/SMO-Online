@@ -17,7 +17,7 @@ More details about packet reliability below.
 Each SMOO packet is made up of a [`Packet Header`](SMOO/Protocol/PacketHeader.cs), and in most cases a payload. Each packet goes roughly through this flow:
 
 **1. Arrival:** The packet reaches the [`Server`](SMOO/Server/SMOOServer.cs) which waits with a UDP socket in a receive loop. When a packet arrives, it is copied into a buffer rented from the ArrayPool 
-and wrapped into a reference counted [`RentedBuffer`](https://github.com/massi441/csharp-core/blob/master/Core/Memory/RentedBuffer.cs) (from the Core submodule).
+and wrapped into a [`RentedBuffer`](https://github.com/massi441/csharp-core/blob/master/Core/Memory/RentedBuffer.cs).
 
 **2. Validation & Routing:** Before being processed, the header of the packet is validated by the server (Magic Number, Packet Type, Room Id...). If validation passes, it is uploaded to a [`Room`](SMOO/Server/Room.cs)'s messaging queue
 as a **packet** [`Room Message`](SMOO/Server/RoomMessage.cs). If validation fails, the packet is dropped.
@@ -36,15 +36,10 @@ When a **packet** message arrives, it is routed to the [`Packet Processor`](SMOO
 **Fire-and-forget** is used for packets that don't need to reliably reach other players in the room, such as game synchronization packets: Player positions, animations, etc...
 
 **Reliable** is used for packets that must reach other players in the room, as they contain state that cannot afford to be lost: Level changes, chat messages, costume changes, etc... Reliable
-packets are stored in each player's [`Sequenced Packet Store`](SMOO/Services/Impl/SequencedPacketStore.cs), a fixed size ring buffer indexed by the packet's sequence number (`sequence % size`). Each player has their own sequence numbers.
-They are resent by the [`Packet Resender`](SMOO/Services/Impl/PacketResendMessageProcessor.cs) at a fixed time interval, until they are acknowledged by the receiver. 
-If a receiver fails to acknowledge a sequenced packet after a certain number of tries, or their store is full, they are disconnected from the server, and all their pending sequenced packets are released.
-Disconnections are requested to the room, and only processed once the current room message is done, so a player never disappears in the middle of a handler.
+packets are stored in the [`Sequenced Packet Store`](SMOO/Services/Impl/SequencedPacketStore.cs). They are resent by the [`Packet Resender`](SMOO/Services/Impl/PacketResendMessageProcessor.cs) at a fixed time interval, until they are acknowledged by the receiver. 
+If a receiver fails to acknowledge a sequenced packet after a certain period of time, they are disconnected from ther server.
 
 </dd>
 
 **5. Release:** Once the handler returns, the room releases its reference from the RentedBuffer. If the counter reaches 0, the buffer is returned to the ArrayPool. Reliable responses take their own reference for each receiver. 
 The buffer stays alive until every receiver has acknowledged the packet, or until the packet expires for each receiver, as multiple sequenced packets can share the same buffer in certain scenarios.
-
-> **Note:** Since a broadcast shares one buffer between receivers, and the sequence number lives in the packet header, the receiver's sequence number is written into the buffer right before every send and resend.
-This relies on the room processing its messages sequentially, and on sends being synchronous.
