@@ -6,6 +6,9 @@ using SMOO.Server;
 
 namespace SMOO.Handle;
 
+/// <summary>
+/// The packet handler that completes the connection handshake with the client
+/// </summary>
 internal class PacketConnectAckHandler : IPacketHandler
 {
     public static ushort MinPayloadSize => 0;
@@ -21,6 +24,8 @@ internal class PacketConnectAckHandler : IPacketHandler
             context.Logger.LogWarning("Invalid SYN ACK sequence number ({SequenceNumber}) received by {PlayerName} in Room #{RoomId}, broadcast will be skipped", sequenceNumber, packet.SenderPlayer?.Name, room.Id);
             return;
         }
+
+        packet.SenderPlayer!.MarkConnected();
 
         PacketPlayerJoinRoom joinPacket = new PacketPlayerJoinRoom()
         {

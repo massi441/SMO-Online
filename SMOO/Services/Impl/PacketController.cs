@@ -24,8 +24,15 @@ internal class PacketController : IPacketController
 
     public ServerResult Send(ReadOnlySpan<byte> buffer, IPEndPoint receiver)
     {
-        int bytesSent = _socket.SendTo(buffer, receiver);
-        if (bytesSent != buffer.Length)
+        try
+        {
+            int bytesSent = _socket.SendTo(buffer, receiver);
+            if (bytesSent != buffer.Length)
+            {
+                return ServerResult.Failure(ServerError.NotSent);
+            }
+        }
+        catch (SocketException)
         {
             return ServerResult.Failure(ServerError.NotSent);
         }
@@ -64,7 +71,7 @@ internal class PacketController : IPacketController
         ServerResult<SequencedPacket> uploadResult = receiver.SequencedPacketStore.UploadPacket(receiver, buffer, packetParams);
         if (uploadResult.IsFailed)
         {
-            receiver.Room.RequestDisconnection(receiver); // the receiver can't keep up with its sequenced packets
+            receiver.Room.RequestDisconnection(receiver);
             return;
         }
 

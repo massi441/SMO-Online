@@ -65,14 +65,10 @@ internal class PlayerHealthMessageProcessor : IRoomMessageProcessor
 
         _context.Logger.LogTrace("Player {PlayerName} has been idle for too long in Room #{RoomId}, a health check request will be sent", player.Name, player.Room.Id);
 
-        try
+        ServerResult sendResult = _context.PacketController.Send(buffer, player);
+        if (sendResult.IsFailed)
         {
-            _context.PacketController.Send(buffer, player);
+            _context.Logger.LogError("An error occured while sending health check to {PlayerName}: {Error}", player.Name, sendResult.Error);
         }
-        catch (Exception ex)
-        {
-            _context.Logger.LogError("An error occured while sending health check to {PlayerName}: {Message}", player.Name, ex.Message);
-        }
-
     }
 }

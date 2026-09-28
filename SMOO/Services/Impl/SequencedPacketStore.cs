@@ -112,19 +112,12 @@ internal class SequencedPacketStore : ISequencedPacketStore
 
         _context.Logger.LogTrace("Resending {Type} packet #{Id} to {PlayerName} in room {#RoomdId}", packet.Header.Type, packet.SequenceNumber, packet.Receiver.Name, packet.Receiver.Room.Id);
 
-        try
-        {
-            packet.WriteSequenceNumber();
+        packet.WriteSequenceNumber();
 
-            ServerResult sendResult = _context.PacketController.Send(packet.Buffer, packet.Receiver);
-            if (!sendResult.IsSuccess)
-            {
-                _context.Logger.LogError("An error occured while trying to resend the packet: {Error}", sendResult.Error);
-            }
-        }
-        catch (Exception ex)
+        ServerResult sendResult = _context.PacketController.Send(packet.Buffer, packet.Receiver);
+        if (!sendResult.IsSuccess)
         {
-            _context.Logger.LogError("Failed to resend packet: {Message}", ex.Message);
+            _context.Logger.LogError("An error occured while trying to resend the packet: {Error}", sendResult.Error);
         }
 
         packet.DecrementTries();

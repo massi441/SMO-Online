@@ -38,7 +38,8 @@ When a **packet** message arrives, it is routed to the [`Packet Processor`](SMOO
 **Reliable** is used for packets that must reach other players in the room, as they contain state that cannot afford to be lost: Level changes, chat messages, costume changes, etc... Reliable
 packets are stored in each player's [`Sequenced Packet Store`](SMOO/Services/Impl/SequencedPacketStore.cs), a fixed size ring buffer indexed by the packet's sequence number (`sequence % size`). Each player has their own sequence numbers.
 They are resent by the [`Packet Resender`](SMOO/Services/Impl/PacketResendMessageProcessor.cs) at a fixed time interval, until they are acknowledged by the receiver. 
-If a receiver fails to acknowledge a sequenced packet after a certain number of tries, they are disconnected from the server, and all their pending sequenced packets are released.
+If a receiver fails to acknowledge a sequenced packet after a certain number of tries, or their store is full, they are disconnected from the server, and all their pending sequenced packets are released.
+Disconnections are requested to the room, and only processed once the current room message is done, so a player never disappears in the middle of a handler.
 
 </dd>
 

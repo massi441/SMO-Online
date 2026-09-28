@@ -1,29 +1,29 @@
-﻿using SMOO.Client;
+using SMOO.Client;
 
 namespace SMOO.Enumerator;
 
 /// <summary>
-/// An enumerator of players in a given state
+/// An enumerator of players that are not in a given state
 /// </summary>
-internal ref struct PlayerInStateEnumerator : IPlayerEnumerator<PlayerInStateEnumerator>
+internal ref struct PlayerNotInStateEnumerator : IPlayerEnumerator<PlayerNotInStateEnumerator>
 {
     private PlayerActiveEnumerator _activeEnumerator;
-    private readonly PlayerState _targetState;
+    private readonly PlayerState _excludedState;
 
     public readonly Player Current => _activeEnumerator.Current;
-    public PlayerInStateEnumerator GetEnumerator() => this;
+    public PlayerNotInStateEnumerator GetEnumerator() => this;
 
-    public PlayerInStateEnumerator(ReadOnlySpan<Player> players, PlayerState targetState)
+    public PlayerNotInStateEnumerator(ReadOnlySpan<Player> players, PlayerState excludedState)
     {
         _activeEnumerator = new PlayerActiveEnumerator(players);
-        _targetState = targetState;
+        _excludedState = excludedState;
     }
 
     public bool MoveNext()
     {
         while (_activeEnumerator.MoveNext())
         {
-            if (_activeEnumerator.Current.State == _targetState)
+            if (_activeEnumerator.Current.State != _excludedState)
             {
                 return true;
             }
