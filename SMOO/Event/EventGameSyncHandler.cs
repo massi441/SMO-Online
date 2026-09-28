@@ -6,6 +6,7 @@ using SMOO.Protocol;
 using SMOO.Server;
 using Core.Memory;
 using Core.Memory.Attributes;
+using SMOO.Services.Impl;
 
 namespace SMOO.Event;
 

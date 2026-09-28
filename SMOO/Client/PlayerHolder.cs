@@ -17,7 +17,7 @@ internal class PlayerHolder : IPlayerHolder
         _players = new PlayerList(Math.Min(size, Constants.MaxRoomSize));
     }
 
-    public ServerResult<Player> RegisterPlayer(in PlayerInfo playerInfo)
+    public ServerResult<Player> RegisterPlayer(PlayerRegisterInfo playerInfo)
     {
         if (ContainsPlayer(playerInfo))
         {
@@ -126,7 +126,7 @@ internal class PlayerHolder : IPlayerHolder
         return false;
     }
 
-    private bool ContainsPlayer(PlayerInfo playerInfo)
+    private bool ContainsPlayer(PlayerRegisterInfo playerInfo)
     {
         return FindPlayerByHost(playerInfo.Endpoint) != null;
     }

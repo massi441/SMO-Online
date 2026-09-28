@@ -2,6 +2,7 @@ using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Server;
 using Microsoft.Extensions.Logging;
+using SMOO.Services.Impl;
 
 namespace SMOO.Handle;
 

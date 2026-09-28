@@ -6,10 +6,10 @@ namespace SMOO.Services.Interface;
 
 internal interface IRoomHolder
 {
-    Room AddRoom(ServerContext context);
+    IRoom AddRoom(ServerContext context);
     Task<bool> RemoveRoom(ushort id);
-    Room? GetRoom(ushort id);
+    IRoom? GetRoom(ushort id);
     Player? FindPlayerByHost(IPEndPoint endpoint);
     Task ShutdownRooms();
-    IEnumerable<Room> GetRooms();
+    IEnumerable<IRoom> GetRooms();
 }

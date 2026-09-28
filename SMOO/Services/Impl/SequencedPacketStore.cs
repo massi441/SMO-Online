@@ -13,12 +13,14 @@ internal class SequencedPacketStore : ISequencedPacketStore
     private readonly SequencedPacket?[] _packets;
     private ushort _nextSequenceNumber = 0;
 
-    internal const ushort StoreSize = 32;
+    internal const ushort MaxStoreSize = 32;
+
+    public int Size => _packets.Length;
 
     public SequencedPacketStore(ServerContext context)
     {
         _context = context;
-        _packets = new SequencedPacket[StoreSize];
+        _packets = new SequencedPacket[MaxStoreSize];
     }
 
     public ServerResult<SequencedPacket> UploadPacket(Player receiver, RentedBuffer buffer, SequencedPacketParams packetParams = default)

@@ -6,6 +6,7 @@ using SMOO.Protocol;
 using SMOO.Server;
 using Core.Memory;
 using Core.Memory.Attributes;
+using SMOO.Services.Impl;
 
 namespace SMOO.Handle;
 
@@ -45,14 +46,14 @@ internal class PacketConnectSynHandler : IPacketHandler
             return;
         }
 
-        PlayerInfo playerInfo = new PlayerInfo()
+        PlayerRegisterInfo playerInfo = new PlayerRegisterInfo()
         {
             Endpoint = packet.SenderIp,
             Name = connectPayload.Name.String,
             Room = room,
         };
 
-        ServerResult<Player> newPlayerResult = room.PlayerHolder.RegisterPlayer(in playerInfo);
+        ServerResult<Player> newPlayerResult = room.PlayerHolder.RegisterPlayer(playerInfo);
         if (newPlayerResult.IsFailed)
         {
             context.Logger.LogError("Failed to register {PlayerName} in Room #{RoomId}", playerInfo.Name, room.Id);

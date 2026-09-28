@@ -4,7 +4,7 @@ using SMOO.Services.Interface;
 namespace SMOO.Server;
 
 /// <summary>
-/// The single object containing services needed to run the server
+/// The context object containing services needed to run the server
 /// </summary>
 internal class ServerContext
 {
@@ -16,7 +16,7 @@ internal class ServerContext
     /// <summary>
     /// The room holder used across the server
     /// </summary>
-    public required IRoomHolder RoomHolder { get; init; }
+    public required IRoomHolder RoomHolder { get; init; } // TODO: Remove
 
     /// <summary>
     /// The packet sender used across the server
@@ -31,5 +31,5 @@ internal class ServerContext
     /// <summary>
     /// The configuration used by the server
     /// </summary>
-    public required ServerConfig Config { get; init; }
+    public required ServerConfig Config { get; init; } // TODO: Remove
 }

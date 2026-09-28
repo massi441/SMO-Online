@@ -7,7 +7,7 @@ internal interface IPlayerHolder
 {
     PlayerList Players { get; }
     byte MaxSize { get; }
-    ServerResult<Player> RegisterPlayer(in PlayerInfo playerInfo);
+    ServerResult<Player> RegisterPlayer(PlayerRegisterInfo playerInfo);
     ServerResult UnregisterPlayer(Player player);
     Player? FindPlayerByHost(IPEndPoint endpoint);
     Player? FindPlayerById(PlayerId id);

@@ -37,7 +37,7 @@ internal class PlayerDisconnector : IPlayerDisconnector
                 Type = PacketType.Disconnect,
                 Flags = (byte)PacketFlags.None,
                 Version = Constants.Version,
-                RoomId = player.Room.Id,
+                RoomId = (ushort)player.Room.Id,
             },
             PlayerSlot = player.Slot
         };

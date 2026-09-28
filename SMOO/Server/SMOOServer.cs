@@ -5,6 +5,8 @@ using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using SMOO.Protocol;
+using SMOO.Services.Impl;
+using SMOO.Services.Interface;
 
 namespace SMOO.Server;
 
@@ -30,7 +32,7 @@ internal class SMOOServer
         {
             if (addDefaultRoom)
             {
-                Room defaultRoom = _context.RoomHolder.AddRoom(_context);
+                IRoom defaultRoom = _context.RoomHolder.AddRoom(_context);
 
                 defaultRoom.Start();
             }
@@ -146,7 +148,7 @@ internal class SMOOServer
             return result;
         }
 
-        Room? room = context.RoomHolder.GetRoom(header.RoomId);
+        IRoom? room = context.RoomHolder.GetRoom(header.RoomId);
         if (room == null)
         {
             return ServerResult.Failure(ServerError.RoomNotFound);

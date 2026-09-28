@@ -58,7 +58,7 @@ internal class PlayerHealthMessageProcessor : IRoomMessageProcessor
             Type = PacketType.HealthCheck,
             Flags = 0,
             Version = Constants.Version,
-            RoomId = player.Room.Id
+            RoomId = (ushort)player.Room.Id
         };
 
         using RentedBuffer buffer = PacketSerializer.SerializeShared(ref header, Unsafe.SizeOf<PacketHeader>());
