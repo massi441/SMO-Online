@@ -161,7 +161,7 @@ public class SequencedPacketStoreTests : IDisposable
     public void SequencedStore_AssignsSequenceNumber_AfterFilling(int fillCount, int expectedSequenceNumber)
     {
         // Arrange
-        Helpers.AdvanceStore(_store, _player, fillCount);
+        SMOTestUtil.AdvanceStore(_store, _player, fillCount);
 
         // Act
         ServerResult<SequencedPacket> packetResult = _store.UploadPacket(_player, _buffer);
@@ -180,7 +180,7 @@ public class SequencedPacketStoreTests : IDisposable
     public void SequencedStore_Remove_RejectsSlotWithDifferentSequenceNumber(int sequenceNumber, int wrapCount)
     {
         // Arrange
-        Helpers.AdvanceStore(_store, _player, sequenceNumber);
+        SMOTestUtil.AdvanceStore(_store, _player, sequenceNumber);
 
         _store.UploadPacket(_player, _buffer);
         ushort wrappedSequenceNumber = (ushort)(sequenceNumber + wrapCount * _store.Capacity); // ends in the same slot, but doesn't have the same sequence number
@@ -191,6 +191,8 @@ public class SequencedPacketStoreTests : IDisposable
         // Assert
         Assert.Null(removedPacket);
     }
+
+    // TODO: Test ResendPackets
 
     public void Dispose()
     {

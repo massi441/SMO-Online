@@ -49,6 +49,39 @@ internal static class StubFactory
     }
 
     /// <summary>
+    /// Creates a stub player with optional parameters
+    /// </summary>
+    public static Player CreatePlayer(PlayerState state = PlayerState.Connecting, string stage = "", byte slot = 0, string name = "Player")
+    {
+        Player player = new Player()
+        {
+            Id = default(PlayerId),
+            WorldInfo = new PlayerWorldInfo()
+            {
+                CostumeBody = string.Empty,
+                CostumeCap = string.Empty,
+                CurrentStage = stage
+            },
+            SyncData = new PlayerSyncData(),
+            Name = name,
+            SequencedPacketStore = Substitute.For<ISequencedPacketStore>(),
+            Room = Substitute.For<IRoom>(),
+            Slot = slot
+        };
+
+        if (state == PlayerState.Connected)
+        {
+            player.MarkConnected();
+        }
+        else if (state == PlayerState.Disconnecting)
+        {
+            player.MarkDisconnecting();
+        }
+
+        return player;
+    }
+
+    /// <summary>
     /// Creates an owned rented buffer with a default size of 1024
     /// </summary>
     public static RentedBuffer CreateBuffer(int size = 1024)

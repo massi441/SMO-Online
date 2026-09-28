@@ -19,9 +19,10 @@ public class PlayerIgnoreEnumeratorTests
             StubFactory.CreatePlayer(PlayerState.Connected, slot: 1),
             StubFactory.CreatePlayer(PlayerState.Connected, slot: 2)
         ];
-
         Player ignored = players[ignoredSlot];
+
         List<Player> expectedPlayers = [.. players.Where(player => player != ignored)];
+
         PlayerIgnoreEnumerator enumerator = new PlayerIgnoreEnumerator(players, ignored);
 
         // Act
@@ -38,8 +39,10 @@ public class PlayerIgnoreEnumeratorTests
         Player ignored = StubFactory.CreatePlayer(PlayerState.Connected, slot: 0);
         Player disconnecting = StubFactory.CreatePlayer(PlayerState.Disconnecting, slot: 1);
         Player connected = StubFactory.CreatePlayer(PlayerState.Connected, slot: 2);
-        List<Player> expectedPlayers = [connected];
         Player[] players = [ignored, disconnecting, connected];
+
+        List<Player> expectedPlayers = [connected];
+
         PlayerIgnoreEnumerator enumerator = new PlayerIgnoreEnumerator(players, ignored);
 
         // Act
@@ -56,8 +59,10 @@ public class PlayerIgnoreEnumeratorTests
         Player ignored = StubFactory.CreatePlayer(PlayerState.Connected, slot: 0);
         Player connecting = StubFactory.CreatePlayer(PlayerState.Connecting, slot: 1);
         Player connected = StubFactory.CreatePlayer(PlayerState.Connected, slot: 2);
-        List<Player> expectedPlayers = [connecting, connected];
         Player[] players = [ignored, connecting, connected];
+
+        List<Player> expectedPlayers = [connecting, connected];
+
         PlayerIgnoreEnumerator enumerator = new PlayerIgnoreEnumerator(players, ignored);
 
         // Act
@@ -73,8 +78,10 @@ public class PlayerIgnoreEnumeratorTests
         // Arrange
         Player ignored = StubFactory.CreatePlayer(PlayerState.Connected, slot: 0);
         Player connected = StubFactory.CreatePlayer(PlayerState.Connected, slot: 2);
-        List<Player> expectedPlayers = [connected];
         Player[] players = [ignored, null!, connected, null!];
+
+        List<Player> expectedPlayers = [connected];
+
         PlayerIgnoreEnumerator enumerator = new PlayerIgnoreEnumerator(players, ignored);
 
         // Act
@@ -90,6 +97,7 @@ public class PlayerIgnoreEnumeratorTests
         // Arrange
         Player ignored = StubFactory.CreatePlayer(PlayerState.Connected, slot: 0);
         Player[] players = [ignored, null!];
+
         PlayerIgnoreEnumerator enumerator = new PlayerIgnoreEnumerator(players, ignored);
 
         // Act
@@ -106,8 +114,10 @@ public class PlayerIgnoreEnumeratorTests
         Player ignored = StubFactory.CreatePlayer(PlayerState.Connected);
         Player first = StubFactory.CreatePlayer(PlayerState.Connected, slot: 0);
         Player second = StubFactory.CreatePlayer(PlayerState.Connected, slot: 1);
-        List<Player> expectedPlayers = [first, second];
         Player[] players = [first, second];
+
+        List<Player> expectedPlayers = [first, second];
+
         PlayerIgnoreEnumerator enumerator = new PlayerIgnoreEnumerator(players, ignored);
 
         // Act

@@ -13,8 +13,10 @@ public class PlayerActiveEnumeratorTests
         Player first = StubFactory.CreatePlayer(slot: 0);
         Player second = StubFactory.CreatePlayer(slot: 2);
         Player third = StubFactory.CreatePlayer(slot: 3);
-        List<Player> expectedPlayers = [first, second, third];
         Player[] players = [first, null!, second, third, null!];
+
+        List<Player> expectedPlayers = [first, second, third];
+
         PlayerActiveEnumerator enumerator = new PlayerActiveEnumerator(players);
 
         // Act
@@ -29,6 +31,7 @@ public class PlayerActiveEnumeratorTests
     {
         // Arrange
         Player[] players = new Player[4];
+
         PlayerActiveEnumerator enumerator = new PlayerActiveEnumerator(players);
 
         // Act
@@ -43,6 +46,7 @@ public class PlayerActiveEnumeratorTests
     {
         // Arrange
         Player[] players = [];
+
         PlayerActiveEnumerator enumerator = new PlayerActiveEnumerator(players);
 
         // Act
@@ -59,8 +63,10 @@ public class PlayerActiveEnumeratorTests
         Player connecting = StubFactory.CreatePlayer(PlayerState.Connecting, slot: 0);
         Player connected = StubFactory.CreatePlayer(PlayerState.Connected, slot: 1);
         Player disconnecting = StubFactory.CreatePlayer(PlayerState.Disconnecting, slot: 2);
-        List<Player> expectedPlayers = [connecting, connected, disconnecting];
         Player[] players = [connecting, connected, disconnecting];
+
+        List<Player> expectedPlayers = [connecting, connected, disconnecting];
+
         PlayerActiveEnumerator enumerator = new PlayerActiveEnumerator(players);
 
         // Act
@@ -75,6 +81,7 @@ public class PlayerActiveEnumeratorTests
     {
         // Arrange
         Player[] players = [StubFactory.CreatePlayer(slot: 0), StubFactory.CreatePlayer(slot: 1)];
+
         PlayerActiveEnumerator enumerator = new PlayerActiveEnumerator(players);
 
         // Act

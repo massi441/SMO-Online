@@ -2,6 +2,10 @@ using SMOO.Client;
 
 namespace SMOO.Enumerator;
 
+/// <summary>
+/// An enumerator that maps active players into <see cref="PlayerInRoomInfo"></see>,
+/// while excluding a target player from the enumeration (usually the player receiving the player in room infos)
+/// </summary>
 internal ref struct PlayerInRoomInfoEnumerator : ISpanEnumerator<PlayerInRoomInfo, PlayerInRoomInfoEnumerator>
 {
     private PlayerActiveEnumerator _playerEnumerator;

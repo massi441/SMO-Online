@@ -1,5 +1,6 @@
 using Core.Memory;
 using SMOO.Client;
+using SMOO.Enumerator;
 using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Services.Interface;
@@ -7,7 +8,7 @@ using SMOO.Test.Stubs;
 
 namespace SMOO.Test;
 
-internal static class Helpers
+internal static class SMOTestUtil
 {
     /// <summary>
     /// Advances the next sequence number of a store by uploading and removing packets, leaving the store empty
@@ -23,5 +24,21 @@ internal static class Helpers
             ServerResult<SequencedPacket> packet = store.UploadPacket(player, buffer);
             store.RemovePacket(packet.Data!.SequenceNumber);
         }
+    }
+
+    /// <summary>
+    /// Enumerates a player enumerator into a list, in iteration order
+    /// </summary>
+    /// <param name="enumerator">The enumerator to collect the players from</param>
+    public static List<Player> GetEnumeratedPlayers<TEnumerator>(TEnumerator enumerator) where TEnumerator : IPlayerEnumerator<TEnumerator>, allows ref struct
+    {
+        List<Player> players = [];
+
+        while (enumerator.MoveNext())
+        {
+            players.Add(enumerator.Current);
+        }
+
+        return players;
     }
 }
