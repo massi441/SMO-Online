@@ -36,9 +36,4 @@ internal readonly struct PlayerList
             _players[index] = value;
         }
     }
-
-    public static implicit operator PlayerActiveEnumerator(PlayerList players)
-    {
-        return players.GetEnumerator();
-    }
 }
