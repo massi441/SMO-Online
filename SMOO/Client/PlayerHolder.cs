@@ -8,23 +8,29 @@ internal class PlayerHolder : IPlayerHolder
 {
     private readonly ServerContext _context;
     private readonly PlayerList _players;
+
+    internal const byte DefaultRoomSize = 4;
+    internal const byte MaxRoomSize = 10;
+    internal static readonly string DefaultCostumeName = "Mario";
+
     public PlayerList Players => _players;
     public byte MaxSize => (byte)_players.Length;
 
-    public PlayerHolder(ServerContext context, byte size = Constants.DefaultRoomSize)
+    public PlayerHolder(ServerContext context, byte size = DefaultRoomSize)
     {
         _context = context;
-        _players = new PlayerList(Math.Min(size, Constants.MaxRoomSize));
+        _players = new PlayerList(Math.Min(size, MaxRoomSize));
     }
 
     public ServerResult<Player> RegisterPlayer(PlayerRegisterInfo playerInfo)
     {
+
         if (ContainsPlayer(playerInfo))
         {
             return ServerResult<Player>.Failure(ServerError.PlayerAlreadyInRoom);
         }
 
-        if (!TryFindSlot(out byte index))
+        if (!TryFindFreeSlot(out byte index))
         {
             return ServerResult<Player>.Failure(ServerError.RoomFull);
         }
@@ -42,8 +48,8 @@ internal class PlayerHolder : IPlayerHolder
             WorldInfo = new PlayerWorldInfo()
             {
                 CurrentStage = string.Empty,
-                CostumeBody = Constants.DefaultCostumeName,
-                CostumeCap = Constants.DefaultCostumeName
+                CostumeBody = DefaultCostumeName,
+                CostumeCap = DefaultCostumeName
             },
             SyncData = new PlayerSyncData(),
             SequencedPacketStore = new SequencedPacketStore(_context)
@@ -109,7 +115,7 @@ internal class PlayerHolder : IPlayerHolder
 
     // TODO: Merge into one single operation
 
-    private bool TryFindSlot(out byte index)
+    private bool TryFindFreeSlot(out byte index)
     {
         index = 0;
 

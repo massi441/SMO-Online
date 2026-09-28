@@ -105,7 +105,7 @@ internal ref struct PacketPlayersInStage : ISerializableStruct
     [RequiredField]
     public required byte PlayerCount;
 
-    [DynamicRepeatedField(Type = typeof(PlayerInStageInfo), MaxRepeatCount = Constants.MaxRoomSize)]
+    [DynamicRepeatedField(Type = typeof(PlayerInStageInfo), MaxRepeatCount = PlayerHolder.MaxRoomSize)]
     public required PlayerSameStageEnumerator PlayersInStage;
 
     internal ref struct PlayerInStageInfo : ISerializableStruct

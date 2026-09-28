@@ -2,6 +2,9 @@
 
 namespace SMOO.Client;
 
+/// <summary>
+/// A unique identifier for a player, composed of an IP endpoint and Guid token
+/// </summary>
 internal readonly struct PlayerId
 {
     public required IPEndPoint Endpoint { get; init; }

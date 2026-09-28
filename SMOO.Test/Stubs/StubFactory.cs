@@ -1,4 +1,5 @@
-﻿using Core.Memory;
+﻿using System.Net;
+using Core.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using SMOO.Client;
@@ -79,6 +80,19 @@ internal static class StubFactory
         }
 
         return player;
+    }
+
+    /// <summary>
+    /// Creates a player registration request coming from a loopback endpoint on a given port
+    /// </summary>
+    public static PlayerRegisterInfo CreateRegisterInfo(int port = 5000, string name = "Player")
+    {
+        return new PlayerRegisterInfo()
+        {
+            Endpoint = new IPEndPoint(IPAddress.Loopback, port),
+            Name = name,
+            Room = Substitute.For<IRoom>()
+        };
     }
 
     /// <summary>
