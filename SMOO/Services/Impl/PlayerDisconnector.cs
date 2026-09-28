@@ -30,8 +30,6 @@ internal class PlayerDisconnector : IPlayerDisconnector
             return unregisterResult;
         }
 
-        player.Room.Broadcaster.ReliablePacketStore.ClearPlayer(player);
-
         PacketDisconnect disconnectPacket = new PacketDisconnect()
         {
             Header = new PacketHeader()
@@ -46,7 +44,7 @@ internal class PlayerDisconnector : IPlayerDisconnector
 
         using RentedBuffer broadcastBuffer = PacketSerializer.SerializeShared(ref disconnectPacket, Unsafe.SizeOf<PacketDisconnect>());
 
-        player.Room.Broadcaster.BroadcastReliably(broadcastBuffer, player.Room.Players.Active);
+        player.Room.Broadcaster.BroadcastReliably(broadcastBuffer, player.Room.Players.NotInState(PlayerState.Disconnecting));
 
         return ServerResult.Success();
     }

@@ -11,7 +11,7 @@ internal enum RoomMessageType : byte
     Packet,
 
     /// <summary>
-    /// Reliable packets need to be checked and resent if needed
+    /// Sequenced packets need to be checked and resent if needed
     /// </summary>
     PacketResend,
 

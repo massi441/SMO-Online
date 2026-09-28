@@ -24,7 +24,7 @@ internal interface IPacketController
     /// <summary>
     /// Sends a packet
     /// </summary>
-    void SendReliably(RentedBuffer buffer, Player receiver, Room room, byte maxRetries = Constants.MaxRetries, int resendDelay = Constants.DefaultResendDelay);
+    void SendReliably(RentedBuffer buffer, Player receiver, SequencedPacketParams packetParams = default);
 
     ValueTask<SocketReceiveFromResult> ReceiveFromAsync(Memory<byte> buffer, SocketFlags flags, EndPoint remoteEndPoint, CancellationToken cancellationToken = default);
 }

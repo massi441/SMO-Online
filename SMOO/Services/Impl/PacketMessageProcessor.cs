@@ -68,6 +68,7 @@ internal class PacketMessageProcessor : IRoomMessageProcessor
         }
     }
 
+    // TODO: Guard auth based on player state
     private static bool IsAllowedInRoom(Room room, IPEndPoint sender, PacketHeader header, out Player? player)
     {
         if (header.Type == PacketType.ConnectSyn)
@@ -75,7 +76,7 @@ internal class PacketMessageProcessor : IRoomMessageProcessor
             player = null;
             return true;
         }
-
+        
         player = room.PlayerHolder.FindPlayerByHost(sender);
 
         return player != null;

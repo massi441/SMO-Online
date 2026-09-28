@@ -20,20 +20,21 @@ internal class RoomHolder : IRoomHolder
         }
 
         // Generic services
-        PlayerHolder playerHolder = new PlayerHolder();
-        ReliablePacketStore reliablePacketStore = new ReliablePacketStore(context);
-        Broadcaster roomBroadcaster = new Broadcaster(context, reliablePacketStore);
+        PlayerHolder playerHolder = new PlayerHolder(context);
+        Broadcaster roomBroadcaster = new Broadcaster(context);
 
         // Room services (IRoomService and IRoomServiceList)
         PacketMessageProcessor packetProcessor = new PacketMessageProcessor(context);
-        PacketResendMessageProcessor packetResendProcessor = new PacketResendMessageProcessor(context, reliablePacketStore);
+        PacketResendMessageProcessor packetResendProcessor = new PacketResendMessageProcessor(context);
         PlayerHealthMessageProcessor playerHealthProcessor = new PlayerHealthMessageProcessor(context, playerHolder);
 
         RoomMessageProcessorList roomServices = new RoomMessageProcessorList(packetProcessor, packetResendProcessor, playerHealthProcessor);
 
         RoomMessageScheduler messageScheduler = new RoomMessageScheduler(context);
 
-        Room room = new Room(nextId, context, playerHolder, roomBroadcaster, roomServices, messageScheduler);
+        PlayerDisconnector disconnector = new PlayerDisconnector();
+
+        Room room = new Room(nextId, context, playerHolder, roomBroadcaster, roomServices, messageScheduler, disconnector);
 
         _rooms.Add(nextId, room);
 

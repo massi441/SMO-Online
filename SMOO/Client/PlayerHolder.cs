@@ -1,16 +1,19 @@
 ﻿using System.Net;
 using SMOO.Server;
+using SMOO.Services.Impl;
 
 namespace SMOO.Client;
 
 internal class PlayerHolder : IPlayerHolder
 {
+    private readonly ServerContext _context;
     private readonly PlayerList _players;
     public PlayerList Players => _players;
     public byte MaxSize => (byte)_players.Length;
 
-    public PlayerHolder(byte size = Constants.DefaultRoomSize)
+    public PlayerHolder(ServerContext context, byte size = Constants.DefaultRoomSize)
     {
+        _context = context;
         _players = new PlayerList(Math.Min(size, Constants.MaxRoomSize));
     }
 
@@ -42,7 +45,8 @@ internal class PlayerHolder : IPlayerHolder
                 CostumeBody = Constants.DefaultCostumeName,
                 CostumeCap = Constants.DefaultCostumeName
             },
-            SyncData = new PlayerSyncData()
+            SyncData = new PlayerSyncData(),
+            SequencedPacketStore = new SequencedPacketStore(_context)
         };
 
         _players[index] = player;
@@ -56,13 +60,15 @@ internal class PlayerHolder : IPlayerHolder
         {
             if (_players[i] == player)
             {
+                player.SequencedPacketStore.Clear();
+
                 _players[i] = null!;
 
                 return ServerResult.Success();
             }
         }
 
-        return ServerResult.Failure(ServerError.OperationFailed);
+        return ServerResult.Failure(ServerError.PlayerNotFound);
     }
 
     public Player? FindPlayerById(PlayerId id)

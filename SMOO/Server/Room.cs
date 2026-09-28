@@ -12,6 +12,8 @@ namespace SMOO.Server;
 /// </summary>
 internal class Room
 {
+    private readonly IPlayerDisconnector _playerDisconnector;
+    private readonly Stack<Player> _disconnectingPlayers;
     private readonly ServerContext _context;
     private Task _processTask = null!;
     private readonly Channel<RoomMessage> _messages;
@@ -23,12 +25,14 @@ internal class Room
     public IBroadcaster Broadcaster { get; }
     public PlayerList Players => PlayerHolder.Players;
 
-    public Room(ushort roomId, ServerContext conxtext, IPlayerHolder playerHolder, IBroadcaster broadcaster, IRoomMessageProcessorList serviceList, IRoomMessageScheduler messageScheduler)
+    public Room(ushort roomId, ServerContext conxtext, IPlayerHolder playerHolder, IBroadcaster broadcaster, IRoomMessageProcessorList serviceList, IRoomMessageScheduler messageScheduler, IPlayerDisconnector disconnector)
     {
         _context = conxtext;
         _messages = Channel.CreateUnbounded<RoomMessage>();
         _serviceList = serviceList;
         _messageScheduler = messageScheduler;
+        _playerDisconnector = disconnector;
+        _disconnectingPlayers = new Stack<Player>();
 
         Id = roomId;
         PlayerHolder = playerHolder;
@@ -75,6 +79,15 @@ internal class Room
         });
     }
 
+    public void RequestDisconnection(Player player)
+    {
+        if (player.State != PlayerState.Disconnecting)
+        {
+            player.MarkDisconnecting();
+            _disconnectingPlayers.Push(player);
+        }
+    }
+
     /// <summary>
     /// Processes the current messages in the room asychronously by dispatching
     /// them to the appropriate message processor
@@ -83,6 +96,20 @@ internal class Room
     private async Task ProcessMessages()
     {
         await foreach (RoomMessage message in _messages.Reader.ReadAllAsync())
+        {
+            ProcessMessage(in message);
+            DrainDisconnections(); // disconnections requested from the current message are handled here
+        }
+
+        _context.Logger.LogInformation("Room #{RoomId} was shutdown sucessfully", Id);
+    }
+
+    /// <summary>
+    /// Dispatches a message to its message processor.
+    /// </summary>
+    private void ProcessMessage(in RoomMessage message)
+    {
+        try
         {
             IRoomMessageProcessor processor = _serviceList.GetProcessor(message.Type);
 
@@ -97,8 +124,36 @@ internal class Room
                 processor.Process(this, default(Packet));
             }
         }
+        catch (Exception ex)
+        {
+            _context.Logger.LogCritical(ex, "Uncaught exception while processing a {MessageType} message in Room #{RoomId}", message.Type, Id);
+        }
+    }
 
-        _context.Logger.LogInformation("Room #{RoomId} was shutdown sucessfully", Id);
+    /// <summary>
+    /// Disconnects all players with a pending disconnection request
+    /// </summary>
+    private void DrainDisconnections()
+    {
+        while (_disconnectingPlayers.TryPop(out Player? player))
+        {
+            try
+            {
+                ServerResult result = _playerDisconnector.Disconnect(player);
+                if (result.IsSuccess)
+                {
+                    _context.Logger.LogInformation("Successfully disconnected {PlayerName} in Room #{RoomId}", player.Name, Id);
+                }
+                else
+                {
+                    _context.Logger.LogCritical("Failed to disconnected {PlayerName} in Room #{RoomId}: {Error}", player.Name, Id, result.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                _context.Logger.LogCritical(ex, "Uncaught exception while disconnecting {PlayerName} in Room #{RoomId}", player.Name, Id);
+            }
+        }
     }
 
     /// <summary>

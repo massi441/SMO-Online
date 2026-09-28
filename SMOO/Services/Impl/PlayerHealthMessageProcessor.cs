@@ -47,7 +47,7 @@ internal class PlayerHealthMessageProcessor : IRoomMessageProcessor
 
         while (_disconnectedPlayers.TryPop(out Player? disconnectedPlayer))
         {
-            DisconnectPlayer(disconnectedPlayer);
+            room.RequestDisconnection(disconnectedPlayer);
         }
     }
 
@@ -65,27 +65,10 @@ internal class PlayerHealthMessageProcessor : IRoomMessageProcessor
 
         _context.Logger.LogTrace("Player {PlayerName} has been idle for too long in Room #{RoomId}, a health check request will be sent", player.Name, player.Room.Id);
 
-        try
+        ServerResult sendResult = _context.PacketController.Send(buffer, player);
+        if (sendResult.IsFailed)
         {
-            _context.PacketController.Send(buffer, player);
-        }
-        catch (Exception ex)
-        {
-            _context.Logger.LogError("An error occured while sending health check to {PlayerName}: {Message}", player.Name, ex.Message);
-        }
-
-    }
-
-    private void DisconnectPlayer(Player player)
-    {
-        ServerResult disconnectResult = _context.PlayerDisconnector.Disconnect(player);
-        if (disconnectResult.IsSuccess)
-        {
-            _context.Logger.LogInformation("Successfully disconnected {PlayerName} from Room #{RoomId}", player.Name, player.Room.Id);
-        }
-        else
-        {
-            _context.Logger.LogError("Failed to disconnect player {PlayerName} in Room #{RoomId}: {Error}", player.Name, player.Room.Id, disconnectResult.Error!.Value);
+            _context.Logger.LogError("An error occured while sending health check to {PlayerName}: {Error}", player.Name, sendResult.Error);
         }
     }
 }

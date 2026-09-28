@@ -14,7 +14,6 @@ internal enum PacketType : byte
     ChatMessageRequest,
     Event,
     PlayersInStage,
-    MultiPacket,
 
     /// <summary>
     /// A reserved packet type for server side validation

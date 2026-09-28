@@ -4,8 +4,13 @@ using Microsoft.Extensions.Logging;
 
 namespace SMOO.Server;
 
+/// <summary>
+/// The configurator of the SMOO server. 
+/// </summary>
 internal static class Configurator
 {
+    private static readonly string ConfigFileName = "Config.json";
+
     private static JsonSerializerOptions JsonOptions => new JsonSerializerOptions()
     {
         WriteIndented = true,
@@ -75,7 +80,7 @@ internal static class Configurator
     {
         try
         {
-            return Path.Combine(Directory.GetCurrentDirectory(), Constants.ConfigFileName);
+            return Path.Combine(Directory.GetCurrentDirectory(), ConfigFileName);
         }
         catch (UnauthorizedAccessException ex)
         {

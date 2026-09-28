@@ -2,26 +2,29 @@
 
 namespace SMOO.Enumerator;
 
+/// <summary>
+/// An enumerator of players that are not disconnecting, excluding an ignored player
+/// </summary>
 internal ref struct PlayerIgnoreEnumerator : IPlayerEnumerator<PlayerIgnoreEnumerator>
 {
-    private PlayerActiveEnumerator _activeEnumerator;
+    private PlayerNotInStateEnumerator _playerEnumerator;
     private readonly Player _ignoredPlayer;
 
-    public readonly Player Current => _activeEnumerator.Current;
+    public readonly Player Current => _playerEnumerator.Current;
     public PlayerIgnoreEnumerator GetEnumerator() => this;
 
     public PlayerIgnoreEnumerator(ReadOnlySpan<Player> players, Player ignordPlayer)
     {
-        _activeEnumerator = new PlayerActiveEnumerator(players);
+        _playerEnumerator = new PlayerNotInStateEnumerator(players, PlayerState.Disconnecting);
         _ignoredPlayer = ignordPlayer;
     }
 
     public bool MoveNext()
     {
-        bool result = _activeEnumerator.MoveNext();
-        if (_activeEnumerator.Current == _ignoredPlayer)
+        bool result = _playerEnumerator.MoveNext();
+        if (_playerEnumerator.Current == _ignoredPlayer)
         {
-            return _activeEnumerator.MoveNext();
+            return _playerEnumerator.MoveNext();
         }
 
         return result;

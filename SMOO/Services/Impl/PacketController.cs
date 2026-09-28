@@ -11,7 +11,7 @@ namespace SMOO.Services.Impl;
 
 /// <summary>
 /// Controls packet sending/receiving in the server.
-/// Can send both reliable and unreliable packets.
+/// Can send both sequenced and unsequenced packets.
 /// </summary>
 internal class PacketController : IPacketController
 {
@@ -24,8 +24,15 @@ internal class PacketController : IPacketController
 
     public ServerResult Send(ReadOnlySpan<byte> buffer, IPEndPoint receiver)
     {
-        int bytesSent = _socket.SendTo(buffer, receiver);
-        if (bytesSent != buffer.Length)
+        try
+        {
+            int bytesSent = _socket.SendTo(buffer, receiver);
+            if (bytesSent != buffer.Length)
+            {
+                return ServerResult.Failure(ServerError.NotSent);
+            }
+        }
+        catch (SocketException)
         {
             return ServerResult.Failure(ServerError.NotSent);
         }
@@ -54,9 +61,19 @@ internal class PacketController : IPacketController
         return Send(buffer, originalPacket.SenderIp);
     }
 
-    public void SendReliably(RentedBuffer buffer, Player receiver, Room room, byte maxRetries, int resendDelay)
+    public void SendReliably(RentedBuffer buffer, Player receiver, SequencedPacketParams packetParams = default)
     {
-        room.Broadcaster.ReliablePacketStore.UploadPacket(buffer, receiver, maxRetries, resendDelay);
+        if (receiver.State == PlayerState.Disconnecting)
+        {
+            return;
+        }
+
+        ServerResult<SequencedPacket> uploadResult = receiver.SequencedPacketStore.UploadPacket(receiver, buffer, packetParams);
+        if (uploadResult.IsFailed)
+        {
+            receiver.Room.RequestDisconnection(receiver);
+            return;
+        }
 
         Send(buffer.UsedSpan, receiver);
     }

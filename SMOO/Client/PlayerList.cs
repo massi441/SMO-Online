@@ -10,6 +10,8 @@ internal readonly struct PlayerList
     private readonly Player[] _players;
     public int Length => _players.Length;
     public PlayerActiveEnumerator Active => new PlayerActiveEnumerator(_players);
+    public PlayerInStateEnumerator InState(PlayerState state) => new PlayerInStateEnumerator(_players, state);
+    public PlayerNotInStateEnumerator NotInState(PlayerState state) => new PlayerNotInStateEnumerator(_players, state);
     public PlayerIgnoreEnumerator Except(Player player) => new PlayerIgnoreEnumerator(_players, player);
     public PlayerSameStageEnumerator SameStageAs(Player player) => new PlayerSameStageEnumerator(_players, player);
     public PlayerInRoomInfoEnumerator PlayerInfos() => new PlayerInRoomInfoEnumerator(_players);
