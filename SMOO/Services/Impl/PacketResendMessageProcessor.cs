@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using SMOO.Client;
+﻿using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Services.Interface;
@@ -18,7 +17,7 @@ internal class PacketResendMessageProcessor : IRoomMessageProcessor
         _context = context;
     }
 
-    public void Process(Room room, Packet packet)
+    public void Process(Room room, NetworkPacket packet)
     {
         //_context.Logger.LogTrace("Packet resend message processor invoked in Room #{RoomId}", room.Id);
 

@@ -1,6 +1,7 @@
 ﻿using SMOO.Protocol;
 using SMOO.Server;
 using Microsoft.Extensions.Logging;
+using SMOO.Services.Impl;
 
 namespace SMOO.Handle;
 
@@ -9,7 +10,7 @@ internal class PacketAckHandler : IPacketHandler
     public static ushort MinPayloadSize => 0;
     public static ushort MaxPayloadSize => 0;
 
-    public static void Handle(ParsedPacket packet, Room room, ServerContext context)
+    public static void Handle(RoomPacket packet, Room room, ServerContext context)
     {
         ushort sequenceNumber = packet.Header.SequenceNumber;
 

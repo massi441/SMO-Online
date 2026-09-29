@@ -5,6 +5,9 @@ using Core.Memory;
 
 namespace SMOO.Protocol;
 
+/// <summary>
+/// Represents a packet that is sent to a player with a sequence number, and can be resent if not acknowledged within a certain time frame
+/// </summary>
 internal class SequencedPacket
 {
     private int _tries;
@@ -45,6 +48,9 @@ internal class SequencedPacket
         return _tries > 0; 
     }
 
+    /// <summary>
+    /// Writes the sequence number to the packet buffer
+    /// </summary>
     public void WriteSequenceNumber()
     {
         PacketUtil.WriteSequenceNumber(Buffer.UsedSpan, SequenceNumber);

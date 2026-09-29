@@ -3,7 +3,7 @@
 namespace SMOO.Client;
 
 /// <summary>
-/// A wrapper around a list of players with predefined span iterators
+/// A wrapper around a list of players with predefined span player iterators
 /// </summary>
 internal readonly struct PlayerList
 {
@@ -35,10 +35,5 @@ internal readonly struct PlayerList
         {
             _players[index] = value;
         }
-    }
-
-    public static implicit operator PlayerActiveEnumerator(PlayerList players)
-    {
-        return players.GetEnumerator();
     }
 }

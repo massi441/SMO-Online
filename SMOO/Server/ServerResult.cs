@@ -1,5 +1,8 @@
 namespace SMOO.Server;
 
+/// <summary>
+/// Represents the result of a server operation, which can either be a success or a failure with an associated error.
+/// </summary>
 internal readonly struct ServerResult
 {
     private readonly ServerError? _error;
@@ -18,6 +21,10 @@ internal readonly struct ServerResult
     public static ServerResult Failure(ServerError error) => new ServerResult(error);
 }
 
+/// <summary>
+/// Represents the result of a server operation that returns data of type T, which can either be a success with the data or a failure with an associated error.
+/// </summary>
+/// <typeparam name="T">The type of the data returned by the server operation on success</typeparam>
 internal readonly struct ServerResult<T>
 {
     private readonly T? _data;

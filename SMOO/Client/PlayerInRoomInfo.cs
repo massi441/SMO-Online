@@ -4,7 +4,10 @@ using SMOO.Server;
 
 namespace SMOO.Client;
 
-internal readonly struct PlayerInRoomInfo
+/// <summary>
+/// The information about a player already in the room a new player has joined
+/// </summary>
+internal readonly record struct PlayerInRoomInfo
 {
     [RequiredField]
     public readonly byte PlayerIndex;

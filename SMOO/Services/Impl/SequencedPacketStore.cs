@@ -13,12 +13,14 @@ internal class SequencedPacketStore : ISequencedPacketStore
     private readonly SequencedPacket?[] _packets;
     private ushort _nextSequenceNumber = 0;
 
-    internal const ushort StoreSize = 32;
+    internal const ushort MaxStoreSize = 32;
+
+    public int Capacity => _packets.Length;
 
     public SequencedPacketStore(ServerContext context)
     {
         _context = context;
-        _packets = new SequencedPacket[StoreSize];
+        _packets = new SequencedPacket[MaxStoreSize];
     }
 
     public ServerResult<SequencedPacket> UploadPacket(Player receiver, RentedBuffer buffer, SequencedPacketParams packetParams = default)
@@ -68,16 +70,20 @@ internal class SequencedPacketStore : ISequencedPacketStore
         return ClearPacketIfPresent(slot);
     }
 
-    public void Clear()
+    public int Clear()
     {
+        int removedCount = 0;
         for (int i = 0; i < _packets.Length; i++)
         {
             SequencedPacket? releasedPacket = ClearPacketIfPresent(i);
             if (releasedPacket != null)
             {
+                removedCount++;
                 _context.Logger.LogInformation("Cleared sequenced {SequenceNumber} packet from {PlayerName}", releasedPacket.SequenceNumber, releasedPacket.Receiver.Name);
             }
         }
+
+        return removedCount;
     }
 
     public void ResendPackets()

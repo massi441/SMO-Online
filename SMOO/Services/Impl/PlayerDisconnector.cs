@@ -36,15 +36,15 @@ internal class PlayerDisconnector : IPlayerDisconnector
             {
                 Type = PacketType.Disconnect,
                 Flags = (byte)PacketFlags.None,
-                Version = Constants.Version,
-                RoomId = player.Room.Id,
+                Version = PacketHeader.DefaultVersion,
+                RoomId = (ushort)player.Room.Id,
             },
             PlayerSlot = player.Slot
         };
 
-        using RentedBuffer broadcastBuffer = PacketSerializer.SerializeShared(ref disconnectPacket, Unsafe.SizeOf<PacketDisconnect>());
+        using RentedBuffer broadcastBuffer = PacketSerializer.SerializeRent(ref disconnectPacket, Unsafe.SizeOf<PacketDisconnect>());
 
-        player.Room.Broadcaster.BroadcastReliably(broadcastBuffer, player.Room.Players.NotInState(PlayerState.Disconnecting));
+        player.Room.Broadcaster.BroadcastReliably(broadcastBuffer, player.Room.PlayerHolder.Players.NotInState(PlayerState.Disconnecting));
 
         return ServerResult.Success();
     }

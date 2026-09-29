@@ -4,13 +4,14 @@ using Microsoft.Extensions.Logging;
 using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Services.Interface;
+using SMOO.Server;
 
-namespace SMOO.Server;
+namespace SMOO.Services.Impl;
 
 /// <summary>
-/// Represents a room of players in SMOO, from which messages can be relayed.
+/// Represents a room of players in SMOO, from which packets and messages can be relayed.
 /// </summary>
-internal class Room
+internal class Room : IRoom
 {
     private readonly IPlayerDisconnector _playerDisconnector;
     private readonly Stack<Player> _disconnectingPlayers;
@@ -20,12 +21,12 @@ internal class Room
     private readonly IRoomMessageProcessorList _serviceList;
     private readonly IRoomMessageScheduler _messageScheduler;
     
-    public ushort Id { get; }
+    public int Id { get; }
     public IPlayerHolder PlayerHolder { get; }
     public IBroadcaster Broadcaster { get; }
     public PlayerList Players => PlayerHolder.Players;
 
-    public Room(ushort roomId, ServerContext conxtext, IPlayerHolder playerHolder, IBroadcaster broadcaster, IRoomMessageProcessorList serviceList, IRoomMessageScheduler messageScheduler, IPlayerDisconnector disconnector)
+    public Room(int roomId, ServerContext conxtext, IPlayerHolder playerHolder, IBroadcaster broadcaster, IRoomMessageProcessorList serviceList, IRoomMessageScheduler messageScheduler, IPlayerDisconnector disconnector)
     {
         _context = conxtext;
         _messages = Channel.CreateUnbounded<RoomMessage>();
@@ -44,6 +45,11 @@ internal class Room
     /// </summary>
     public void Start()
     {
+        if (_processTask != null)
+        {
+            throw new Exception($"Room {Id} was already started");
+        }
+
         _processTask = Task.Run(ProcessMessages, _context.CancellationToken);
         _messageScheduler.Start(this);
     }
@@ -113,7 +119,7 @@ internal class Room
         {
             IRoomMessageProcessor processor = _serviceList.GetProcessor(message.Type);
 
-            Packet? packet = message.Packet;
+            NetworkPacket? packet = message.Packet;
             if (packet != null)
             {
                 using RentedBuffer buffer = packet.Value.Buffer;
@@ -121,7 +127,7 @@ internal class Room
             }
             else
             {
-                processor.Process(this, default(Packet));
+                processor.Process(this, default(NetworkPacket));
             }
         }
         catch (Exception ex)

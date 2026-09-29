@@ -26,7 +26,7 @@ internal class PlayerHealthMessageProcessor : IRoomMessageProcessor
         _disconnectedPlayers = new Stack<Player>(_playerHolder.MaxSize);
     }
 
-    public void Process(Room room, Packet packet)
+    public void Process(Room room, NetworkPacket packet)
     {
         Debug.Assert(room.PlayerHolder == _playerHolder, "PlayerHolder in health check is different from the room it is processing");
 
@@ -57,11 +57,11 @@ internal class PlayerHealthMessageProcessor : IRoomMessageProcessor
         {
             Type = PacketType.HealthCheck,
             Flags = 0,
-            Version = Constants.Version,
-            RoomId = player.Room.Id
+            Version = PacketHeader.DefaultVersion,
+            RoomId = (ushort)player.Room.Id
         };
 
-        using RentedBuffer buffer = PacketSerializer.SerializeShared(ref header, Unsafe.SizeOf<PacketHeader>());
+        using RentedBuffer buffer = PacketSerializer.SerializeRent(ref header, Unsafe.SizeOf<PacketHeader>());
 
         _context.Logger.LogTrace("Player {PlayerName} has been idle for too long in Room #{RoomId}, a health check request will be sent", player.Name, player.Room.Id);
 

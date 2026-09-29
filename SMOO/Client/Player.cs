@@ -11,7 +11,7 @@ internal class Player
     public required string Name { get; init; }
     public required PlayerWorldInfo WorldInfo { get; init; }
     public required PlayerSyncData SyncData { get; init; }
-    public required Room Room { get; init; }
+    public required IRoom Room { get; init; }
     public required byte Slot { get; init; }
     public PlayerState State { get; private set; } = PlayerState.Connecting; // TODO: Uncomment and add auth to room
     public DateTime LastSeen { get; private set; } = DateTime.UtcNow;

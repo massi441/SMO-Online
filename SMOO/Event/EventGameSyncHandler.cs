@@ -6,6 +6,7 @@ using SMOO.Protocol;
 using SMOO.Server;
 using Core.Memory;
 using Core.Memory.Attributes;
+using SMOO.Services.Impl;
 
 namespace SMOO.Event;
 
@@ -100,7 +101,7 @@ internal class EventGameSyncHandler : IEventHandler
         }
     }
 
-    public static void Handle(ParsedEventPacket eventPacket, Room room, ServerContext context)
+    public static void Handle(EventPacket eventPacket, Room room, ServerContext context)
     {
         try
         {

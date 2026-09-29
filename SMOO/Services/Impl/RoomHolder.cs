@@ -5,12 +5,14 @@ using SMOO.Services.Interface;
 
 namespace SMOO.Services.Impl;
 
+// TODO: Use array or list as backing container
+
 internal class RoomHolder : IRoomHolder
 {
     private readonly Dictionary<ushort, Room> _rooms = [];
 
     // TODO: Figure out lightweight synchronization
-    public Room AddRoom(ServerContext context)
+    public IRoom AddRoom(ServerContext context)
     {
         ushort nextId = 0;
 
@@ -56,7 +58,7 @@ internal class RoomHolder : IRoomHolder
         return false;
     }
 
-    public Room? GetRoom(ushort id)
+    public IRoom? GetRoom(ushort id)
     {
         if (_rooms.TryGetValue(id, out Room? room))
         {
@@ -71,7 +73,7 @@ internal class RoomHolder : IRoomHolder
         return Task.WhenAll(_rooms.Values.Select(room => room.Shutdown()));
     }
 
-    public IEnumerable<Room> GetRooms()
+    public IEnumerable<IRoom> GetRooms()
     {
         return _rooms.Values;
     }

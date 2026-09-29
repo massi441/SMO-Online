@@ -4,6 +4,7 @@ using SMOO.Protocol;
 using SMOO.Server;
 using Core.Memory;
 using Core.Memory.Attributes;
+using SMOO.Services.Impl;
 
 namespace SMOO.Event;
 
@@ -24,7 +25,7 @@ internal class EventChangeCapHandler : IEventHandler
         }
     }
 
-    public static void Handle(ParsedEventPacket packet, Room room, ServerContext context)
+    public static void Handle(EventPacket packet, Room room, ServerContext context)
     {
         Player player = packet.BasePacket.SenderPlayer!;
 

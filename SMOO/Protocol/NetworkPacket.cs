@@ -8,7 +8,7 @@ namespace SMOO.Protocol;
 /// <summary>
 /// Represents a network packet ready to be processed by the server
 /// </summary>
-internal readonly struct Packet
+internal readonly struct NetworkPacket
 {
     /// <summary>
     /// The sender of the packet
@@ -26,9 +26,12 @@ internal readonly struct Packet
     public ref PacketHeader Header => ref MemoryMarshal.AsRef<PacketHeader>(Buffer.UsedSpan);
 
     /// <summary>
-    /// The full size of the packet
+    /// The full size of the packet, including the header and payload
     /// </summary>
     public int FullSize => Buffer.UsedBytes;
 
+    /// <summary>
+    /// The size of the payload of the packet. (The size of the packet minus the size of the header)
+    /// </summary>
     public int PayloadSize => Buffer.UsedBytes - Unsafe.SizeOf<PacketHeader>();
 }

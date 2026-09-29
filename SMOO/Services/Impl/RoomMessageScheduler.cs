@@ -28,7 +28,7 @@ internal class RoomMessageScheduler : IRoomMessageScheduler
         _packetResendTask = ScheduleMessage(RoomMessageType.PacketResend, PacketResendDelay);
         _playerHealthCheckTask = ScheduleMessage(RoomMessageType.PlayerHealthCheck, PlayerHealthCheckDelay);
 
-        _context.Logger.LogInformation("Starting message scheduler in Room #{RoomId}", room.Id);
+        _context.Logger.LogInformation("Started message scheduler in Room #{RoomId}", room.Id);
     }
 
     /// <summary>

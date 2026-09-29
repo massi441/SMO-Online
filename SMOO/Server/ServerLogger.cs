@@ -3,7 +3,7 @@
 namespace SMOO.Server;
 
 /// <summary>
-/// A decorator around an existing logger, with an mutable log level
+/// A decorator around an existing logger, with a mutable log level
 /// </summary>
 internal class ServerLogger : ILogger
 {

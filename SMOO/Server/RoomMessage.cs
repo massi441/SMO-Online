@@ -9,6 +9,13 @@ namespace SMOO.Server;
 /// </summary>
 internal readonly struct RoomMessage
 {
+    /// <summary>
+    /// The type of the message
+    /// </summary>
     public required RoomMessageType Type { get; init; }
-    public Packet? Packet { get; init; }
+
+    /// <summary>
+    /// The optional packet tied to the message, if any
+    /// </summary>
+    public NetworkPacket? Packet { get; init; }
 }

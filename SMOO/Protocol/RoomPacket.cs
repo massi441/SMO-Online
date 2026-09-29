@@ -3,13 +3,14 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Core.Memory;
 using SMOO.Client;
+using SMOO.Handle;
 
 namespace SMOO.Protocol;
 
 /// <summary>
-/// Represents a network packet with a parsed header, ready to be handled by a server handler
+/// Represents a network packet with a validated header, ready to be processed by a <see cref="IPacketHandler"/>
 /// </summary>
-internal readonly struct ParsedPacket
+internal readonly struct RoomPacket
 {
     public required IPEndPoint SenderIp { get; init; }
     public required RentedBuffer Buffer { get; init; }
@@ -25,5 +26,8 @@ internal readonly struct ParsedPacket
     /// </summary>
     public Span<byte> Payload => Buffer.UsedSpan[Unsafe.SizeOf<PacketHeader>()..];
 
+    /// <summary>
+    /// The full size of the packet, including the header and payload
+    /// </summary>
     public int FullSize => Buffer.UsedBytes;
 }

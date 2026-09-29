@@ -4,7 +4,7 @@ using SMOO.Services.Interface;
 namespace SMOO.Server;
 
 /// <summary>
-/// The single object containing services needed to run the server
+/// The context object containing services needed to run the server
 /// </summary>
 internal class ServerContext
 {
@@ -27,9 +27,4 @@ internal class ServerContext
     /// The cancellation used to signal a server shutdown
     /// </summary>
     public required CancellationToken CancellationToken { get; init; }
-
-    /// <summary>
-    /// The configuration used by the server
-    /// </summary>
-    public required ServerConfig Config { get; init; }
 }

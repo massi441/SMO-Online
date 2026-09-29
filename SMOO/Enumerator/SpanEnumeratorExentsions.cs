@@ -13,4 +13,3 @@ internal static class SpanEnumeratorExentsions
         return count;
     }
 }
-

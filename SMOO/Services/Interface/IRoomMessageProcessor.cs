@@ -1,5 +1,5 @@
 ﻿using SMOO.Protocol;
-using SMOO.Server;
+using SMOO.Services.Impl;
 
 namespace SMOO.Services.Interface;
 
@@ -8,5 +8,10 @@ namespace SMOO.Services.Interface;
 /// </summary>
 internal interface IRoomMessageProcessor
 {
-    void Process(Room room, Packet packet);
+    /// <summary>
+    /// Processes messages received in a room, handling the logic for each message type and updating the room state accordingly
+    /// </summary>
+    /// <param name="room">The room in which the message was received</param>
+    /// <param name="packet">The network packet containing the message</param>
+    void Process(Room room, NetworkPacket packet);
 }

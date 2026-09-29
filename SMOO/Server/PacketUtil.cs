@@ -5,8 +5,16 @@ using Core.Memory;
 
 namespace SMOO.Server;
 
+/// <summary>
+/// A static utility class for packet-related operations.
+/// </summary>
 internal static class PacketUtil
 {
+    /// <summary>
+    /// Writes the sequence number to the specified destination span at the correct offset for the PacketHeader structure.
+    /// </summary>
+    /// <param name="destination">The buffer to write the sequence number to.</param>
+    /// <param name="sequenceNumber">The sequence number to write.</param>
     public static void WriteSequenceNumber(Span<byte> destination, ushort sequenceNumber)
     {
         SpanWriter writer = new SpanWriter(destination);
@@ -17,7 +25,13 @@ internal static class PacketUtil
         writer.Write(sequenceNumber);
     }
 
-    public static void AckPacket(ParsedPacket originalPacket, ServerContext context)
+    /// <summary>
+    /// Sends an acknowledgment packet for the specified original packet and logs the result.
+    /// Does not return the success or failure status.
+    /// </summary>
+    /// <param name="originalPacket">The original packet to acknowledge, containing the sequence number.</param>
+    /// <param name="context">The server context.</param>
+    public static void AckPacket(RoomPacket originalPacket, ServerContext context)
     {
         ServerResult ackResult = context.PacketController.SendAck(originalPacket);
         if (ackResult.IsSuccess)
@@ -30,9 +44,15 @@ internal static class PacketUtil
         }
     }
 
-    public static void AckEvent(ParsedEventPacket originalPacket, ServerContext context)
+    /// <summary>
+    /// Sends an acknowledgment packet for the specified original event packet and logs the result.
+    /// Does not return the success or failure status
+    /// </summary>
+    /// <param name="originalPacket">The original event packet to acknowledge.</param>
+    /// <param name="context">The server context.</param>
+    public static void AckEvent(EventPacket originalPacket, ServerContext context)
     {
-        ParsedPacket basePacket = originalPacket.BasePacket;
+        RoomPacket basePacket = originalPacket.BasePacket;
 
         ServerResult ackResult = context.PacketController.SendAck(basePacket);
         if (ackResult.IsSuccess)

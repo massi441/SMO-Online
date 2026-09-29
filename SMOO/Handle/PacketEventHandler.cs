@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SMOO.Event;
 using SMOO.Protocol;
 using SMOO.Server;
+using SMOO.Services.Impl;
 
 namespace SMOO.Handle;
 
@@ -11,9 +12,9 @@ internal class PacketEventHandler : IPacketHandler
     public static ushort MinPayloadSize => (ushort)Unsafe.SizeOf<EventHeader>();
     public static ushort MaxPayloadSize => Constants.MaxBufferSize;
 
-    public static void Handle(ParsedPacket packet, Room room, ServerContext context)
+    public static void Handle(RoomPacket packet, Room room, ServerContext context)
     {
-        ParsedEventPacket eventPacket = new ParsedEventPacket() { BasePacket = packet };
+        EventPacket eventPacket = new EventPacket() { BasePacket = packet };
 
         EventType eventType = eventPacket.EventHeader.Type;
 

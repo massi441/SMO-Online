@@ -1,15 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace SMOO.Server;
+﻿namespace SMOO.Server;
 
 // TODO: Inline in files
 
 internal class Constants
 {
-    // Packet
-    public const uint Magic = 0x534D4F4F; // "SMOO"
-    public const byte Version = 1;
-
     // Data constraints
     public const byte MaxPlayerNameLength = 50;
 
@@ -20,16 +14,9 @@ internal class Constants
     public const ushort MaxChatMessageLength = 512;
     public const ushort MaxBufferSize = 2048;
 
-    // Room
-    public const byte DefaultRoomSize = 4;
-    public const byte MaxRoomSize = 10;
-
     // Threading/Time
     public const int PlayerHealthCheckThreshold = 3000;
     public const int PlayerConnectionLostThreshold = 10000;
-
-    // Player
-    public static readonly string DefaultCostumeName = "Mario";
 
     // Server Config
 }

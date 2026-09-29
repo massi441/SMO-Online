@@ -3,8 +3,11 @@ using Microsoft.Extensions.Logging;
 using SMOO.Client;
 using SMOO.Protocol;
 using SMOO.Server;
+using SMOO.Services.Impl;
 
 namespace SMOO.Handle;
+
+// TODO: Return room information to player from here (after auth is implemented)
 
 /// <summary>
 /// The packet handler that completes the connection handshake with the client
@@ -14,7 +17,7 @@ internal class PacketConnectAckHandler : IPacketHandler
     public static ushort MinPayloadSize => 0;
     public static ushort MaxPayloadSize => 0;
 
-    public static void Handle(ParsedPacket packet, Room room, ServerContext context)
+    public static void Handle(RoomPacket packet, Room room, ServerContext context)
     {
         ushort sequenceNumber = packet.Header.SequenceNumber;
 
@@ -33,7 +36,7 @@ internal class PacketConnectAckHandler : IPacketHandler
             PlayerRoomInfo = new PlayerInRoomInfo(packet.SenderPlayer!)
         };
 
-        using RentedBuffer joinRoomBuffer = PacketSerializer.SerializeShared(ref joinPacket, RequiredSize<PacketPlayerJoinRoom>.MaxSize);
+        using RentedBuffer joinRoomBuffer = PacketSerializer.SerializeRent(ref joinPacket, RequiredSize<PacketPlayerJoinRoom>.MaxSize);
 
         context.Logger.LogInformation("Player {PlayerName} has confirmed their connection in Room #{RoomId}, room will be notified", packet.SenderPlayer!.Name, room.Id);
 
