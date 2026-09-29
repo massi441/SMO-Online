@@ -11,7 +11,7 @@ class Program
     {
         SMOOUpdater.WipeUpdateTempDirFrom();
 
-        if (await RequestUpdate())
+        if (await RequestUpdateToUser())
         {
             return;
         }
@@ -56,13 +56,12 @@ class Program
         }
     }
 
-    private static async Task<bool> RequestUpdate()
+    private static async Task<bool> RequestUpdateToUser()
     {
         ServerLogger logger = ServerLoggerFactory.Instance();
 
         try
         {
-
             SMOOUpdater updater = new SMOOUpdater();
 
             GithubUpdateCheck updateCheck = await updater.CheckUpdate();

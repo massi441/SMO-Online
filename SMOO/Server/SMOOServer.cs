@@ -20,6 +20,9 @@ internal class SMOOServer : IDisposable
 
     private IPEndPoint LocalEndpoint => (IPEndPoint)(_socket!.LocalEndPoint!);
 
+    /// <summary>
+    /// Creates an SMOO server from a context a socket, the server owns the socket and disposes it
+    /// </summary>
     public SMOOServer(ServerContext context, Socket socket)
     {
         _context = context;
