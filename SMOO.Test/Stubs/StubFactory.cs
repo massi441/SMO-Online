@@ -20,7 +20,6 @@ internal static class StubFactory
         return new ServerContext()
         {
             CancellationToken = CancellationToken.None,
-            Config = new ServerConfig(),
             Logger = NullLogger.Instance,
             PacketController = Substitute.For<IPacketController>(),
             RoomHolder = Substitute.For<IRoomHolder>(),
