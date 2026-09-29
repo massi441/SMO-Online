@@ -101,7 +101,7 @@ internal class EventGameSyncHandler : IEventHandler
         }
     }
 
-    public static void Handle(ParsedEventPacket eventPacket, Room room, ServerContext context)
+    public static void Handle(EventPacket eventPacket, Room room, ServerContext context)
     {
         try
         {

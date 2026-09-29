@@ -31,7 +31,7 @@ internal class PacketConnectSynHandler : IPacketHandler
         }
     }
 
-    public static void Handle(ParsedPacket packet, Room room, ServerContext context)
+    public static void Handle(RoomPacket packet, Room room, ServerContext context)
     {
         if (IsInOtherRoom(packet.SenderIp, context, out Player? takenPlayer, out IRoom takenRoom))
         {
@@ -75,7 +75,7 @@ internal class PacketConnectSynHandler : IPacketHandler
             PlayerInfos = playerInfos
         };
 
-        using RentedBuffer ackBuffer = PacketSerializer.SerializeShared(ref ackPacket, Constants.MaxBufferSize);
+        using RentedBuffer ackBuffer = PacketSerializer.SerializeRent(ref ackPacket, Constants.MaxBufferSize);
 
         SequencedPacketParams packetParams = new SequencedPacketParams()
         {

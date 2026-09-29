@@ -11,7 +11,7 @@ internal class PacketDisconnectHandler : IPacketHandler
     public static ushort MinPayloadSize => 0;
     public static ushort MaxPayloadSize => 0;
 
-    public static void Handle(ParsedPacket packet, Room room, ServerContext context)
+    public static void Handle(RoomPacket packet, Room room, ServerContext context)
     {
         Player? player = packet.SenderPlayer;
 

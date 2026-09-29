@@ -7,12 +7,14 @@ using Core.Memory.Attributes;
 namespace SMOO.Protocol;
 
 /// <summary>
-/// The packet sent to a player that just connected to a room
+/// The SYN-ACK packet sent to a player to acknowledge their SYN packet
 /// </summary>
 internal ref struct PacketConnectSynAck : ISerializableStruct
 {
     public required PacketHeader Header;
-    public required Guid SessionId;
+
+    // TODO: Move all of this in ACK when auth implemented
+    public required Guid SessionId; 
     public required byte RoomSize;
     public required byte SelfSlot;
     public required byte OtherPlayersCount;
@@ -34,7 +36,7 @@ internal ref struct PacketConnectSynAck : ISerializableStruct
 }
 
 /// <summary>
-/// The packet sent to acknowledge a sequenced server packet
+/// The packet sent to acknowledge a sequenced packet
 /// </summary>
 internal ref struct PacketAck : ISerializableStruct
 {
@@ -48,7 +50,7 @@ internal ref struct PacketAck : ISerializableStruct
 }
 
 /// <summary>
-/// The packet sent to a room, to notify that a new player has joined
+/// The packet broadcasted to a room, to notify that a new player has joined
 /// </summary>
 internal ref struct PacketPlayerJoinRoom : ISerializableStruct
 {
@@ -95,7 +97,7 @@ internal ref struct PacketChatMessage : ISerializableStruct
 }
 
 /// <summary>
-/// The packet sent to a player that just joined a stage
+/// The packet sent to a player that just joined a stage, containing the list of all players currently in that stage
 /// </summary>
 internal ref struct PacketPlayersInStage : ISerializableStruct
 {

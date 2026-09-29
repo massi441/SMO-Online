@@ -119,7 +119,7 @@ internal class Room : IRoom
         {
             IRoomMessageProcessor processor = _serviceList.GetProcessor(message.Type);
 
-            Packet? packet = message.Packet;
+            NetworkPacket? packet = message.Packet;
             if (packet != null)
             {
                 using RentedBuffer buffer = packet.Value.Buffer;
@@ -127,7 +127,7 @@ internal class Room : IRoom
             }
             else
             {
-                processor.Process(this, default(Packet));
+                processor.Process(this, default(NetworkPacket));
             }
         }
         catch (Exception ex)

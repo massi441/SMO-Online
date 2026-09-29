@@ -25,7 +25,7 @@ internal class EventChangeCapHandler : IEventHandler
         }
     }
 
-    public static void Handle(ParsedEventPacket packet, Room room, ServerContext context)
+    public static void Handle(EventPacket packet, Room room, ServerContext context)
     {
         Player player = packet.BasePacket.SenderPlayer!;
 

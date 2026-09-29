@@ -4,10 +4,6 @@
 
 internal class Constants
 {
-    // Packet
-    public const uint Magic = 0x534D4F4F; // "SMOO"
-    public const byte Version = 1;
-
     // Data constraints
     public const byte MaxPlayerNameLength = 50;
 

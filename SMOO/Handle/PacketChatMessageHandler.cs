@@ -26,7 +26,7 @@ internal class PacketChatMessageHandler : IPacketHandler
         }
     }
 
-    public static void Handle(ParsedPacket packet, Room room, ServerContext context)
+    public static void Handle(RoomPacket packet, Room room, ServerContext context)
     {
         PacketChatMessageRequest request = PacketSerializer.Deserialize<PacketChatMessageRequest>(packet.Payload);
 
@@ -39,7 +39,7 @@ internal class PacketChatMessageHandler : IPacketHandler
             Message = request.Message,
         };
 
-        using RentedBuffer chatBuffer = PacketSerializer.SerializeShared(ref chatPacket, RequiredSize<PacketChatMessage>.MaxSize);
+        using RentedBuffer chatBuffer = PacketSerializer.SerializeRent(ref chatPacket, RequiredSize<PacketChatMessage>.MaxSize);
 
         room.Broadcaster.BroadcastReliably(chatBuffer, room.Players.Except(packet.SenderPlayer));
     }

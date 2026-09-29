@@ -29,7 +29,7 @@ internal class EventChangeStageHandler : IEventHandler
         }
     }
 
-    public static void Handle(ParsedEventPacket packet, Room room, ServerContext context)
+    public static void Handle(EventPacket packet, Room room, ServerContext context)
     {
         ChangeStageData data = PacketSerializer.Deserialize<ChangeStageData>(packet.EventData);
 
@@ -62,7 +62,7 @@ internal class EventChangeStageHandler : IEventHandler
                 PlayersInStage = playersInStage
             };
 
-            using RentedBuffer buffer = PacketSerializer.SerializeShared(ref playersInStagePacket, RequiredSize<PacketPlayersInStage>.MaxSize);
+            using RentedBuffer buffer = PacketSerializer.SerializeRent(ref playersInStagePacket, RequiredSize<PacketPlayersInStage>.MaxSize);
 
             context.Logger.LogInformation("{PlayerCount} players were already in stage {StageName}, {PlayerName} will be notified", inStageCount, data.NewStage, player.Name);
 

@@ -20,7 +20,7 @@ internal class PacketMessageProcessor : IRoomMessageProcessor
         _context = context;
     }
 
-    public void Process(Room room, Packet packet)
+    public void Process(Room room, NetworkPacket packet)
     {
         try
         {
@@ -46,7 +46,7 @@ internal class PacketMessageProcessor : IRoomMessageProcessor
                 return;
             }
 
-            ParsedPacket parsedPacket = new ParsedPacket()
+            RoomPacket parsedPacket = new RoomPacket()
             {
                 SenderPlayer = player,
                 Buffer = packet.Buffer,

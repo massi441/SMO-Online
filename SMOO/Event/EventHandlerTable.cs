@@ -9,9 +9,9 @@ internal readonly unsafe struct EventHandler
 {
     public readonly ushort MinDataSize;
     public readonly ushort MaxDataSize;
-    public readonly delegate*<ParsedEventPacket, Room, ServerContext, void> Handle;
+    public readonly delegate*<EventPacket, Room, ServerContext, void> Handle;
 
-    public EventHandler(ushort minPayloadSize, ushort maxPayloadSize, delegate*<ParsedEventPacket, Room, ServerContext, void> handle)
+    public EventHandler(ushort minPayloadSize, ushort maxPayloadSize, delegate*<EventPacket, Room, ServerContext, void> handle)
     {
         MinDataSize = minPayloadSize;
         MaxDataSize = maxPayloadSize;

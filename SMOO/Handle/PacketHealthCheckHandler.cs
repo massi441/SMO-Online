@@ -10,7 +10,7 @@ internal class PacketHealthCheckHandler : IPacketHandler
     public static ushort MinPayloadSize => 0;
     public static ushort MaxPayloadSize => 0;
 
-    public static void Handle(ParsedPacket packet, Room room, ServerContext context)
+    public static void Handle(RoomPacket packet, Room room, ServerContext context)
     {
         context.Logger.LogTrace("Health check accepted");
     }

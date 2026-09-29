@@ -45,7 +45,7 @@ internal class PacketController : IPacketController
         return Send(buffer, receiver.Endpoint);
     }
 
-    public ServerResult SendAck(ParsedPacket originalPacket)
+    public ServerResult SendAck(RoomPacket originalPacket)
     {
         PacketAck ackPacket = new PacketAck()
         {

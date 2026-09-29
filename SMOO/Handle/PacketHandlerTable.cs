@@ -13,9 +13,9 @@ internal readonly unsafe struct PacketHandler
 {
     public readonly ushort MinPayloadSize;
     public readonly ushort MaxPayloadSize;
-    public readonly delegate*<ParsedPacket, Room, ServerContext, void> Handler;
+    public readonly delegate*<RoomPacket, Room, ServerContext, void> Handler;
 
-    public PacketHandler(ushort minPayloadSize, ushort maxPayloadSize, delegate*<ParsedPacket, Room, ServerContext, void> handler)
+    public PacketHandler(ushort minPayloadSize, ushort maxPayloadSize, delegate*<RoomPacket, Room, ServerContext, void> handler)
     {
         MinPayloadSize = minPayloadSize;
         MaxPayloadSize = maxPayloadSize;

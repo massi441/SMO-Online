@@ -1,5 +1,8 @@
 ﻿namespace SMOO.Server;
 
+/// <summary>
+/// Represents various server error codes that can occur during packet handling, sending, room management, or anything else happening within the server.
+/// </summary>
 internal enum ServerError
 {
     // Packet header

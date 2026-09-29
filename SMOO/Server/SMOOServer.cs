@@ -16,7 +16,7 @@ internal class SMOOServer : IDisposable
 {
     private readonly ServerContext _context;
     private readonly Socket _socket;
-    private readonly Channel<Packet> _packets;
+    private readonly Channel<NetworkPacket> _packets;
 
     private IPEndPoint LocalEndpoint => (IPEndPoint)(_socket!.LocalEndPoint!);
 
@@ -27,7 +27,7 @@ internal class SMOOServer : IDisposable
     {
         _context = context;
         _socket = socket;
-        _packets = Channel.CreateUnbounded<Packet>();
+        _packets = Channel.CreateUnbounded<NetworkPacket>();
     }
 
     public async Task Run(CancellationToken cancellationToken, bool addDefaultRoom = true)
@@ -73,7 +73,7 @@ internal class SMOOServer : IDisposable
                 if (receiveResult.ReceivedBytes > 0)
                 {
                     buffer.Restrict(receiveResult.ReceivedBytes);
-                    _packets.Writer.TryWrite(new Packet
+                    _packets.Writer.TryWrite(new NetworkPacket
                     {
                         Sender = (IPEndPoint)receiveResult.RemoteEndPoint,
                         Buffer = buffer.Transfer()
@@ -111,7 +111,7 @@ internal class SMOOServer : IDisposable
 
     private async Task ProcessLoop(CancellationToken cancellationTokenSource)
     {
-        await foreach (Packet packet in _packets.Reader.ReadAllAsync(cancellationTokenSource))
+        await foreach (NetworkPacket packet in _packets.Reader.ReadAllAsync(cancellationTokenSource))
         {
             using RentedBuffer buffer = packet.Buffer;
 
@@ -123,7 +123,7 @@ internal class SMOOServer : IDisposable
         }
     }
 
-    private static ServerResult ProcessPacket(Packet packet, ServerContext context)
+    private static ServerResult ProcessPacket(NetworkPacket packet, ServerContext context)
     {
         if (!IsValidHeaderSize(packet.Buffer))
         {
@@ -132,7 +132,7 @@ internal class SMOOServer : IDisposable
 
         ref PacketHeader header = ref packet.Header;
 
-        if (header.Magic != Constants.Magic)
+        if (header.Magic != PacketHeader.SMOOMagic)
         {
             return ServerResult.Failure(ServerError.InvalidMagic);
         }
@@ -160,7 +160,7 @@ internal class SMOOServer : IDisposable
             return ServerResult.Failure(ServerError.RoomNotFound);
         }
 
-        Packet roomPacket = new Packet
+        NetworkPacket roomPacket = new NetworkPacket
         {
             Buffer = packet.Buffer.Transfer(),
             Sender = packet.Sender
@@ -177,7 +177,7 @@ internal class SMOOServer : IDisposable
 
     private static bool IsValidVersion(byte version)
     {
-        return version == Constants.Version;
+        return version == PacketHeader.DefaultVersion;
     }
 
     private static bool IsValidHeaderSize(ReadOnlySpan<byte> span)
