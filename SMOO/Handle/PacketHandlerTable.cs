@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Core.Util;
 using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Services.Impl;
@@ -37,8 +38,7 @@ internal static unsafe class PacketHandlerTable
     private static readonly PacketHandler HealthCheck           = MakeHandler<PacketHealthCheckHandler>();
     private static readonly PacketHandler Ping                  = DefaultHandler;
     private static readonly PacketHandler Ack                   = MakeHandler<PacketAckHandler>();
-    private static readonly PacketHandler ChatMessage           = DefaultHandler;
-    private static readonly PacketHandler ChatMessageRequest    = MakeHandler<PacketChatMessageHandler>();
+    private static readonly PacketHandler ChatMessage           = MakeHandler<PacketChatMessageHandler>();
     private static readonly PacketHandler Event                 = MakeHandler<PacketEventHandler>();
     private static readonly PacketHandler PlayersInStage        = DefaultHandler;
 
@@ -53,14 +53,13 @@ internal static unsafe class PacketHandlerTable
         Ping,
         Ack,
         ChatMessage,
-        ChatMessageRequest,
         Event,
         PlayersInStage
     ];
 
     static PacketHandlerTable()
     {
-        Debug.Assert(Handlers.Length == (byte)PacketType.OutOfRange, "Handlers table is out of sync with PacketType enum");
+        Debug.Assert(Handlers.Length == EnumUtil.GetEnumCount<PacketType>(), "Handlers table is out of sync with PacketType enum");
     }
 
     public static PacketHandler GetHandler(PacketType type)

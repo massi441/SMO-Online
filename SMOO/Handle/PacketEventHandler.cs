@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Core.Util;
 using Microsoft.Extensions.Logging;
 using SMOO.Event;
 using SMOO.Protocol;
@@ -7,18 +8,26 @@ using SMOO.Services.Impl;
 
 namespace SMOO.Handle;
 
+/// <summary>
+/// Handles an incoming event packet, dispatching it to the appropriate event handler based on the event type.
+/// </summary>
 internal class PacketEventHandler : IPacketHandler
 {
     public static ushort MinPayloadSize => (ushort)Unsafe.SizeOf<EventHeader>();
     public static ushort MaxPayloadSize => Constants.MaxBufferSize;
 
+    private static readonly int EventTypeCount = EnumUtil.GetEnumCount<EventType>();
+
     public static void Handle(RoomPacket packet, Room room, ServerContext context)
     {
-        EventPacket eventPacket = new EventPacket() { BasePacket = packet };
+        EventPacket eventPacket = new EventPacket() 
+        { 
+            BasePacket = packet
+        };
 
         EventType eventType = eventPacket.EventHeader.Type;
 
-        if (eventType >= EventType.OutOfRange)
+        if ((int)eventType >= EventTypeCount) // exlusive check
         {
             context.Logger.LogWarning("{PlayeName} sent an invalid event type ({EventType}) in Room #{RoomId}", packet.SenderPlayer!.Name, eventType, room.Id);
             return;
