@@ -6,6 +6,7 @@ using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using SMOO.Protocol;
 using SMOO.Services.Interface;
+using Core.Util;
 
 namespace SMOO.Server;
 
@@ -19,6 +20,7 @@ internal class SMOOServer : IDisposable
     private readonly Channel<NetworkPacket> _packets;
 
     private IPEndPoint LocalEndpoint => (IPEndPoint)(_socket!.LocalEndPoint!);
+    private static readonly int PacketTypeCount = EnumUtil.GetEnumCount<PacketType>();
 
     /// <summary>
     /// Creates an SMOO server from a context a socket, the server owns the socket and disposes it
@@ -187,7 +189,7 @@ internal class SMOOServer : IDisposable
 
     private static bool IsValidType(byte packetType)
     {
-        return packetType < (byte)PacketType.OutOfRange;
+        return packetType < PacketTypeCount;
     }
 
     public void Dispose()

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Core.Util;
 using SMOO.Protocol;
 using SMOO.Server;
 using SMOO.Services.Impl;
@@ -37,7 +38,7 @@ internal static unsafe class EventHandlerTable
 
     static EventHandlerTable()
     {
-        Debug.Assert(Handlers.Length == (ushort)EventType.OutOfRange, "Handlers table is out of sync with EventType enum");
+        Debug.Assert(Handlers.Length == EnumUtil.GetEnumCount<EventType>(), "Handlers table is out of sync with EventType enum");
     }
 
     public static EventHandler GetHandler(EventType type)
