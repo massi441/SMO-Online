@@ -46,10 +46,9 @@ internal enum PacketType : byte
     Ack,
 
     /// <summary>
-    /// A chat message is being broadcasted to all players in the room
+    /// A player sent a chat message to the room, and the server is broadcasting this message to all players in the room
     /// </summary>
     ChatMessage,
-    ChatMessageRequest, // TODO: Remove this and merge with single Chat Message type (when server receives it broadcasts it to all players)
 
     /// <summary>
     /// A game event has occurred
@@ -60,9 +59,4 @@ internal enum PacketType : byte
     /// A packet that contains information about all players in the current stage of a player
     /// </summary>
     PlayersInStage,
-
-    /// <summary>
-    /// A reserved packet type for server side validation
-    /// </summary>
-    OutOfRange
 }
